@@ -1,0 +1,122 @@
+{
+    "Happy": [
+        "Beaming Smile",
+        "Giggly",
+        "Excited",
+        "Cheerful",
+        "Content",
+        "Joyful",
+        "Laughing",
+        "Pleased",
+        "Radiant",
+        "Smirking"
+    ],
+    "Sad": [
+        "Crying",
+        "Depressed",
+        "Disappointed",
+        "Heartbroken",
+        "Tearful",
+        "Gloomy",
+        "Sorrowful",
+        "Mournful",
+        "Wistful",
+        "Somber"
+    ],
+    "Angry": [
+        "Annoyed",
+        "Fuming",
+        "Irate",
+        "Outraged",
+        "Frustrated",
+        "Aggravated",
+        "Seething",
+        "Enraged",
+        "Infuriated",
+        "Irritated"
+    ],
+    "Surprised": [
+        "Astonished",
+        "Amazed",
+        "Startled",
+        "Stunned",
+        "Awed",
+        "Astounded",
+        "Shocked",
+        "Dumbfounded",
+        "Bewildered",
+        "Flabbergasted"
+    ],
+    "Fearful": [
+        "Scared",
+        "Terrified",
+        "Panicked",
+        "Horrified",
+        "Petrified",
+        "Alarmed",
+        "Disturbed",
+        "Frightened",
+        "Terror-struck",
+        "Spooked"
+    ],
+    "Disgust": [
+        "Repulsed",
+        "Revolted",
+        "Appalled",
+        "Distasteful",
+        "Nauseated",
+        "Sickened",
+        "Grossed Out",
+        "Detesting",
+        "Abhorred",
+        "Loathsome"
+    ],
+    "Thinking": [
+        "Pensive",
+        "Contemplative",
+        "Reflective",
+        "Meditative",
+        "Concentrated",
+        "Doubtful",
+        "Inquisitive",
+        "Skeptical",
+        "Perplexed",
+        "Intrigued"
+    ],
+    "Confused": [
+        "Puzzled",
+        "Baffled",
+        "Perplexed",
+        "Mystified",
+        "Bemused",
+        "Mixed Up",
+        "Bewildered",
+        "Dazed",
+        "Stumped",
+        "Nonplussed"
+    ],
+    "Neutral": [
+        "Unemotional",
+        "Apathetic",
+        "Nonchalant",
+        "Detached",
+        "Steady",
+        "Still",
+        "Serene",
+        "Composed",
+        "Calm",
+        "Casual"
+    ],
+    "Embarrassed": [
+        "Ashamed",
+        "Chagrined",
+        "Flushed",
+        "Mortified",
+        "Humiliated",
+        "Sheepish",
+        "Shy",
+        "Guilty",
+        "Regretful",
+        "Apologetic"
+    ]
+}

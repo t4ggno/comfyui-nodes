@@ -1,0 +1,99 @@
+{
+    "Realism": [
+        "Photorealistic",
+        "Hyper-realistic",
+        "High-definition",
+        "Cinematic"
+    ],
+    "Illustration": [
+        "Watercolor",
+        "Ink Wash",
+        "Gouache",
+        "Pastel",
+        "Digital Painting",
+        "Vector Art"
+    ],
+    "Animation": [
+        "Anime",
+        "Cartoon",
+        "CGI",
+        "Cel Shading",
+        "Claymation",
+        "Stop Motion"
+    ],
+    "Abstract": [
+        "Surrealism",
+        "Cubism",
+        "Expressionism",
+        "Impressionism",
+        "Fauvism",
+        "Dadaism"
+    ],
+    "Drawing": [
+        "Sketch",
+        "Charcoal",
+        "Graphite",
+        "Conté",
+        "Line Art",
+        "Doodle",
+        "Minimalism"
+    ],
+    "Vintage": [
+        "Sepia Tone",
+        "Black and White",
+        "Grainy Film",
+        "Retro",
+        "Vintage Poster",
+        "Art Deco",
+        "Art Nouveau"
+    ],
+    "ConceptArt": [
+        "Science Fiction",
+        "Fantasy",
+        "Steampunk",
+        "Cyberpunk",
+        "Gothic",
+        "Post-Apocalyptic"
+    ],
+    "StreetArt": [
+        "Graffiti",
+        "Stencil Art",
+        "Wheatpaste Poster",
+        "Street Mural",
+        "Flash Mob",
+        "Yarn Bombing"
+    ],
+    "PopArt": [
+        "Comic Book",
+        "Warhol-esque",
+        "Lichtenstein Dots",
+        "Psychedelic",
+        "Glitch Art"
+    ],
+    "Patterns": [
+        "Mandala",
+        "Geometric",
+        "Floral",
+        "Tribal",
+        "Herringbone",
+        "Paisley",
+        "Chevron"
+    ],
+    "Textured": [
+        "Marble Effect",
+        "Wood Grain",
+        "Textile",
+        "Paper Texture",
+        "Canvas",
+        "Leather",
+        "Metallic"
+    ],
+    "Techniques": [
+        "Cross-hatching",
+        "Pointillism",
+        "Splatter",
+        "Gradient Mesh",
+        "Low Poly",
+        "Double Exposure"
+    ]
+}

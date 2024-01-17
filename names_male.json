@@ -1,0 +1,86 @@
+{
+    "ClassicNames": [
+        "James",
+        "John",
+        "Michael",
+        "William",
+        "David",
+        "Robert",
+        "Joseph",
+        "Richard",
+        "Charles",
+        "Thomas"
+    ],
+    "WarriorNames": [
+        "Alexander",
+        "Leonidas",
+        "William",
+        "Archer",
+        "Maximus",
+        "Odin",
+        "Thor",
+        "Griffin",
+        "Valentine",
+        "Stone"
+    ],
+    "SciFiNames": [
+        "Luke",
+        "Anakin",
+        "Han",
+        "Spock",
+        "Riker",
+        "Picard",
+        "Kirk",
+        "Mal",
+        "Neo",
+        "Morpheus"
+    ],
+    "NatureNames": [
+        "Flint",
+        "Glenn",
+        "Heath",
+        "Clay",
+        "Basil",
+        "Cedar",
+        "Elm",
+        "Brooks",
+        "Dale",
+        "Fielding"
+    ],
+    "GemstoneNames": [
+        "Jasper",
+        "Onyx",
+        "Flint",
+        "Jet",
+        "Mica",
+        "Jett",
+        "Stone",
+        "Obsidian",
+        "Diamond",
+        "Quartz"
+    ],
+    "UniqueNames": [
+        "Zephyr",
+        "Tarquin",
+        "Quinlan",
+        "Emeric",
+        "Leander",
+        "Thorn",
+        "Riordan",
+        "Severin",
+        "Acelin",
+        "Valor"
+    ],
+    "MythicalMaleNames": [
+        "Achilles",
+        "Hercules",
+        "Perseus",
+        "Poseidon",
+        "Zeus",
+        "Loki",
+        "Odysseus",
+        "Merlin",
+        "Atlas",
+        "Prometheus"
+    ]
+}

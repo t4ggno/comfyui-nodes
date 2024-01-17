@@ -1,0 +1,98 @@
+{
+    "Long": [
+        "Ponytail",
+        "Man bun",
+        "Braids",
+        "Wavy",
+        "Straight",
+        "Dreads",
+        "Shoulder length",
+        "Curly",
+        "Rock Star",
+        "Mullet"
+    ],
+    "Short": [
+        "Crew Cut",
+        "Buzz Cut",
+        "Fade",
+        "Undercut",
+        "French crop",
+        "Tapered Cut",
+        "Caesar Cut",
+        "Ivy League",
+        "Butch Cut",
+        "Fringe"
+    ],
+    "Medium": [
+        "Textured Pompadour",
+        "Mohawk",
+        "Faux Hawk",
+        "Brushed Back",
+        "Slick Back",
+        "Pompadour",
+        "Spiked",
+        "High Fade",
+        "Low Fade",
+        "Mid Fade"
+    ],
+    "Afro": [
+        "Twisted Curls",
+        "Short Afro",
+        "Medium Afro",
+        "Long Afro",
+        "Geometric Cut",
+        "Fade with Edge Up",
+        "Afro with Twisties",
+        "Afro Mohawk",
+        "Box Fade Cut",
+        "Wavy Afro"
+    ],
+    "Curly": [
+        "Twist Curls",
+        "Ringlets",
+        "Loose Waves",
+        "Tight Coils",
+        "Textured Lob",
+        "Shaggy Curls",
+        "Surfer Waves",
+        "Bruno Mars Curls",
+        "Dense Curls",
+        "Wavy Top"
+    ],
+    "Asian": [
+        "Down Perm",
+        "Volume Up",
+        "Side Swept",
+        "Undercut with Modern Pompadour",
+        "Messy Medium",
+        "Bowl Cut",
+        "Center Parting",
+        "Long Layered Cut",
+        "Sharp Fade",
+        "Korean Fade"
+    ],
+    "Vintage": [
+        "Classic Pompadour",
+        "Rockabilly",
+        "Slick Back Side Part",
+        "Executive Contour",
+        "High and Tight Recon",
+        "Flat Top Boogie",
+        "DA with Fade and Shape up",
+        "Psycho Quiff",
+        "The Elephant's Trunk",
+        "Classic Regular Cut"
+    ],
+    "Balding": [
+        "Shaved Head",
+        "Buzz Cut",
+        "Short Caesar Cut",
+        "Comb Over",
+        "Shaved Sides",
+        "Fringe Up Front",
+        "The Bateman",
+        "Short Crop",
+        "Bald Fade",
+        "Faux Hawk with Shaved Sides"
+    ]
+}

@@ -1,0 +1,65 @@
+{
+    "Natural": [
+        "black",
+        "dark brown",
+        "medium brown",
+        "light brown",
+        "blonde",
+        "dark blonde",
+        "ash blonde",
+        "platinum blonde",
+        "strawberry blonde",
+        "auburn",
+        "chestnut",
+        "ginger",
+        "gray",
+        "silver",
+        "white"
+    ],
+    "Colorful": [
+        "pink",
+        "blue",
+        "green",
+        "purple",
+        "teal",
+        "turquoise",
+        "lavender",
+        "maroon",
+        "rose gold",
+        "coral"
+    ],
+    "UnnaturalBlends": [
+        "blue ombre",
+        "green with yellow tips",
+        "rainbow",
+        "pastel mix",
+        "neon streaks",
+        "fire red to yellow gradient"
+    ],
+    "MetallicShades": [
+        "metallic silver",
+        "metallic gold",
+        "metallic bronze",
+        "metallic ruby",
+        "metallic sapphire"
+    ],
+    "MythicalColors": [
+        "mermaid green and blue mix",
+        "phoenix fire blend",
+        "unicorn pastels",
+        "dragon scale emerald"
+    ],
+    "NatureInspired": [
+        "autumn leaves mix",
+        "sunset orange and red blend",
+        "ocean wave blue-green gradient",
+        "earthy moss green",
+        "desert sand beige"
+    ],
+    "Futuristic": [
+        "holographic shimmer",
+        "galactic purple sparkle",
+        "nebula pink and blue mix",
+        "android silver luminance"
+    ]
+}

@@ -1,0 +1,62 @@
+{
+    "StandingPoses": [
+        "Standing with hands folded",
+        "Leaning against a wall",
+        "Standing on one foot",
+        "Standing with hands on hips",
+        "Cross-legged standing",
+        "Facing the wind standing",
+        "Looking up at the sky",
+        "Back to the camera",
+        "Martial arts stance",
+        "Power stance with legs apart",
+        "Standing on tiptoes"
+    ],
+    "SittingPoses": [
+        "Sitting on a chair with arms rested",
+        "Cross-legged on the floor",
+        "Sitting with legs hanging off a high place",
+        "Sitting on the ground leaning against a wall",
+        "Sitting on a stool at a bar",
+        "Sitting and reading a book",
+        "Sitting while playing a guitar",
+        "Lotus position",
+        "Sitting on a bench in a park",
+        "Sitting on a rock at the beach",
+        "Sitting on a swing"
+    ],
+    "DynamicPoses": [
+        "Throwing hair back - standing",
+        "Throwing hair back - sitting",
+        "Jumping with joy",
+        "Running towards the camera",
+        "Running away from the camera",
+        "Doing a dancer's pose",
+        "Doing a handstand",
+        "Squatting to pick something up",
+        "Playing catch",
+        "Swinging on a swing",
+        "Sliding down a slide",
+        "Kicking a football",
+        "Climbing a tree",
+        "Kayaking on a river",
+        "Riding a bike",
+        "Rolling downhill",
+        "Leaping over a hurdle",
+        "Stretching before a workout",
+        "Throwing a dart",
+        "Boxing with a punching bag"
+    ],
+    "RelaxedPoses": [
+        "Lying down on grass",
+        "Lounging on a recliner",
+        "Lounging in a swimming pool",
+        "Napping under a tree",
+        "Lying on a hammock",
+        "Sitting on sidewalk with back against a wall",
+        "Stretching while yawning",
+        "Lying down on a meadow looking at the sky",
+        "Sitting on the steps of a porch",
+        "Lying down on a beach towel"
+    ]
+}

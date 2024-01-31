@@ -1,0 +1,98 @@
+{
+    "Natural Fibers": [
+        "cotton fiber",
+        "wool fiber",
+        "silk fiber",
+        "linen fiber",
+        "bamboo fiber",
+        "hemp fiber",
+        "jute fiber",
+        "cashmere fiber",
+        "angora fiber",
+        "mohair fiber"
+    ],
+    "Synthetic Fibers": [
+        "nylon fiber",
+        "polyester fiber",
+        "acrylic fiber",
+        "rayon fiber",
+        "spandex fiber",
+        "polyethylene fiber",
+        "vinyl fiber",
+        "lycra fiber",
+        "microfiber",
+        "olefin fiber"
+    ],
+    "Metals": [
+        "iron metal",
+        "gold metal",
+        "silver metal",
+        "aluminum metal",
+        "copper metal",
+        "bronze metal",
+        "brass metal",
+        "steel metal",
+        "tin metal",
+        "lead metal"
+    ],
+    "Wood Types": [
+        "pine wood",
+        "oak wood",
+        "maple wood",
+        "birch wood",
+        "cherry wood",
+        "walnut wood",
+        "teak wood",
+        "mahogany wood",
+        "bamboo wood",
+        "cedar wood"
+    ],
+    "Stones": [
+        "granite stone",
+        "marble stone",
+        "limestone stone",
+        "slate stone",
+        "sandstone",
+        "quartz stone",
+        "obsidian stone",
+        "chalk stone",
+        "flint stone",
+        "basalt stone"
+    ],
+    "Paper Types": [
+        "cardstock paper",
+        "newsprint paper",
+        "note paper",
+        "print paper",
+        "tissue paper",
+        "parchment paper",
+        "wrapping paper",
+        "construction paper",
+        "kraft paper",
+        "waxed paper"
+    ],
+    "Plastics": [
+        "PET plastic",
+        "PVC plastic",
+        "HDPE plastic",
+        "LDPE plastic",
+        "PP plastic",
+        "PS plastic",
+        "ABS plastic",
+        "polycarbonate",
+        "acrylic plastic",
+        "nylon plastic"
+    ],
+    "Natural Materials": [
+        "latex rubber",
+        "gum rubber",
+        "cork",
+        "clay",
+        "amber",
+        "ivory",
+        "jet",
+        "pearl",
+        "silk",
+        "wool"
+    ]
+}

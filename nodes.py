@@ -669,7 +669,7 @@ class TextReplacer:
             replaceUsingJson("HairColor", "hair_colors.json")
             # 12. Replace [Color] (if exists) with random color
             colors = ["red", "orange", "yellow", "green", "blue", "purple", "pink", "brown", "black", "white", "gray", "grey", "gold", "silver", "bronze", "copper"]
-            replaceUsingArray("Color", colors, 2, True)
+            replaceUsingArray("Color", colors)
             # 13. Replace [PickMultiple,Option1,Option2,...] (if exists) with random option
             pickMultipleMatches = re.findall(r"(\[PickMultiple(?:\:([\w\,]+?))?\])", text)
             for match in pickMultipleMatches:
@@ -865,6 +865,8 @@ class TextReplacer:
             replaceUsingJson("Style", "styles.json")
             # 24. Interresting ideas
             replaceUsingJson("InterestingIdeas", "interesting_ideas.json")
+            # 25. Materials
+            replaceUsingJson("Material", "materials.json")
 
             # Last: "If" -> If:Contains:TriggerWord:Add:Value -> Allow "[Statement]" in Value via escaping. Example: [If:Contains:woman:Add:[PickOne:22,80] years old]
             if re.search(r"(\[\[If:(Contains):([\w\ ]+?):(Add):([\w\ \[\]\:\,]+?)\]\])", text) != None:
@@ -895,6 +897,36 @@ class TextReplacer:
                     somethingRemoved = True
             if not somethingRemoved:
                 break
+
+        # Replace regex lora with random lora
+        all_loras_regex = re.findall(r"<RE\:(.+?)(?:\:([0-9](?:\.[0-9]*)?)|(?:\:([0-9]+(?:\.[0-9]*)?|))(?:\:([0-9]+(?:\.[0-9]*)?|)))?>", text)
+        if len(all_loras_regex) > 0:
+            avaialbe_loras = folder_paths.get_filename_list("loras")
+            for lora in all_loras_regex:
+                print("Lora regex: " + lora[0])
+                # Convert regex to regex object
+                regex = re.compile(lora[0])
+                # Create list with all avaialbe loras that match regex
+                avaialbe_loras_regex = list(filter(lambda x: regex.match(x) != None, avaialbe_loras))
+                # print("Avaialbe loras regex: " + str(avaialbe_loras_regex))
+                # If no avaialbe loras match regex, skip
+                if len(avaialbe_loras_regex) == 0:
+                    print("No avaialbe loras match regex")
+                    # Remove lora from text
+                    text = text.replace("<RE:" + lora[0] + ">", "")
+                    continue
+                # Get random lora from avaialbe_loras_regex
+                random_lora = avaialbe_loras_regex[numpy.random.randint(0, len(avaialbe_loras_regex))]
+                # Remove extension name
+                random_lora = re.sub(r"\.[a-zA-Z0-9]+$", "", random_lora)
+                print("Random lora: " + random_lora)
+                # Replace lora with random_lora
+                text = text.replace("<RE:" + lora[0], "<" + random_lora)
+
+        # Cleanup - Remove empty lines, trim, remove multiple spaces, remove multiple commas, etc
+        text = "\n".join([line.strip() for line in text.split("\n") if line.strip() != ""])
+        text = re.sub(r"\s+", " ", text)
+        text = re.sub(r"\,+?", ",", text)
 
         print("Text: " + text)
         return (text,)
@@ -1077,16 +1109,21 @@ class LoraLoaderFromPrompt:
         avaialbe_loras = folder_paths.get_filename_list("loras")
         # print("Avaialbe loras: " + str(avaialbe_loras))
         # Extract lora from _prompt: <name:model_stremgth:clip_strength> or <name:model_stremgth> or <name::clip_strength> or <name> or <name::>
-        all_loras = re.findall(r"<([\w\-. ]+?)(?:\:([0-9](?:\.[0-9]*)?)|(?:\:([0-9]+(?:\.[0-9]*)?|))(?:\:([0-9]+(?:\.[0-9]*)?|)))?>", prompt)
-        all_loras_regex = re.findall(r"<RE\:(.+?)(?:\:([0-9](?:\.[0-9]*)?)|(?:\:([0-9]+(?:\.[0-9]*)?|))(?:\:([0-9]+(?:\.[0-9]*)?|)))?>", prompt)
+        all_loras = re.findall(r"<([\w\-. \\]+?)(?:\:([0-9](?:\.[0-9]*)?)|(?:\:([0-9]+(?:\.[0-9]*)?|))(?:\:([0-9]+(?:\.[0-9]*)?|)))?>", prompt)
+        print("All loras: " + str(all_loras))
         # Remove loras from prompt
-        prompt = re.sub(r"<([\w\-. ]+?)(?:\:([0-9](?:\.[0-9]*)?)|(?:\:([0-9]+(?:\.[0-9]*)?|))(?:\:([0-9]+(?:\.[0-9]*)?|)))?>", "", prompt)
-        prompt = re.sub(r"<RE\:(.+?)(?:\:([0-9](?:\.[0-9]*)?)|(?:\:([0-9]+(?:\.[0-9]*)?|))(?:\:([0-9]+(?:\.[0-9]*)?|)))?>", "", prompt)
+        prompt = re.sub(r"<([\w\-. \\]+?)(?:\:([0-9](?:\.[0-9]*)?)|(?:\:([0-9]+(?:\.[0-9]*)?|))(?:\:([0-9]+(?:\.[0-9]*)?|)))?>", "", prompt)
         # Map lora to object with name, model_strength and clip_strength
-        all_loras = list(map(lambda x: {
-                         "name": x[0], "model_strength": x[1], "clip_strength": x[2]}, all_loras))
+        all_loras = list(map(lambda x: {"name": x[0], "model_strength": x[1], "clip_strength": x[2]}, all_loras))
 
-        # Go trough every lora and fix name. For exmaple: FineNude -> NSFW\\FineNude-V0.2.safetensors or FineNude-V0.2 -> NSFW\\FineNude-V0.2.safetensors
+        # Convert model_strength and clip_strength to float
+        # If only model_strength is set, use model_strength for clip_strength
+        # If no model_strength or clip_strength is set, use 1.0
+        for lora in all_loras:
+            lora["model_strength"] = float(lora["model_strength"]) if lora["model_strength"] != "" else 1.0
+            lora["clip_strength"] = float(lora["clip_strength"]) if lora["clip_strength"] != "" else float(lora["model_strength"]) if lora["model_strength"] != "" else 1.0
+
+        # Go trough every lora and fix name. For exmaple: Happy -> Emotions\\Happy-V1.0.safetensors or Happy-V1.0 -> Emotions\\Happy-V1.0.safetensors
         for lora in all_loras:
             current_name = lora["name"]
             found_exact = False
@@ -1102,32 +1139,35 @@ class LoraLoaderFromPrompt:
                         lora["name"] = avaialbe_lora
                         break
 
-        # In regex search for avaiable loras using that regex
-        for lora in all_loras_regex:
-            print("Lora regex: " + lora[0])
-            # Convert regex to regex object
-            regex = re.compile(lora[0])
-            # Create list with all avaialbe loras that match regex
-            avaialbe_loras_regex = list(filter(lambda x: regex.match(x) != None, avaialbe_loras))
-            # print("Avaialbe loras regex: " + str(avaialbe_loras_regex))
-            # If no avaialbe loras match regex, skip
-            if len(avaialbe_loras_regex) == 0:
-                continue
-            # Get random lora from avaialbe_loras_regex
-            random_lora = avaialbe_loras_regex[numpy.random.randint(0, len(avaialbe_loras_regex))]
-            # Replace lora with random_lora
-            prompt = prompt.replace("<RE:" + lora[0] + ">", random_lora)
-            # Add random_lora to all_loras
-            all_loras.append({"name": random_lora, "model_strength": lora[1], "clip_strength": lora[2]})
-
         # Go thorugh all loras and warn if lora not available
         for lora in all_loras:
             if lora["name"] not in avaialbe_loras:
                 print("Lora not available: " + lora["name"])
 
+        # Go trough every lora and check for duplicates. If duplicate found, calculate average of model_strength and clip_strength
+        # If model_strength or clip_strength is not set, use 1.0
+        all_loras_tmp = []
+        for lora in all_loras:
+            found = False
+            for lora_tmp in all_loras_tmp:
+                if lora_tmp["name"] == lora["name"]:
+                    found = True
+                    lora_tmp["model_strength"] = (float(lora_tmp["model_strength"]) + float(lora["model_strength"]))
+                    lora_tmp["clip_strength"] = (float(lora_tmp["clip_strength"]) + float(lora["clip_strength"]))
+                    lora_tmp["quantity"] += 1
+                    break
+            if not found:
+                lora["quantity"] = 1
+                all_loras_tmp.append(lora)
+        all_loras = all_loras_tmp
+        # Calculate average
+        for lora in all_loras:
+            lora["model_strength"] = lora["model_strength"] / lora["quantity"]
+            lora["clip_strength"] = lora["clip_strength"] / lora["quantity"]
+            del lora["quantity"]
+
         # Filter out loras that are not available
-        all_loras = list(
-            filter(lambda x: x["name"] in avaialbe_loras, all_loras))
+        all_loras = list(filter(lambda x: x["name"] in avaialbe_loras, all_loras))
         print(all_loras)
         if len(all_loras) == 0:
             return (model, clip, prompt)

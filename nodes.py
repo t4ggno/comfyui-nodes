@@ -24,9 +24,11 @@ import folder_paths as comfy_paths
 from PIL.PngImagePlugin import PngInfo
 from datetime import datetime
 import time
+from openai import OpenAI
 
 dirPath = os.path.dirname(os.path.realpath(__file__))
 ALLOWED_EXT = ('jpeg', 'jpg', 'png', 'tiff', 'gif', 'bmp', 'webp')
+
 
 class Base64Decode:
     @classmethod
@@ -97,6 +99,8 @@ NOTE: For SDXL, it is recommended to use trained values listed below:
  - 1536 x 640
  - 640  x 1536
 """
+
+
 class PredefinedResolutions:
     @classmethod
     def INPUT_TYPES(cls):
@@ -214,6 +218,130 @@ class TextSwitch:
             return (text1,)
         elif active == "Text 2":
             return (text2,)
+
+
+class ImageMetadataExtractor:
+    @classmethod
+    def INPUT_TYPES(cls):
+        return {
+            "required": {
+                "folder": ("STRING", {"default": ""}),
+                "max_width": ("INT", {"default": 8192, "min": 1, "max": 100000, "step": 1}),
+                "max_height": ("INT", {"default": 8192, "min": 1, "max": 100000, "step": 1}),
+                "scale": ("FLOAT", {"default": 2, "min": 1, "max": 100, "step": 1}),
+                "max_scale": ("FLOAT", {"default": 100000, "min": 1, "max": 100000, "step": 1}),
+                "fallback_positive_prompt": ("STRING", {"default": "", "multiline": True}),
+                "fallback_negative_prompt": ("STRING", {"default": "", "multiline": True}),
+                "seed": ("INT", {"default": 0, "min": 0, "max": 0xffffffffffffffff}),
+            },
+        }
+
+    RETURN_TYPES = ("IMAGE", "STRING", "FLOAT", "STRING", "STRING", "FLOAT")
+    RETURN_NAMES = ("image", "filename_without_scale", "current_scale", "positive_prompt", "negative_prompt", "next_scale")
+    FUNCTION = "load_image"
+    CATEGORY = "t4ggno/image"
+    OUTPUT_NODE = False
+
+    def get_prompt_data_from_image(self, image, positive_prompt, negative_prompt):
+        return_positive_prompt = positive_prompt
+        return_negative_prompt = negative_prompt
+        return_additional_prompt = ""
+        # Get metadata
+        metadata = image.info
+        # Convert metadata to JSON
+        metadata_json = json.dumps(metadata)
+        # Check if metadata contains PositiveText, NegativeText and AdditionalText
+        if "PositiveText" in metadata_json:
+            # Get PositiveText
+            positive_text = metadata["PositiveText"]
+            # Check if PositiveText is not empty
+            if positive_text.strip() != "":
+                # Add to positive_prompt
+                return_positive_prompt += positive_text
+        if "NegativeText" in metadata_json:
+            # Get NegativeText
+            negative_text = metadata["NegativeText"]
+            # Check if NegativeText is not empty
+            if negative_text.strip() != "":
+                # Add to negative_prompt
+                return_negative_prompt += negative_text
+        if "AdditionalText" in metadata_json:
+            # Get AdditionalText
+            additional_text = metadata["AdditionalText"]
+            # Check if AdditionalText is not empty
+            if additional_text.strip() != "":
+                # Add to additional_prompt
+                return_additional_prompt += additional_text
+        return (return_positive_prompt, return_negative_prompt, return_additional_prompt)
+
+    def load_image(self, folder, max_width, max_height, scale, max_scale, fallback_positive_prompt, fallback_negative_prompt, seed):
+        while True:
+            # Load files from folder
+            files = os.listdir(folder)
+            # Filter only for png images
+            files = [file for file in files if file.endswith(".png")]
+            # Find image with lowest avaiable scale -> _1.0x, _2.0x, _3.5x, ...
+            # Create a collection of images. Remove all lower scales than current scale and also if max_width or max_height is exceeded
+            images = []
+            for file in files:
+                # Get filename and scale using regex
+                filename_regex = re.search(r"(.+?)(?:_(\d(?:\.\d+)?)x)\.png", file)
+                if filename_regex != None:
+                    filename_regex_name = filename_regex.group(1)
+                    filename_regex_scale = float(filename_regex.group(2))
+
+                    # Check if same filename but with higher scale is in images list -> Continue if yes, else add to images list
+                    higher_scale_exists = False
+                    for image in images:
+                        if image["filename"] == filename_regex_name and image["scale"] > scale:
+                            higher_scale_exists = True
+                            break
+                    if higher_scale_exists:
+                        print("Higher scale exists")
+                        continue
+                    # Remove lower scales of same filename if in images list
+                    images = [image for image in images if not (image["filename"] == filename_regex_name)]
+                    # Check if image is lower than max_width and max_height
+                    images.append({"filename": filename_regex_name, "scale": filename_regex_scale, "file": file})
+            # Remove images with scale * 2 > max_scale
+            images = [image for image in images if not (image["scale"] * 2 > max_scale)]
+            # Remove images with size higher than max_width or max_height
+            for image in images:
+                image = Image.open(folder + "/" + file)
+                if image.width > max_width or image.height > max_height:
+                    images.remove(image)
+            # Check if list empty
+            if len(images) > 0:
+                # Get image with lowest scale
+                lower_scale = None
+                for image in images:
+                    if lower_scale == None or image["scale"] < lower_scale["scale"]:
+                        lower_scale = image
+                # Use that image
+                loaded_image = Image.open(folder + "/" + lower_scale["file"])
+                # Calculate if scale is possible, else calculate optimal scale
+                """ Disabled because not needed currently
+                width_after_scale = loaded_image.width * scale
+                height_after_scale = loaded_image.height * scale
+                if width_after_scale > max_width or height_after_scale > max_height:
+                    use_scale = min(max_width / loaded_image.width, max_height / loaded_image.height)
+                else:
+                    use_scale = scale"""
+                use_scale = scale
+                # Read positive and negative prompt from metadata
+                positive_prompt, negative_prompt, additional_prompt = self.get_prompt_data_from_image(loaded_image, fallback_positive_prompt, fallback_negative_prompt)
+                print("====================================")
+                print("Image: " + lower_scale["file"])
+                print("Current scale: " + str(lower_scale["scale"]) + (lower_scale["scale"] == 1 and " (Base)" or ""))
+                print("Next scale: " + str(use_scale))
+                print("Positive prompt: " + positive_prompt)
+                print("Negative prompt: " + negative_prompt)
+                print("====================================")
+                # Return
+                return (torch.from_numpy(numpy.array(loaded_image).astype(numpy.float32) / 255.0).unsqueeze(0), lower_scale["filename"], image["scale"], positive_prompt, negative_prompt, use_scale)
+
+            # Wait 10 seconds and try again
+            time.sleep(10)
 
 
 class AutoLoadImageForUpscaler:
@@ -899,7 +1027,7 @@ class TextReplacer:
                 break
 
         # Replace regex lora with random lora
-        all_loras_regex = re.findall(r"<RE\:(.+?)(?:\:([0-9](?:\.[0-9]*)?)|(?:\:([0-9]+(?:\.[0-9]*)?|))(?:\:([0-9]+(?:\.[0-9]*)?|)))?>", text)
+        all_loras_regex = re.findall(r"<RE\:(.+?)(?:\:(-?[0-9](?:\.[0-9]*)?)|(?:\:(-?[0-9]+(?:\.[0-9]*)?|))(?:\:(-?[0-9]+(?:\.[0-9]*)?|)))?>", text)
         if len(all_loras_regex) > 0:
             avaialbe_loras = folder_paths.get_filename_list("loras")
             for lora in all_loras_regex:
@@ -941,7 +1069,10 @@ class PromptFromAI:
     def INPUT_TYPES(cls):
         return {
             "required": {
-                "token": ("STRING", {"default": ""}),
+                "api_key": ("STRING", {"default": ""}),
+                "temperature": ("FLOAT", {"default": 1.1}),
+                "frequency_penalty": ("FLOAT", {"default": 0.2}),
+                "presence_penalty": ("FLOAT", {"default": 0.2}),
                 "details": ("STRING", {"multiline": True}),
                 "append_prefix": ("STRING",  {"multiline": True}),
                 "append_suffix": ("STRING",  {"multiline": True}),
@@ -953,29 +1084,16 @@ class PromptFromAI:
                 "value": ("INT", {"default": 0}),
             },
         }
-
-    RETURN_TYPES = ("STRING", "INT", "INT",)
-    RETURN_NAMES = ("prompt", "width", "height",)
+    
+    RETURN_TYPES = ("STRING",)
+    RETURN_NAMES = ("prompt",)
     FUNCTION = "get_prompt"
-    CATEGORY = "t4ggno/loaders"
+    CATEGORY = "t4ggno/utils"
     OUTPUT_NODE = False
 
-    def get_prompt(cls, token, details, append_prefix, append_suffix, batch_quantity, images_per_batch):
-        """
-            [EXAMPLE_START]
-            product shot of ultra realistic juicy [cheeseburger:cake:0.2] against a (dark background:1.2), two tone lighting, (advertisement, octane:1.1)
-            landscape
-
-            sensual silhouette of a (woman:1.5), draped in silk, [candlelight:moonlight:0.3], surreal elements like floating bubbles with galaxies inside them, neon butterflies, crystal raindrops, (chocolate river:1.2), glowing flowers, ethereal mist, vibrant colors
-            portrait
-
-            seductive scene set in an alien landscape, bioluminescent plants and creatures, erotic statues made of glass and gold, waterfall of sparkling wine, sky filled with three moons and shooting stars, velvet roses growing on trees, sensual shadows playing on the ground
-            landscape
-            [EXAMPLE_END]
-        """
+    def get_prompt(cls, api_key, temperature, frequency_penalty, presence_penalty, details, append_prefix, append_suffix, batch_quantity, images_per_batch):
         print("Get next prompt")
-        next_prompt = cls.get_next_prompt(
-            token, details, append_prefix, append_suffix, batch_quantity, images_per_batch)
+        next_prompt = cls.get_next_prompt(append_prefix, append_suffix, images_per_batch)
         if next_prompt:
             return next_prompt
 
@@ -994,34 +1112,73 @@ class PromptFromAI:
         avaiable_loras = json.dumps(converted_loras)
         # print("Avaiable loras: " + avaiable_loras)
 
-        # Call "http://localhost:3000/api/stable-concept" with details and batch_quantity as body
-        url = 'http://localhost:3000/api/stable-concept'
-        values = {
-            'details': details,
-            'engine': 'gpt-4.0-8k',
-            'quantity': batch_quantity,
-            'loras': avaiable_loras,
-        }
-        headers = {
-            'token': token
-        }
-        data = urllib.parse.urlencode(values)
-        full_url = url + "?" + data
-        req = urllib.request.Request(full_url, headers=headers)
-        timeout = 120  # 2 minutes
+        # Get prompt from ChatGPT for GPT-4
+        client = OpenAI(
+            api_key=api_key
+        )
 
-        with urllib.request.urlopen(req, None, timeout) as response:
-            result = response.read().decode("utf-8")
-            with open("prompt_from_ai.txt", "w") as outfile:
-                outfile.write("index:0\nimage:0\n\n" + result)
-        next_prompt = cls.get_next_prompt(
-            token, details, append_prefix, append_suffix, batch_quantity, images_per_batch)
+        # Load keywoar list from file if exists
+        keywoard_list = ""
+        try:
+            with open("keywoard_list.txt", "r") as infile:
+                keywoard_list = infile.read()
+        except:
+            print("keywoard_list.txt not found")
+
+        # Get new prompts from ChatGPT
+        gpt_assistant_prompt = "You are a Stable Diffusion prompt generator. The prompt should be detailed but not too long. Use Keyword sentences. The scene should be interesting and engaging. The layout should be chosen based on the scene. The details should be relevant to the scene. The prompt should be creative and unique. Start directly with the prompt! If you have to create multiple prompts, add an empty line between them. Don't number them. You can also use loras in the following format: <loraname:strength>. Avaiable loras:  " + avaiable_loras
+        gpt_user_prompt_1 = "Details for the prompt: " + details
+        gpt_user_prompt_2 = "Quantity of prompts: " + str(batch_quantity)
+        if keywoard_list != "":
+            gpt_user_prompt_3 = "Avoit prompts with the following keywoards: " + keywoard_list
+            message = [{"role": "assistant", "content": gpt_assistant_prompt}, {"role": "user", "content": gpt_user_prompt_1}, {"role": "user", "content": gpt_user_prompt_2}, {"role": "user", "content": gpt_user_prompt_3}]
+        else:
+            message = [{"role": "assistant", "content": gpt_assistant_prompt}, {"role": "user", "content": gpt_user_prompt_1}, {"role": "user", "content": gpt_user_prompt_2}]
+        max_tokens = 4095 # Max tokens is used to control the length of the output
+        response = client.chat.completions.create(
+            model="gpt-4-turbo",
+            messages=message,
+            temperature=temperature,
+            max_tokens=max_tokens,
+            frequency_penalty=frequency_penalty,
+            presence_penalty=presence_penalty,
+        )
+
+        # Get a new overview of the prompts (Keywoards like "castle", "underwater sear world", ...)
+        gpt_assistant_prompt = "You will receive an overview of prompts. Create a short keywoard list of prompts I can use, to prevent furhter generations of the same prompts later. Keep it short but detailed. Start directly with the keywoards! Seperate the keywoards with a comma. If already a keywoard list is provided, attach it to the end of the list."
+        if keywoard_list != "":
+            gp_user_prompt_1 = "Prompts:\n\n" + response.choices[0].message.content
+            gp_user_prompt_2 = "Keywoard list: " + keywoard_list
+            message = [{"role": "assistant", "content": gpt_assistant_prompt}, {"role": "user", "content": gp_user_prompt_1}, {"role": "user", "content": gp_user_prompt_2}]
+        else:
+            gp_user_prompt = "Prompts:\n\n" + response.choices[0].message.content
+            message = [{"role": "assistant", "content": gpt_assistant_prompt}, {"role": "user", "content": gp_user_prompt}]
+        responseKeywoarList = client.chat.completions.create(
+            model="gpt-4-turbo",
+            messages=message,
+            temperature=0.8,
+            max_tokens=max_tokens,
+            frequency_penalty=0.2,
+            presence_penalty=0.2,
+        )
+
+        print("Response prompt: " + response.choices[0].message.content)
+        print("Response keywoard list: " + responseKeywoarList.choices[0].message.content)
+        prompt = response.choices[0].message.content
+        # Write prompt to prompt_from_ai.txt
+        with open("prompt_from_ai.txt", "w") as outfile:
+            outfile.write("index:0\nimage:0\n\n" + prompt)
+        # Write keywoard list to keywoard_list.txt
+        with open("keywoard_list.txt", "w") as outfile:
+            outfile.write(responseKeywoarList.choices[0].message.content)
+        # Get next prompt
+        next_prompt = cls.get_next_prompt(append_prefix, append_suffix, images_per_batch)
         if next_prompt:
             return next_prompt
         else:
-            return (None, None, None)
+            return (None,)
 
-    def get_next_prompt(cls, token, details, append_prefix, append_suffix, batch_quantity, images_per_batch):
+    def get_next_prompt(cls, append_prefix, append_suffix, images_per_batch):
         # Read prompt_from_ai.txt
         try:
             with open("prompt_from_ai.txt", "r") as infile:
@@ -1040,8 +1197,7 @@ class PromptFromAI:
         prompts = list(filter(lambda x: x != "", prompts))
         # If image_count is higher or equal than images_per_batch, reset image_count and increase index by 1
         if image_count >= images_per_batch:
-            print(
-                "Image count higher or equal than images per batch -> Reset image count and increase index by 1")
+            print("Image count higher or equal than images per batch -> Reset image count and increase index by 1")
             image_count = 0
             index += 1
         # If index is higher than len(prompts), return None
@@ -1058,23 +1214,17 @@ class PromptFromAI:
         # Remove empty lines in prompt
         prompt = re.sub(r"^\s*$", "", prompt, flags=re.MULTILINE)
         # Write prompt_from_ai.txt
-        with open("prompt_from_ai.txt", "w") as outfile:
-            outfile.write("index:" + str(index) + "\nimage:" +
-                          str(image_count) + "\n\n" + "\n".join(prompts))
-        # Return prompt and layout (first line prompt, second line layout) -> If layout = landscape, width = 1216, height = 832; If layout = portrait, width = 832, height = 1216; If layout = square, width = 1024, height = 1024
+        with open("prompt_from_ai.txt", "w") as outfile: outfile.write("index:" + str(index) + "\nimage:" + str(image_count) + "\n\n" + "\n".join(prompts))
+
+        # Return prompt
         prompt_splitted = prompt.split("\n")
         # Remove empty lines in prompt
         prompt_splitted = list(filter(lambda x: x != "", prompt_splitted))
         prompt = prompt_splitted[0]
-        layout = prompt_splitted[1]
         # Append prefix and suffix
         prompt = append_prefix + " " + prompt + " " + append_suffix
-        if layout == "landscape":
-            return (prompt, 1216, 832)
-        elif layout == "portrait":
-            return (prompt, 832, 1216)
-        elif layout == "square":
-            return (prompt, 1024, 1024)
+        print("Prompt: " + prompt)
+        return (prompt,)
 
     """@classmethod
     def IS_CHANGED(cls, token, details, append_prefix, append_suffix, batch_quantity, images_per_batch):
@@ -1083,7 +1233,7 @@ class PromptFromAI:
             os.remove("prompt_from_ai.txt")
         return True"""
 
-    def IS_CHANGED(cls, token, details, append_prefix, append_suffix, batch_quantity, images_per_batch):
+    def IS_CHANGED(cls, api_key, organization_id, details, append_prefix, append_suffix, batch_quantity, images_per_batch):
         print("PARTY HARD")
 
 
@@ -1109,10 +1259,10 @@ class LoraLoaderFromPrompt:
         avaialbe_loras = folder_paths.get_filename_list("loras")
         # print("Avaialbe loras: " + str(avaialbe_loras))
         # Extract lora from _prompt: <name:model_stremgth:clip_strength> or <name:model_stremgth> or <name::clip_strength> or <name> or <name::>
-        all_loras = re.findall(r"<([\w\-. \\]+?)(?:\:([0-9](?:\.[0-9]*)?)|(?:\:([0-9]+(?:\.[0-9]*)?|))(?:\:([0-9]+(?:\.[0-9]*)?|)))?>", prompt)
+        all_loras = re.findall(r"<([\w\-. \\]+?)(?:\:(-?[0-9](?:\.[0-9]*)?)|(?:\:(-?[0-9]+(?:\.[0-9]*)?|))(?:\:(-?[0-9]+(?:\.[0-9]*)?|)))?>", prompt)
         print("All loras: " + str(all_loras))
         # Remove loras from prompt
-        prompt = re.sub(r"<([\w\-. \\]+?)(?:\:([0-9](?:\.[0-9]*)?)|(?:\:([0-9]+(?:\.[0-9]*)?|))(?:\:([0-9]+(?:\.[0-9]*)?|)))?>", "", prompt)
+        prompt = re.sub(r"<([\w\-. \\]+?)(?:\:(-?[0-9](?:\.[0-9]*)?)|(?:\:(-?[0-9]+(?:\.[0-9]*)?|))(?:\:(-?[0-9]+(?:\.[0-9]*)?|)))?>", "", prompt)
         # Map lora to object with name, model_strength and clip_strength
         all_loras = list(map(lambda x: {"name": x[0], "model_strength": x[1], "clip_strength": x[2]}, all_loras))
 

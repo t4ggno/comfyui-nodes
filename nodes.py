@@ -1070,6 +1070,8 @@ class PromptFromAI:
         return {
             "required": {
                 "api_key": ("STRING", {"default": ""}),
+                "gpt": (["gpt-3.5-turbo","gpt-3.5-turbo-16K","gpt-4","gpt-4-Turbo","Custom"], {"default": "gpt-4-turbo"}),
+                "gpt_custom": ("STRING", {"default": ""}),
                 "temperature": ("FLOAT", {"default": 1.1}),
                 "frequency_penalty": ("FLOAT", {"default": 0.2}),
                 "presence_penalty": ("FLOAT", {"default": 0.2}),
@@ -1091,7 +1093,7 @@ class PromptFromAI:
     CATEGORY = "t4ggno/utils"
     OUTPUT_NODE = False
 
-    def get_prompt(cls, api_key, temperature, frequency_penalty, presence_penalty, details, append_prefix, append_suffix, batch_quantity, images_per_batch):
+    def get_prompt(cls, api_key, gpt, gpt_custom, temperature, frequency_penalty, presence_penalty, details, append_prefix, append_suffix, batch_quantity, images_per_batch):
         print("Get next prompt")
         next_prompt = cls.get_next_prompt(append_prefix, append_suffix, images_per_batch)
         if next_prompt:
@@ -1126,23 +1128,36 @@ class PromptFromAI:
             print("keywoard_list.txt not found")
 
         # Get new prompts from ChatGPT
-        gpt_assistant_prompt = "You are a Stable Diffusion prompt generator. The prompt should be detailed but not too long. Use Keyword sentences. The scene should be interesting and engaging. The layout should be chosen based on the scene. The details should be relevant to the scene. The prompt should be creative and unique. Start directly with the prompt! If you have to create multiple prompts, add an empty line between them. Don't number them. You can also use loras in the following format: <loraname:strength>. Avaiable loras:  " + avaiable_loras
+        gpt_assistant_prompt = "You are a Stable Diffusion prompt generator. The prompt should be detailed but not too long. Use Keyword sentences. The scene should be interesting and engaging. The layout should be chosen based on the scene. The details should be relevant to the scene. The prompt should be creative and unique. Start directly with the prompt! If you have to create multiple prompts, add an empty line between them. Don't number them! You can also use loras in the following format: <loraname:strength>."
         gpt_user_prompt_1 = "Details for the prompt: " + details
         gpt_user_prompt_2 = "Quantity of prompts: " + str(batch_quantity)
+        gpt_user_prompt_3 = "Avaiable loras: " + avaiable_loras
+        gtp_user_prompt_4 = """Example:
+            score_9, score_8_up, score_8, medium breasts, (ultra realistic,32k, masterpiece:1.2),(high detailed skin:1.1),( high quality:1.1), (curvy), cute, eyelashes, princess zelda, solo, green eyes, long hair, green eyes, crown braid, hairclip, pointy ears, blue shirt, long sleeves, curvy, head tilt, hearts, blush, lips, curvy, head tilt, shiny clothes, upper body, looking at viewer, bokeh, luminescent background
+
+            A glass sphere sculpture, concealed inside the sphere is a large Pirate Ship in a Lightning storm, large waves, in the dark, detailed image, 8k high quality detailed, the moon, shaped sphere, amazing wallpaper, digital painting highly detailed, 8k UHD detailed oil painting, beautiful art UHD, focus on full glass sphere, bokeh, background Modifiers: extremely detailed Award winning photography, fantasy studio lighting, photorealistic very attractive beautiful imperial colours ultra detailed 3D, (Very Intricate)
+
+            cinematic photo anna in school,<lora:add-detail-xl:1> <lora:princess_xl_v2:0.9>, 35mm photograph, film, bokeh, professional, 4k, highly detailed
+
+            <lora:Lego_XL_v2.1:0.8> LEGO MiniFig, A man in a vintage early-20th-century setting, possibly from a period film, stands prominently in the foreground. He wears a dark grey suit, a light blue shirt, a darker blue tie, and a classic fedora hat, conveying an aura of authority and composure. His face shows determination, with sharp features, short dark hair, and an intense gaze. The badge labeled 'K-6' on his lapel suggests he might have an official or investigative role
+
+            A full body photograph of a beautiful 20 year old girl wearing a Vault Suit with the number 76 on the back in a desert wasteland <lora:Fallout_Vault_Suit-000008:0.6> <lora:Perfect Hands v2:0.75> Perfect Hands
+        """
         if keywoard_list != "":
-            gpt_user_prompt_3 = "Avoit prompts with the following keywoards: " + keywoard_list
-            message = [{"role": "assistant", "content": gpt_assistant_prompt}, {"role": "user", "content": gpt_user_prompt_1}, {"role": "user", "content": gpt_user_prompt_2}, {"role": "user", "content": gpt_user_prompt_3}]
+            gpt_user_prompt_4 = "Avoid prompts with the following keywoards: " + keywoard_list
+            message = [{"role": "assistant", "content": gpt_assistant_prompt}, {"role": "user", "content": gpt_user_prompt_1}, {"role": "user", "content": gpt_user_prompt_2}, {"role": "user", "content": gpt_user_prompt_3}, {"role": "user", "content": gpt_user_prompt_4}]
         else:
-            message = [{"role": "assistant", "content": gpt_assistant_prompt}, {"role": "user", "content": gpt_user_prompt_1}, {"role": "user", "content": gpt_user_prompt_2}]
+            message = [{"role": "assistant", "content": gpt_assistant_prompt}, {"role": "user", "content": gpt_user_prompt_1}, {"role": "user", "content": gpt_user_prompt_2}, {"role": "user", "content": gpt_user_prompt_3}]
         max_tokens = 4095 # Max tokens is used to control the length of the output
         response = client.chat.completions.create(
-            model="gpt-4-turbo",
+            model=gpt if gpt_custom == "" else gpt_custom,
             messages=message,
             temperature=temperature,
             max_tokens=max_tokens,
             frequency_penalty=frequency_penalty,
             presence_penalty=presence_penalty,
         )
+        prompt = response.choices[0].message.content
 
         # Get a new overview of the prompts (Keywoards like "castle", "underwater sear world", ...)
         gpt_assistant_prompt = "You will receive an overview of prompts. Create a short keywoard list of prompts I can use, to prevent furhter generations of the same prompts later. Keep it short but detailed. Start directly with the keywoards! Seperate the keywoards with a comma. If already a keywoard list is provided, attach it to the end of the list."
@@ -1164,19 +1179,30 @@ class PromptFromAI:
 
         print("Response prompt: " + response.choices[0].message.content)
         print("Response keywoard list: " + responseKeywoarList.choices[0].message.content)
-        prompt = response.choices[0].message.content
+
+        # Remove numbering from prompts - Via regex
+        prompt = re.sub(r"^\d+\.", "", prompt, flags=re.MULTILINE)
+
+        # Combines lines where none empty lines are between them
+        prompt = re.sub(r"([^\n])\n([^\n])", r"\1 \2", prompt)
+
+        # Fix invalid loras -> For example <Character:Gamora-V1.0.safetensors> to <lora:Gamora-V1.0> or <NSFW:NoBra-V1.0.safetensors> to <lora:NoBra-V1.0>
+        # Remove the part before the colon and probably the .safetenors part
+        prompt = re.sub(r"<(?:[\w\-. \\]+?)\:((?:[\w-]+?)(?:\-V\d+\.\d+))?(?:\.safetensors?)?>", r"<lora:\1>", prompt)
+        # Change <loraname: to <lora:
+        prompt = re.sub(r"<loraname:", "<lora:", prompt)
+
+        # Remove lines with only whitespace or "-----" or similar but not empty lines
+        prompt = re.sub(r"^\s*[\-]+\s*$", "", prompt, flags=re.MULTILINE)
+
         # Write prompt to prompt_from_ai.txt
         with open("prompt_from_ai.txt", "w") as outfile:
             outfile.write("index:0\nimage:0\n\n" + prompt)
         # Write keywoard list to keywoard_list.txt
         with open("keywoard_list.txt", "w") as outfile:
             outfile.write(responseKeywoarList.choices[0].message.content)
-        # Get next prompt
-        next_prompt = cls.get_next_prompt(append_prefix, append_suffix, images_per_batch)
-        if next_prompt:
-            return next_prompt
-        else:
-            return (None,)
+        # Rerun get_prompt to get the first prompt or generate new if something went wrong
+        return cls.get_prompt(api_key, gpt, gpt_custom, temperature, frequency_penalty, presence_penalty, details, append_prefix, append_suffix, batch_quantity, images_per_batch)
 
     def get_next_prompt(cls, append_prefix, append_suffix, images_per_batch):
         # Read prompt_from_ai.txt
@@ -1193,6 +1219,10 @@ class PromptFromAI:
         image_count = int(prompt_from_ai[0].split("\n")[1].split(":")[1])
         # The rest are prompts
         prompts = prompt_from_ai[1:]
+        # Return None if no prompts
+        if len(prompts) == 0:
+            print("No prompts found")
+            return None
         # Remove empty prompts (could contain whitespace and newlines)
         prompts = list(filter(lambda x: x != "", prompts))
         # If image_count is higher or equal than images_per_batch, reset image_count and increase index by 1
@@ -1215,7 +1245,6 @@ class PromptFromAI:
         prompt = re.sub(r"^\s*$", "", prompt, flags=re.MULTILINE)
         # Write prompt_from_ai.txt
         with open("prompt_from_ai.txt", "w") as outfile: outfile.write("index:" + str(index) + "\nimage:" + str(image_count) + "\n\n" + "\n".join(prompts))
-
         # Return prompt
         prompt_splitted = prompt.split("\n")
         # Remove empty lines in prompt

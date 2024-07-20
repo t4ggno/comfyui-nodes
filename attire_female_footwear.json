@@ -1,0 +1,15 @@
+{
+    "Shoes": [
+      "high heels",
+      "mary janes",
+      "pumps",
+      "flats"
+    ],
+    "Boots": [
+      "high heel boots",
+      "thigh boots"
+    ],
+    "Other": [
+      "wedge heels"
+    ]
+  }

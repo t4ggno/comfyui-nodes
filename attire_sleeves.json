@@ -1,0 +1,92 @@
+{
+    "Colors": [
+        "aqua sleeves",
+        "black sleeves",
+        "blue sleeves",
+        "brown sleeves",
+        "gradient sleeves",
+        "green sleeves",
+        "grey sleeves",
+        "multicolored sleeves",
+        "orange sleeves",
+        "pink sleeves",
+        "purple sleeves",
+        "red sleeves",
+        "two-tone sleeves",
+        "white sleeves",
+        "yellow sleeves"
+    ],
+    "Prints": [
+        "checkered sleeves",
+        "plaid sleeves",
+        "polka dot sleeves",
+        "striped sleeves"
+    ],
+    "Length": [
+        "short sleeves",
+        "sleeves past elbows",
+        "long sleeves",
+        "sleeves past wrists",
+        "sleeves past fingers"
+    ],
+    "Styled": [
+        "sleeves pushed up",
+        "sleeves rolled up"
+    ],
+    "Trims": [
+        "feather-trimmed sleeves",
+        "frilled sleeves",
+        "fur-trimmed sleeves",
+        "lace-trimmed sleeves",
+        "ribbon-trimmed sleeves"
+    ],
+    "Styles": [
+        "uneven sleeves",
+        "bell sleeves",
+        "detached sleeves",
+        "compression sleeve",
+        "elbow sleeve",
+        "single detached sleeve",
+        "lace-up sleeves",
+        "layered sleeves",
+        "long sleeves",
+        "mismatched sleeves",
+        "puff and slash sleeves",
+        "puffy sleeves",
+        "puffy detached sleeves",
+        "puffy long sleeves",
+        "puffy short sleeves",
+        "raglan sleeves",
+        "ribbed sleeves",
+        "see-through sleeves",
+        "sleeves with ears",
+        "short sleeves",
+        "short over long sleeves",
+        "torn sleeves",
+        "wide sleeves"
+    ],
+    "Actions": [
+        "arm out of sleeve",
+        "hands in opposite sleeves",
+        "pinching sleeves",
+        "rolling sleeves up",
+        "sleeve grab"
+    ],
+    "Sleeveless": [
+        "sleeveless",
+        "sleeveless shirt",
+        "sleeveless dress",
+        "sleeveless duster",
+        "sleeveless hoodie",
+        "sleeveless jacket",
+        "sleeveless kimono",
+        "sleeveless turtleneck"
+    ],
+    "Miscellaneous": [
+        "nipple sleeves",
+        "no detached sleeves",
+        "single sleeve",
+        "sleeve cuffs",
+        "up sleeve"
+    ]
+}

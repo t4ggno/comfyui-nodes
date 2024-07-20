@@ -595,6 +595,7 @@ class TextReplacer:
         # Remove comments - Either // or /* */, but not if /* escaped lik
         # text = re.sub(r"(?<!\\)\/\/.*", "", text)
         # text = re.sub(r"(?<!\\)\/\*(?:.|\n)*?\*\/", "", text)
+        # Remove comments - Either # or ''' '''
         text = re.sub(r"#.*", "", text)  # Fallbck for now
         text = re.sub(r"'''(?:.|\n)*?'''", "", text)
         # Load global whitelist and blacklist - Schema: [Blacklist:TriggerWord:Category,Category,...] and / or [Whitelist:TriggerWord:Category,Category,...]
@@ -641,7 +642,7 @@ class TextReplacer:
         while True:
             somethingReplaced = False
 
-            pickOneMatches = re.findall(r"(\[PickOne(?:\:(.+?))?\])", text)
+            pickOneMatches = re.findall(r"(\[PickOne:(\[(.+?)\]|.+?)\])", text)
             for match in pickOneMatches:
                 completeString = match[0]
                 options = match[1].split(",")
@@ -769,36 +770,124 @@ class TextReplacer:
                     text = text[:indexOf] + randomValue + text[indexOf + len(completeString):]
                     somethingReplaced = True
 
-            # 1. Replace [TimeOfDay] (if exists) with random time of day
+            # Replace [TimeOfDay] (if exists) with random time of day
             timeOfDay = ["morning", "afternoon", "evening", "night", "sunset", "sunrise"]
             replaceUsingArray("TimeOfDay", timeOfDay)
-            # 2. Replace [Weather] (if exists) with random weather
+            # Replace [Weather] (if exists) with random weather
             weather = ["sunny", "cloudy", "rainy", "snowy"]
             replaceUsingArray("Weather", weather)
-            # 3. Replace [Nudity] (if exists) with random nudity
-            nudity = ["nude", "topless", "nipple", "bottomless", "naked", "nude", "bikini", "lingerie", "underwear", "swimsuit", "swimwear"]
-            replaceUsingArray("Nudity", nudity)
-            # 4. Replace [FacialExpression] (if exists) with random facial expression
+            # Replace [Nudity] (if exists) with random location
+            replaceUsingJson("Nudity", "nudity.json")
+            # Replace [FacialExpression] (if exists) with random facial expression
             facialExpression = ["happy", "sad", "angry", "surprised", "disgusted", "scared", "cry", "laugh", "smile", "light smile"]
             replaceUsingArray("FacialExpression", facialExpression)
-            # 5. Replace [Location] (if exists) with random location
+            # Replace [Location] (if exists) with random location
             replaceUsingJson("Location", "locations.json")
-            # 6. Replace [ClothesFemale] (if exists) with random location
-            replaceUsingJson("ClothesFemale", "clothes_female.json")
-            # 7. Replace [ClothesFemaleSexy] (if exists) with random location
-            replaceUsingJson("ClothesFemaleSexy", "clothes_female_sexy.json")
-            # 8. Replace [ClothesMale] (if exists) with random location
-            replaceUsingJson("ClothesMale", "clothes_male.json")
-            # 9. Replace [ClothesMaleSexy] (if exists) with random location
-            replaceUsingJson("ClothesMaleSexy", "clothes_male_sexy.json")
-            # 10. Replace [Scenario] (if exists) with random location
+            # Replace [Scenario] (if exists) with random location
             replaceUsingJson("Scenario", "scenarios.json")
-            # 11. Replace [HairColor] (if exists) with random hair color
+            # Replace [HairColor] (if exists) with random hair color
             replaceUsingJson("HairColor", "hair_colors.json")
-            # 12. Replace [Color] (if exists) with random color
+
+            # Replace [AttireEyewear] (if exists) with random eyewear
+            replaceUsingJson("AttireEyewear", "attire_eyewear.json")
+            # Replace [AttireSleeve] (if exists) with random sleeve
+            replaceUsingJson("AttireSleeve", "attire_sleeves.json")
+            # Replace [AttireJewelryAndAccessories] (if exists) with random jewelry and accessories
+            replaceUsingJson("AttireJewelryAndAccessories", "attire_jewelry_and_accessories.json")
+            # Replace [AttireStylesAndPatterns] (if exists) with random styles and patterns
+            replaceUsingJson("AttireStylesAndPatterns", "attire_styles_and_patterns.json")
+
+            # Replace [AttireFemaleBodysuit] (if exists) with random bodysuit
+            replaceUsingJson("AttireFemaleBodysuit", "attire_female_bodysuits.json")
+            # Replace [AttireFemaleBottomwear] (if exists) with random bottomwear
+            replaceUsingJson("AttireFemaleBottomwear", "attire_female_bottomwear.json")
+            # Replace [AttireFemaleBra] (if exists) with random bra
+            replaceUsingJson("AttireFemaleBra", "attire_female_bra.json")
+            # Replace [AttireFemaleFootwear] (if exists) with random footwear
+            replaceUsingJson("AttireFemaleFootwear", "attire_female_footwear.json")
+            # Replace [AttireFemaleHeadwear] (if exists) with random headwear
+            replaceUsingJson("AttireFemaleHeadwear", "attire_female_headwear.json")
+            # Replace [AttireFemaleLegwear] (if exists) with random legwear
+            replaceUsingJson("AttireFemaleLegwear", "attire_female_legwear.json")
+            # Replace [AttireFemalePanties] (if exists) with random panties
+            replaceUsingJson("AttireFemalePanties", "attire_female_panties.json")
+            # Replace [AttireFemaleSwimsuit] (if exists) with random swimsuit
+            replaceUsingJson("AttireFemaleSwimsuit", "attire_female_swimsuit.json")
+            # Replace [AttireFemaleTopwear] (if exists) with random topwear
+            replaceUsingJson("AttireFemaleTopwear", "attire_female_topwear.json")
+            # Replace [AttireFemaleTraditionalClothing] (if exists) with random traditional clothing
+            replaceUsingJson("AttireFemaleTraditionalClothing", "attire_female_traditional_clothing.json")
+            # Replace [AttireFemaleUniformsAndCostumes] (if exists) with random uniforms and costumes
+            replaceUsingJson("AttireFemaleUniformsAndCostumes", "attire_female_uniforms_and_costumes.json")
+
+            # Replace [AttireMaleBodysuit] (if exists) with random bodysuit
+            replaceUsingJson("AttireMaleBodysuit", "attire_male_bodysuits.json")
+            # Replace [AttireMaleBottomwear] (if exists) with random bottomwear
+            replaceUsingJson("AttireMaleBottomwear", "attire_male_bottomwear.json")
+            # Replace [AttireMaleFootwear] (if exists) with random footwear
+            replaceUsingJson("AttireMaleFootwear", "attire_male_footwear.json")
+            # Replace [AttireMaleHeadwear] (if exists) with random headwear
+            replaceUsingJson("AttireMaleHeadwear", "attire_male_headwear.json")
+            # Replace [AttireMaleLegwear] (if exists) with random legwear
+            replaceUsingJson("AttireMaleLegwear", "attire_male_legwear.json")
+            # Replace [AttireMaleSwimsuit] (if exists) with random swimsuit
+            replaceUsingJson("AttireMaleSwimsuit", "attire_male_swimsuit.json")
+            # Replace [AttireMaleTopwear] (if exists) with random topwear
+            replaceUsingJson("AttireMaleTopwear", "attire_male_topwear.json")
+            # Replace [AttireMaleTraditionalClothing] (if exists) with random traditional clothing
+            replaceUsingJson("AttireMaleTraditionalClothing", "attire_male_traditional_clothing.json")
+            # Replace [AttireMaleUniformsAndCostumes] (if exists) with random uniforms and costumes
+            replaceUsingJson("AttireMaleUniformsAndCostumes", "attire_male_uniforms_and_costumes.json")
+
+            # Replace [Fetishes] (if exists) with random stuff
+            replaceUsingJson("Fetishes", "fetishes.json")
+            # Replace [SexToys] (if exists) with random stuff
+            replaceUsingJson("SexToys", "sex_toys.json")
+            # Replace [SexToysBondage] (if exists) with random stuff
+            replaceUsingJson("SexToysBondage", "sex_toys_bondage.json")
+            # Replace [SexPositions] (if exists) with random stuff
+            replaceUsingJson("SexPositions", "sex_positions.json")
+            
+            # Replace [SexualActs] (if exists) with random stuff
+            replaceUsingJson("SexualActs", "sexual_acts.json")
+            # Replace [SexualAttireBDSM] (if exists) with random stuff
+            replaceUsingJson("SexualAttireBDSM", "sexual_attire_bdsm.json")
+            # Replace [SexualAttireExposure] (if exists) with random stuff
+            replaceUsingJson("SexualAttireExposure", "sexual_attire_exposure.json")
+            # Replace [SexualAttireLingerine] (if exists) with random stuff
+            replaceUsingJson("SexualAttireLingerine", "sexual_attire_lingerine.json")
+            # Replace [SexualAttireMiscellaneous] (if exists) with random stuff
+            replaceUsingJson("SexualAttireMiscellaneous", "sexual_attire_miscellaneous.json")
+
+            # Replace [PostureArm] (if exists) with random stuff
+            replaceUsingJson("PostureArm", "posture_arm.json")
+            # Replace [PostureBasic] (if exists) with random stuff
+            replaceUsingJson("PostureBasic", "posture_basic.json")
+            # Replace [PostureCarrying] (if exists) with random stuff
+            replaceUsingJson("PostureCarrying", "posture_carrying.json")
+            # Replace [PostureHead] (if exists) with random stuff
+            replaceUsingJson("PostureHead", "posture_head.json")
+            # Replace [PostureHips] (if exists) with random stuff
+            replaceUsingJson("PostureHips", "posture_hips.json")
+            # Replace [PostureHug] (if exists) with random stuff
+            replaceUsingJson("PostureHug", "posture_hug.json")
+            # Replace [PostureLeg] (if exists) with random stuff
+            replaceUsingJson("PostureLeg", "posture_leg.json")
+            # Replace [PostureMovement] (if exists) with random stuff
+            replaceUsingJson("PostureMovement", "posture_movement.json")
+            # Replace [PostureMultipleCharacter] (if exists) with random stuff
+            replaceUsingJson("PostureMultipleCharacter", "posture_multiple_character.json")
+            # Replace [PostureOther] (if exists) with random stuff
+            replaceUsingJson("PostureOther", "posture_other.json")
+            # Replace [PosturePoses] (if exists) with random stuff
+            replaceUsingJson("PosturePoses", "posture_poses.json")
+            # Replace [PostureTorso] (if exists) with random stuff
+            replaceUsingJson("PostureTorso", "posture_torso.json")
+
+            # Replace [Color] (if exists) with random color
             colors = ["red", "orange", "yellow", "green", "blue", "purple", "pink", "brown", "black", "white", "gray", "grey", "gold", "silver", "bronze", "copper"]
             replaceUsingArray("Color", colors)
-            # 13. Replace [PickMultiple,Option1,Option2,...] (if exists) with random option
+            # Replace [PickMultiple,Option1,Option2,...] (if exists) with random option
             pickMultipleMatches = re.findall(r"(\[PickMultiple(?:\:([\w\,]+?))?\])", text)
             for match in pickMultipleMatches:
                 completeString = match[0]
@@ -816,9 +905,7 @@ class TextReplacer:
             replaceUsingJson("NationalityByContinent", "nationality_by_continent.json")
             # 15. Replace [NationalityByEthnic] (if exists) with random option
             replaceUsingJson("NationalityByEthnic", "nationality_by_ethnic.json")
-            # 16. Replace [Poses] (if exists) with random option
-            replaceUsingJson("Poses", "poses.json")
-            # 17. Replace [Random] (if exists) with random option
+            # Replace [Random] (if exists) with random option
             if re.search(r"(\[Random(?:\:[\w]+){0,}\])", text) != None:
                 randomMatches = re.findall(r"(\[Random(?:\:[\w]+){0,}\])", text)
                 for match in randomMatches:
@@ -967,7 +1054,7 @@ class TextReplacer:
                     indexOf = text.find(completeString)
                     text = text[:indexOf] + newText + text[indexOf + len(completeString):]
                     somethingReplaced = True
-            # 18. Replace [Name] (if exists) with random name
+            # Replace [Name] (if exists) with random name
             if re.search(r"(\[Name(?:\:([\w\,]+?))?\])", text) != None:
                 isMale = re.search(r"(?:^|\ |,)(male|boy|man)", text) != None
                 isFemale = re.search(r"(?:^|\ |,)(female|girl|woman)", text) != None
@@ -980,20 +1067,17 @@ class TextReplacer:
                 # Load names from json list
                 if fileName != "":
                     replaceUsingJson("Name", fileName)
-            # 19. Replace [Weather] (if exists) with random weather
-            weather = ["sunny", "cloudy", "rainy", "snowy"]
-            replaceUsingArray("Weather", weather)
-            # 20. Hair female
+            # Hair female
             replaceUsingJson("HairFemale", "hair_female.json")
-            # 21. Hair male
+            # Hair male
             replaceUsingJson("HairMale", "hair_male.json")
-            # 22. Sexy things
+            # Sexy things
             replaceUsingJson("SexyThings", "sexy_things.json")
-            # 23. Styles
+            # Styles
             replaceUsingJson("Style", "styles.json")
-            # 24. Interresting ideas
+            # Interresting ideas
             replaceUsingJson("InterestingIdeas", "interesting_ideas.json")
-            # 25. Materials
+            # Materials
             replaceUsingJson("Material", "materials.json")
 
             # Last: "If" -> If:Contains:TriggerWord:Add:Value -> Allow "[Statement]" in Value via escaping. Example: [If:Contains:woman:Add:[PickOne:22,80] years old]
@@ -1030,6 +1114,7 @@ class TextReplacer:
         all_loras_regex = re.findall(r"<RE\:(.+?)(?:\:(-?[0-9](?:\.[0-9]*)?)|(?:\:(-?[0-9]+(?:\.[0-9]*)?|))(?:\:(-?[0-9]+(?:\.[0-9]*)?|)))?>", text)
         if len(all_loras_regex) > 0:
             avaialbe_loras = folder_paths.get_filename_list("loras")
+            print("All loras: " + str(avaialbe_loras))
             for lora in all_loras_regex:
                 print("Lora regex: " + lora[0])
                 # Convert regex to regex object
@@ -1070,7 +1155,7 @@ class PromptFromAI:
         return {
             "required": {
                 "api_key": ("STRING", {"default": ""}),
-                "gpt": (["gpt-3.5-turbo","gpt-3.5-turbo-16K","gpt-4","gpt-4-Turbo","Custom"], {"default": "gpt-4-turbo"}),
+                "gpt": (["gpt-3.5-turbo","gpt-3.5-turbo-16K","gpt-4","gpt-4-turbo","gpt-4o","Custom"], {"default": "gpt-4o"}),
                 "gpt_custom": ("STRING", {"default": ""}),
                 "temperature": ("FLOAT", {"default": 1.1}),
                 "frequency_penalty": ("FLOAT", {"default": 0.2}),
@@ -1132,7 +1217,7 @@ class PromptFromAI:
         gpt_user_prompt_1 = "Details for the prompt: " + details
         gpt_user_prompt_2 = "Quantity of prompts: " + str(batch_quantity)
         gpt_user_prompt_3 = "Avaiable loras: " + avaiable_loras
-        gtp_user_prompt_4 = """Example:
+        gpt_user_prompt_4 = """Example:
             score_9, score_8_up, score_8, medium breasts, (ultra realistic,32k, masterpiece:1.2),(high detailed skin:1.1),( high quality:1.1), (curvy), cute, eyelashes, princess zelda, solo, green eyes, long hair, green eyes, crown braid, hairclip, pointy ears, blue shirt, long sleeves, curvy, head tilt, hearts, blush, lips, curvy, head tilt, shiny clothes, upper body, looking at viewer, bokeh, luminescent background
 
             A glass sphere sculpture, concealed inside the sphere is a large Pirate Ship in a Lightning storm, large waves, in the dark, detailed image, 8k high quality detailed, the moon, shaped sphere, amazing wallpaper, digital painting highly detailed, 8k UHD detailed oil painting, beautiful art UHD, focus on full glass sphere, bokeh, background Modifiers: extremely detailed Award winning photography, fantasy studio lighting, photorealistic very attractive beautiful imperial colours ultra detailed 3D, (Very Intricate)
@@ -1144,10 +1229,10 @@ class PromptFromAI:
             A full body photograph of a beautiful 20 year old girl wearing a Vault Suit with the number 76 on the back in a desert wasteland <lora:Fallout_Vault_Suit-000008:0.6> <lora:Perfect Hands v2:0.75> Perfect Hands
         """
         if keywoard_list != "":
-            gpt_user_prompt_4 = "Avoid prompts with the following keywoards: " + keywoard_list
-            message = [{"role": "assistant", "content": gpt_assistant_prompt}, {"role": "user", "content": gpt_user_prompt_1}, {"role": "user", "content": gpt_user_prompt_2}, {"role": "user", "content": gpt_user_prompt_3}, {"role": "user", "content": gpt_user_prompt_4}]
+            gpt_user_prompt_5 = "Following are a list of keywoards you should NOT use. Create completly different prompts. Keywoard list: " + keywoard_list
+            message = [{"role": "assistant", "content": gpt_assistant_prompt}, {"role": "user", "content": gpt_user_prompt_1}, {"role": "user", "content": gpt_user_prompt_2}, {"role": "user", "content": gpt_user_prompt_3}, {"role": "user", "content": gpt_user_prompt_4}, {"role": "user", "content": gpt_user_prompt_5}]
         else:
-            message = [{"role": "assistant", "content": gpt_assistant_prompt}, {"role": "user", "content": gpt_user_prompt_1}, {"role": "user", "content": gpt_user_prompt_2}, {"role": "user", "content": gpt_user_prompt_3}]
+            message = [{"role": "assistant", "content": gpt_assistant_prompt}, {"role": "user", "content": gpt_user_prompt_1}, {"role": "user", "content": gpt_user_prompt_2}, {"role": "user", "content": gpt_user_prompt_3}, {"role": "user", "content": gpt_user_prompt_4}]
         max_tokens = 4095 # Max tokens is used to control the length of the output
         response = client.chat.completions.create(
             model=gpt if gpt_custom == "" else gpt_custom,
@@ -1157,6 +1242,10 @@ class PromptFromAI:
             frequency_penalty=frequency_penalty,
             presence_penalty=presence_penalty,
         )
+        # Check for errors or empty responses
+        if response.choices[0].message.content == "" or response.choices[0].message.content == " ": # or response.choices[0].message.content == "No prompts found":
+            print("No prompts found")
+            return cls.get_prompt(api_key, gpt, gpt_custom, temperature, frequency_penalty, presence_penalty, details, append_prefix, append_suffix, batch_quantity, images_per_batch)
         prompt = response.choices[0].message.content
 
         # Get a new overview of the prompts (Keywoards like "castle", "underwater sear world", ...)
@@ -1404,6 +1493,7 @@ class LoraLoaderFromPrompt:
                                         triggerWordFound = True
                                         break
                                 if not triggerWordFound:
+                                    print("Trigger word not found in prompt. Available trigger words: " + str(ssDatasetDirsKeys))
                                     # Add random trigger word to prompt
                                     randomTriggerWord = ssDatasetDirsKeys[numpy.random.randint(0, len(ssDatasetDirsKeys))]
                                     prompt += " " + randomTriggerWord.split("_")[1]

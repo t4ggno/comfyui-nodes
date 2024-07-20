@@ -1,0 +1,23 @@
+{
+    "Professional": [
+      "maid uniform",
+      "nurse uniform",
+      "waitress uniform",
+      "stewardess uniform"
+    ],
+    "Costumes": [
+      "cheerleader outfit",
+      "witch costume",
+      "princess costume",
+      "fairy costume"
+    ],
+    "School": [
+      "serafuku",
+      "sailor dress",
+      "school uniform"
+    ],
+    "Religious": [
+      "nun habit",
+      "miko outfit"
+    ]
+  }

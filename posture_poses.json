@@ -1,0 +1,35 @@
+{
+    "AnimalPoses": [
+        "animal pose",
+        "rabbit pose",
+        "horns pose",
+        "paw pose",
+        "claw pose"
+    ],
+    "GeneralPoses": [
+        "archer pose",
+        "bras d'honneur",
+        "body bridge",
+        "contrapposto",
+        "dojikko pose",
+        "ghost pose",
+        "inugami-ke no ichizoku pose",
+        "letter pose",
+        "ojou-sama pose",
+        "saboten pose",
+        "symmetrical hand pose",
+        "victory pose",
+        "villain pose",
+        "zombie pose"
+    ],
+    "SignaturePoses": [
+        "Gendou pose",
+        "JoJo pose",
+        "Dio Brando's pose",
+        "Giorno Giovanna's pose",
+        "Jonathan Joestar's pose",
+        "Kujo Jotaro's pose",
+        "Kongou pose",
+        "Kujou Karen pose"
+    ]
+}

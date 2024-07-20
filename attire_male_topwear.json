@@ -1,0 +1,28 @@
+{
+    "Shirts": [
+      "collared shirt",
+      "dress shirt",
+      "t-shirt",
+      "compression shirt"
+    ],
+    "Outerwear": [
+      "cardigan",
+      "coat",
+      "duffel coat",
+      "overcoat",
+      "peacoat",
+      "trench coat",
+      "winter coat",
+      "hoodie",
+      "jacket",
+      "blazer",
+      "letterman jacket",
+      "safari jacket",
+      "suit jacket"
+    ],
+    "Other": [
+      "tank top",
+      "vest",
+      "waistcoat"
+    ]
+  }

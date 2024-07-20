@@ -1,0 +1,102 @@
+{
+    "General": [
+        "glasses",
+        "goggles",
+        "monocle",
+        "sunglasses"
+    ],
+    "Frame Colors": [
+        "aqua-framed eyewear",
+        "black-framed eyewear",
+        "blue-framed eyewear",
+        "brown-framed eyewear",
+        "green-framed eyewear",
+        "grey-framed eyewear",
+        "orange-framed eyewear",
+        "pink-framed eyewear",
+        "purple-framed eyewear",
+        "red-framed eyewear",
+        "white-framed eyewear",
+        "two-tone eyewear",
+        "yellow-framed eyewear"
+    ],
+    "Lens Colors": [
+        "aqua-tinted eyewear",
+        "blue-tinted eyewear",
+        "brown-tinted eyewear",
+        "green-tinted eyewear",
+        "grey-tinted eyewear",
+        "multicolour-tinted eyewear",
+        "rainbow-tinted eyewear",
+        "orange-tinted eyewear",
+        "pink-tinted eyewear",
+        "purple-tinted eyewear",
+        "red-tinted eyewear",
+        "yellow-tinted eyewear"
+    ],
+    "Types": [
+        "animal-themed eyewear",
+        "cat eye-framed eyewear",
+        "food-themed eyewear",
+        "heart-shaped eyewear",
+        "rectangular eyewear",
+        "rimless eyewear",
+        "round eyewear",
+        "semi-circular eyewear",
+        "semi-rimless eyewear",
+        "over-rim eyewear",
+        "under-rim eyewear",
+        "teardrop-framed glasses",
+        "triangular eyewear",
+        "tortoiseshell-framed eyewear"
+    ],
+    "Misc": [
+        "alternate eyewear",
+        "adjusting eyewear",
+        "crooked eyewear",
+        "eyewear on head",
+        "eyewear on headwear",
+        "unworn eyewear",
+        "eyewear hang",
+        "eyewear in mouth",
+        "holding removed eyewear",
+        "looking for glasses",
+        "eyewear strap",
+        "eyewear switch",
+        "eyewear view",
+        "hand on eyewear",
+        "looking over eyewear",
+        "no eyewear",
+        "removing eyewear"
+    ],
+    "Glasses Types": [
+        "3D glasses",
+        "aviator sunglasses",
+        "coke-bottle glasses",
+        "diving mask",
+        "novelty glasses",
+        "heart-shaped eyewear",
+        "star-shaped eyewear",
+        "teardrop-framed glasses",
+        "flight goggles",
+        "groucho glasses",
+        "lorgnette",
+        "Nodoka glasses",
+        "opaque glasses",
+        "opera glasses",
+        "pince-nez",
+        "safety glasses",
+        "scouter",
+        "ski goggles",
+        "X-ray glasses"
+    ],
+    "Glasses Misc": [
+        "bespectacled"
+    ],
+    "Sunglasses": [
+        "aviator sunglasses",
+        "Kamina shades",
+        "shutter shades",
+        "Simon shades"
+    ]
+}

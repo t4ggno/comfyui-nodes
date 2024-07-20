@@ -1,0 +1,40 @@
+{
+    "General": [
+        "Lingerie",
+        "Babydoll",
+        "Bodystocking",
+        "Bustier",
+        "Camisole",
+        "Chemise",
+        "Corset",
+        "Fishnets",
+        "garter straps",
+        "Garter belt",
+        "Lace",
+        "Nightgown",
+        "Strapless bottom",
+        "Teddy",
+        "Thighhighs",
+        "Thong"
+    ],
+    "Bra": [
+        "Bra"
+    ],
+    "Panties": [
+        "Panties",
+        "Boyshort panties"
+    ],
+    "ThongTypes": [
+        "G-string",
+        "Pearl thong"
+    ],
+    "MaleUnderwear": [
+        "Boxers",
+        "Briefs",
+        "Boxer briefs",
+        "Bikini briefs",
+        "Jockstrap",
+        "Ball bra",
+        "Penis sheath"
+    ]
+}

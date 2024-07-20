@@ -1,0 +1,36 @@
+{
+    "Kneeling": [
+        "kneeling",
+        "on one knee"
+    ],
+    "Lying": [
+        "lying",
+        "crossed legs",
+        "fetal position",
+        "on back",
+        "on side",
+        "on stomach"
+    ],
+    "Sitting": [
+        "butterfly sitting",
+        "crossed legs",
+        "figure four sitting",
+        "indian style",
+        "hugging own legs",
+        "lotus position",
+        "seiza",
+        "sitting on lap",
+        "sitting on person",
+        "straddling",
+        "thigh straddling",
+        "upright straddle",
+        "wariza",
+        "yokozuwari"
+    ],
+    "Standing": [
+        "balancing",
+        "crossed legs",
+        "legs apart",
+        "standing on one leg"
+    ]
+}

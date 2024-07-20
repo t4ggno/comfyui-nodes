@@ -1,0 +1,20 @@
+{
+    "Professional": [
+      "suit",
+      "business suit",
+      "tuxedo",
+      "military uniform",
+      "pilot suit",
+      "sailor uniform"
+    ],
+    "Costumes": [
+      "armor",
+      "hazmat suit",
+      "santa costume",
+      "cowboy western outfit"
+    ],
+    "School": [
+      "gakuran",
+      "school uniform"
+    ]
+  }

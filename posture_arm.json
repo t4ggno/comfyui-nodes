@@ -1,0 +1,39 @@
+{
+    "General": [
+        "arm behind back",
+        "arms behind back",
+        "arm up",
+        "arm behind head",
+        "victory pose",
+        "arms up",
+        "arms behind head",
+        "outstretched arm",
+        "outstretched arms",
+        "spread arms",
+        "arm at side",
+        "arms at sides"
+    ],
+    "Specific": [
+        "airplane arms",
+        "crossed arms",
+        "flexing",
+        "praise the sun",
+        "reaching",
+        "shrugging",
+        "t-pose",
+        "a-pose",
+        "v arms",
+        "w arms"
+    ],
+    "HandPosition": [
+        "stroking own chin",
+        "outstretched hand",
+        "hand v sign"
+    ],
+    "HandsTouching": [
+        "interlocked fingers",
+        "own hands clasped",
+        "own hands together",
+        "star hands"
+    ]
+}

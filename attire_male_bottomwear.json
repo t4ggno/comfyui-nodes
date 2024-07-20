@@ -1,0 +1,15 @@
+{
+    "Pants": [
+        "pants",
+        "jeans",
+        "slacks",
+        "cargo pants"
+    ],
+    "Shorts": [
+        "shorts",
+        "gym shorts"
+    ],
+    "Other": [
+        "kilt"
+    ]
+}

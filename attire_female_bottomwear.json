@@ -1,0 +1,25 @@
+{
+    "Pants": [
+      "capri pants",
+      "yoga pants"
+    ],
+    "Shorts": [
+      "short shorts",
+      "micro shorts"
+    ],
+    "Skirts": [
+      "skirt",
+      "bubble skirt",
+      "high-waist skirt",
+      "high-low skirt",
+      "long skirt",
+      "microskirt",
+      "miniskirt",
+      "pleated skirt"
+    ],
+    "Other": [
+      "bloomers",
+      "petticoat",
+      "sarong"
+    ]
+  }

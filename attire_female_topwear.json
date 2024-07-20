@@ -1,0 +1,32 @@
+{
+    "Tops": [
+      "blouse",
+      "frilled shirt",
+      "sleeveless shirt",
+      "off-shoulder shirt",
+      "crop top",
+      "camisole",
+      "halterneck",
+      "criss-cross halter",
+      "tube top",
+      "bandeau"
+    ],
+    "Dresses": [
+      "dress"
+    ],
+    "Outerwear": [
+      "cardigan",
+      "fur coat",
+      "fur-trimmed coat",
+      "long coat",
+      "raincoat",
+      "transparent raincoat",
+      "poncho",
+      "shrug"
+    ],
+    "Other": [
+      "bustier",
+      "corset",
+      "underbust"
+    ]
+  }

@@ -25,6 +25,8 @@ from PIL.PngImagePlugin import PngInfo
 from datetime import datetime
 import time
 from openai import OpenAI
+from anthropic import Anthropic
+from collections import defaultdict
 
 dirPath = os.path.dirname(os.path.realpath(__file__))
 ALLOWED_EXT = ('jpeg', 'jpg', 'png', 'tiff', 'gif', 'bmp', 'webp')
@@ -45,6 +47,10 @@ class Base64Decode:
     OUTPUT_NODE = True
 
     def render_image(self, base64_img):
+
+        print("=============================")
+        print("== Base64 Decode")
+
         # Convert base64 image to PIL image
         image = Image.open(io.BytesIO(base64.b64decode(base64_img)))
         # Convert PIL image to torch tensor
@@ -72,6 +78,10 @@ class LayoutSwitch:
     OUTPUT_NODE = False
 
     def render_resolution(self, size1, size2, layout):  # size1 = width, size2 = height
+
+        print("=============================")
+        print("== Layout Switch")
+
         if layout == "Landscape":
             if size1 > size2:
                 return (size1, size2)
@@ -106,7 +116,7 @@ class PredefinedResolutions:
     def INPUT_TYPES(cls):
         return {
             "required": {
-                "engine": (["1.5", "SDXL"], {"default": "SDXL"}),
+                "dimension": (["1.5", "SDXL", "Famous"], {"default": "SDXL"}),
                 "layout": (["Square", "Landscape", "Landscape (Ultra Wide)", "Portrait", "Portrait (Ultra Tall)", "Random"], {"default": "Square"}),
                 "at_random_enable_square": (["true", "false"], {"default": "true"}),
                 "at_random_enable_landscape": (["true", "false"], {"default": "true"}),
@@ -124,7 +134,11 @@ class PredefinedResolutions:
     CATEGORY = "t4ggno/utils"
     OUTPUT_NODE = False
 
-    def render_resolution(self, engine, layout, at_random_enable_square, at_random_enable_landscape, at_random_enable_landscape_ultra_wide, at_random_enable_portrait, at_random_enable_portrait_ultra_tall, seed, scale):
+    def render_resolution(self, dimension, layout, at_random_enable_square, at_random_enable_landscape, at_random_enable_landscape_ultra_wide, at_random_enable_portrait, at_random_enable_portrait_ultra_tall, seed, scale):
+
+        print("=============================")
+        print("== Predefined Resolutions")
+
         if layout == "Random":
             allowed_layouts = []
             if at_random_enable_square == "true":
@@ -140,7 +154,7 @@ class PredefinedResolutions:
             layout = random.choice(allowed_layouts)
 
         resolution = None
-        if (engine == "1.5"):
+        if (dimension == "1.5"):
             if layout == "Square":
                 resolution = (512, 512)
             elif layout == "Landscape":
@@ -153,7 +167,7 @@ class PredefinedResolutions:
                 resolution = (320, 768)
             else:
                 resolution = (512, 512)
-        elif (engine == "SDXL"):
+        elif (dimension == "SDXL"):
             if layout == "Square":
                 resolution = (1024, 1024)
             elif layout == "Landscape":
@@ -164,6 +178,19 @@ class PredefinedResolutions:
                 resolution = (832, 1216)
             elif layout == "Portrait (Ultra Tall)":
                 resolution = (640, 1536)
+            else:
+                resolution = (1024, 1024)
+        elif (dimension == "Famous"):
+            if layout == "Square":
+                resolution = (1024, 1024)
+            elif layout == "Landscape":
+                resolution = (1366, 768)
+            elif layout == "Landscape (Ultra Wide)":
+                resolution = (1596, 684)
+            elif layout == "Portrait":
+                resolution = (768, 1366)
+            elif layout == "Portrait (Ultra Tall)":
+                resolution = (684, 1596)
             else:
                 resolution = (1024, 1024)
         # Scale and floor
@@ -190,9 +217,15 @@ class ResolutionSwitch:
     OUTPUT_NODE = False
 
     def get_resolution(self, active, width1, height1, width2, height2):
+
+        print("=============================")
+        print("== Resolution Switch")
+
         if active == "Resolution 1":
+            print("Output: " + str(width1) + "x" + str(height1))
             return (width1, height1)
         elif active == "Resolution 2":
+            print("Output: " + str(width2) + "x" + str(height2))
             return (width2, height2)
 
 
@@ -214,9 +247,15 @@ class TextSwitch:
     OUTPUT_NODE = False
 
     def get_text(self, active, text1, text2):
+
+        print("=============================")
+        print("== Text Switch")
+
         if active == "Text 1":
+            print("Output: " + text1)
             return (text1,)
         elif active == "Text 2":
+            print("Output: " + text2)
             return (text2,)
 
 
@@ -275,6 +314,10 @@ class ImageMetadataExtractor:
         return (return_positive_prompt, return_negative_prompt, return_additional_prompt)
 
     def load_image(self, folder, max_width, max_height, scale, max_scale, fallback_positive_prompt, fallback_negative_prompt, seed):
+
+        print("=============================")
+        print("== Image Metadata Extractor")
+
         while True:
             # Load files from folder
             files = os.listdir(folder)
@@ -399,6 +442,10 @@ class AutoLoadImageForUpscaler:
         return (return_positive_prompt, return_negative_prompt, return_additional_prompt)
 
     def load_image(self, folder, max_width, max_height, scale, max_scale, fallback_positive_prompt, fallback_negative_prompt, seed):
+
+        print("=============================")
+        print("== Auto Load Image For Upscaler")
+
         while True:
             # Load files from folder
             files = os.listdir(folder)
@@ -487,6 +534,7 @@ class ImageSave:
                 "positive_text": ("STRING", {"default": "", }),
                 "negative_text": ("STRING", {"default": "", }),
                 "additional_text": ("STRING", {"default": "", }),
+                "model": ("STRING", {"default": ""}),
             },
         }
 
@@ -495,7 +543,10 @@ class ImageSave:
     OUTPUT_NODE = True
     CATEGORY = "t4ggno/image"
 
-    def save_images(self, images, filename="", output_path="", extension='png', quality=100, lossless_webp="false", show_previews="true", positive_text="", negative_text="", additional_text=""):
+    def save_images(self, images, filename="", output_path="", extension='png', quality=100, lossless_webp="false", show_previews="true", positive_text="", negative_text="", additional_text="", model=""):
+
+        print("=============================")
+        print("== Image Save")
 
         lossless_webp = (lossless_webp == "true")
 
@@ -506,7 +557,7 @@ class ImageSave:
 
         # Check output destination
         if not os.path.exists(output_path.strip()):
-            print('The path `{output_path.strip()}` specified doesn\'t exist! Creating directory.')
+            print(f'The path `{output_path.strip()}` specified doesn\'t exist! Creating directory.')
             os.makedirs(output_path, exist_ok=True)
 
         # Set Extension
@@ -519,15 +570,16 @@ class ImageSave:
             i = 255. * image.cpu().numpy()
             img = Image.fromarray(numpy.clip(i, 0, 255).astype(numpy.uint8))
 
-            # Crate JSON with positive, negative and additional text
+            # Create JSON with positive, negative and additional text
             metadata = PngInfo()
             metadata.add_text("PositiveText", positive_text)
             metadata.add_text("NegativeText", negative_text)
             metadata.add_text("AdditionalText", additional_text)
+            metadata.add_text("Checkpoint", model)
 
             # If filename is empty, use "yyyy-mm-dd_hh-mm-ss" as filename
             if filename.strip() == '':
-                timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+                timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
                 filename = f"{timestamp}.{extension}"
             else:
                 filename = f"{filename}.{extension}"
@@ -537,29 +589,30 @@ class ImageSave:
                 if extension == 'png':
                     img.save(output_file, pnginfo=metadata, optimize=True)
                 elif extension == 'webp':
-                    img.save(output_file, quality=quality)
+                    img.save(output_file, quality=quality, lossless=lossless_webp, exif=metadata)
                 elif extension == 'jpeg':
                     img.save(output_file, quality=quality, optimize=True)
                 elif extension == 'tiff':
-                    img.save(output_file,
-                             quality=quality, optimize=True)
-                elif extension == 'webp':
-                    img.save(output_file, quality=quality,
-                             lossless=lossless_webp, exif=metadata)
+                    img.save(output_file, quality=quality, optimize=True)
 
-                print("Image file saved to: {output_file}")
+                print(f"Image file saved to: {output_file}")
+                print(f"Positive Text: {positive_text}")
+                print(f"Negative Text: {negative_text}")
+                print(f"Additional Text: {additional_text}")
+                print(f"Checkpoint: {model}")
+                results.append({"filename": filename, "path": output_file})
 
             except OSError as e:
-                print('Unable to save file to: {output_file}')
+                print(f'Unable to save file to: {output_file}')
                 print(e)
             except Exception as e:
-                print('Unable to save file due to the to the following error:')
+                print('Unable to save file due to the following error:')
                 print(e)
 
         if show_previews == 'true':
-            return {"ui": {"images": results}}
+            return (json.dumps({"ui": {"images": results}}),)
         else:
-            return {"ui": {"images": []}}
+            return (json.dumps({"ui": {"images": []}}),)
 
     def get_subfolder_path(self, image_path, output_path):
         output_parts = output_path.strip(os.sep).split(os.sep)
@@ -568,7 +621,6 @@ class ImageSave:
         subfolder_parts = image_parts[len(common_parts):]
         subfolder_path = os.sep.join(subfolder_parts[:-1])
         return subfolder_path
-
 
 class TextReplacer:
     @classmethod
@@ -587,6 +639,9 @@ class TextReplacer:
     OUTPUT_NODE = False
 
     def replace_text(self, text, seed):
+
+        print("=============================")
+        print("== Text Replacer")
 
         # Remove empty lines and trim
         text = "\n".join([line.strip() for line in text.split("\n") if line.strip() != ""])
@@ -1148,8 +1203,58 @@ class TextReplacer:
     def IS_CHANGED(cls, **kwargs):
         return True
 
+def get_next_prompt(cls, append_prefix, append_suffix, images_per_batch):
+    # Read prompt_from_ai.txt
+    try:
+        with open("prompt_from_ai.txt", "r") as infile:
+            prompt_from_ai = infile.read()
+    except:
+        print("prompt_from_ai.txt not found")
+        return None
+    # Split prompt_from_ai.txt by empty line (could contain whitespace) using regex
+    prompt_from_ai = re.split(r"^\s*$", prompt_from_ai, flags=re.MULTILINE)
+    # In first element is index and image count
+    index = int(prompt_from_ai[0].split("\n")[0].split(":")[1])
+    image_count = int(prompt_from_ai[0].split("\n")[1].split(":")[1])
+    # The rest are prompts
+    prompts = prompt_from_ai[1:]
+    # Return None if no prompts
+    if len(prompts) == 0:
+        print("No prompts found")
+        return None
+    # Remove empty prompts (could contain whitespace and newlines)
+    prompts = list(filter(lambda x: x != "", prompts))
+    # If image_count is higher or equal than images_per_batch, reset image_count and increase index by 1
+    if image_count >= images_per_batch:
+        print("Image count higher or equal than images per batch -> Reset image count and increase index by 1")
+        image_count = 0
+        index += 1
+    # If index is higher than len(prompts), return None
+    if index >= len(prompts):
+        print("Index higher than len(prompts)")
+        return None
+    # Increase image_count by 1
+    image_count += 1
+    # Output index and image_count
+    print("Index: " + str(index))
+    print("Image count: " + str(image_count))
+    # Get prompt
+    prompt = prompts[index]
+    # Remove empty lines in prompt
+    prompt = re.sub(r"^\s*$", "", prompt, flags=re.MULTILINE)
+    # Write prompt_from_ai.txt
+    with open("prompt_from_ai.txt", "w") as outfile: outfile.write("index:" + str(index) + "\nimage:" + str(image_count) + "\n\n" + "\n".join(prompts))
+    # Return prompt
+    prompt_splitted = prompt.split("\n")
+    # Remove empty lines in prompt
+    prompt_splitted = list(filter(lambda x: x != "", prompt_splitted))
+    prompt = prompt_splitted[0]
+    # Append prefix and suffix
+    prompt = append_prefix + " " + prompt + " " + append_suffix
+    print("Prompt: " + prompt)
+    return (prompt,)
 
-class PromptFromAI:
+class PromptFromAIOpenAI:
     @classmethod
     def INPUT_TYPES(cls):
         return {
@@ -1179,8 +1284,10 @@ class PromptFromAI:
     OUTPUT_NODE = False
 
     def get_prompt(cls, api_key, gpt, gpt_custom, temperature, frequency_penalty, presence_penalty, details, append_prefix, append_suffix, batch_quantity, images_per_batch):
-        print("Get next prompt")
-        next_prompt = cls.get_next_prompt(append_prefix, append_suffix, images_per_batch)
+        print("=============================")
+        print("== Get prompt from OpenAI")
+
+        next_prompt = get_next_prompt(cls, append_prefix, append_suffix, images_per_batch)
         if next_prompt:
             return next_prompt
 
@@ -1213,35 +1320,44 @@ class PromptFromAI:
             print("keywoard_list.txt not found")
 
         # Get new prompts from ChatGPT
-        gpt_assistant_prompt = "You are a Stable Diffusion prompt generator. The prompt should be detailed but not too long. Use Keyword sentences. The scene should be interesting and engaging. The layout should be chosen based on the scene. The details should be relevant to the scene. The prompt should be creative and unique. Start directly with the prompt! If you have to create multiple prompts, add an empty line between them. Don't number them! You can also use loras in the following format: <loraname:strength>."
-        gpt_user_prompt_1 = "Details for the prompt: " + details
-        gpt_user_prompt_2 = "Quantity of prompts: " + str(batch_quantity)
-        gpt_user_prompt_3 = "Avaiable loras: " + avaiable_loras
-        gpt_user_prompt_4 = """Example:
-            score_9, score_8_up, score_8, medium breasts, (ultra realistic,32k, masterpiece:1.2),(high detailed skin:1.1),( high quality:1.1), (curvy), cute, eyelashes, princess zelda, solo, green eyes, long hair, green eyes, crown braid, hairclip, pointy ears, blue shirt, long sleeves, curvy, head tilt, hearts, blush, lips, curvy, head tilt, shiny clothes, upper body, looking at viewer, bokeh, luminescent background
+        gpt_assistant_prompt = "You are a Stable Diffusion prompt generator. The prompt should be detailed. Use Keyword sentences. The scene should be interesting and engaging. The prompt should be creative and unique. Start directly with the prompt and dont use a caption. If you have to create multiple prompts, add an empty line between them. Don't number them! \nYou can also use loras in the following format: <loraname:strength>. \nYou can strengthen parts of the prompt using bradcks. For example: a white (cute cat) is playing with a (red ball:1.2)."
+        gpt_assistant_prompt += "\n---------------------------------"
+        gpt_assistant_prompt += """\nExample Output:
+            Bosstyle,Silhouette of a Woman fighting a giant DARK mononoke Monster Boss resembling a ethereal fox with seven tails: Capture the essence of nostalgia and color in this vintage photograph. Dominating the scene is a meticulously detailed,translucent dark-red Blood filled firefox,adorned with vibrant patterns,blending seamlessly with its surroundings. Its long tail,composed of intricately woven ribbons in a spectrum of colors,trails behind,adding to the spectacle of the moment. Amidst the quietude of the night,its presence exudes a sense of ancestral strength and resilience. Behind it,the low-toned hues of the Milky Way cast a mesmerizing backdrop,a cosmic tapestry weaving tales of both past and future. In this moment,the convergence of tradition and technology,of ancient wisdom and industrial progress,hangs palpably in the air.,atmospheric haze,Film grain,cinematic film still,shallow depth of field,highly detailed,high budget,cinemascope,moody,epic,OverallDetail,2000s vintage RAW photo,photorealistic,candid camera,color graded cinematic,eye catchlights,atmospheric lighting,imperfections,natural,shallow dof
 
-            A glass sphere sculpture, concealed inside the sphere is a large Pirate Ship in a Lightning storm, large waves, in the dark, detailed image, 8k high quality detailed, the moon, shaped sphere, amazing wallpaper, digital painting highly detailed, 8k UHD detailed oil painting, beautiful art UHD, focus on full glass sphere, bokeh, background Modifiers: extremely detailed Award winning photography, fantasy studio lighting, photorealistic very attractive beautiful imperial colours ultra detailed 3D, (Very Intricate)
+            strong and powerful dungeons and dragons epic movie poster barbarian woman with cape charging into battle violent roar riding a vicious ice [wolf|tiger] beast leather and fur boots warriors and red banners (windy dust debris storm:1.1) volumetric lighting fog depth mist pass z pass great stone castle very bright morning sunlight from side
 
-            cinematic photo anna in school,<lora:add-detail-xl:1> <lora:princess_xl_v2:0.9>, 35mm photograph, film, bokeh, professional, 4k, highly detailed
+            enchanting scene,a steaming cup of coffee,the liquid within the cup forms a swirling cosmic galaxy,The coffee surface is a mesmerizing mix of deep purples and blues and pinks dotted with stars and nebulae,fit the vastness of space inside the cup,The cup rests on a saucer that reflects the celestial patterns,surrounded by tiny star-shaped cookies and cosmic-themed decorations,The atmosphere is magical and dreamy,<EpicF4nta5yXL:0.7>
 
-            <lora:Lego_XL_v2.1:0.8> LEGO MiniFig, A man in a vintage early-20th-century setting, possibly from a period film, stands prominently in the foreground. He wears a dark grey suit, a light blue shirt, a darker blue tie, and a classic fedora hat, conveying an aura of authority and composure. His face shows determination, with sharp features, short dark hair, and an intense gaze. The badge labeled 'K-6' on his lapel suggests he might have an official or investigative role
+            an anthropomorphic turtle with a large decorated shell,walking through a dense misty forest,the turtle is wearing a long flowing robe adorned with intricate patterns and holding a wooden staff,The shell is filled with various items including flowers and pouches,wandering sage,towering trees background,moss-covered rocks,soft ethereal light filtering through the forest canopy,a magical and serene atmosphere,<detailed_notrigger:0.6>,<zavy-cntrst-sdxl:0.7>
 
-            A full body photograph of a beautiful 20 year old girl wearing a Vault Suit with the number 76 on the back in a desert wasteland <lora:Fallout_Vault_Suit-000008:0.6> <lora:Perfect Hands v2:0.75> Perfect Hands
+            Assasin,A closeup of fantastical image of a assasin false glory,darkness of night fall,Their filled with power and determination,clad in flowing,flowing scarf,wielding an scarf ornate,scarf ornate,as they wield the scarf n a fluid,sword carried behind the body,squatting on the roof of the clock tower building like an assassin,sitting squatting pose,hands touch the ground,squatting all four,action pose,clock tower,from behind view,cyberpunk city,neon city,skindentation,glowing,shiny,scifi,neon lights,intricate artistic color,cinematic light,radiant,vibrant,perfect symmetry,Grayscale,Dramatic spotlight,highly color focused,dynamic motion,very dark
+
+            A captivating paranormal photograph,(oddly tilted fisheyelens) that showcases intense dynamic composition of a (partiallyvaporous terrifying vampire that is part of the shadows) (emerging in a dark bedroom at night),(floating above) (an innocent,adorable,victim),((high angle photograph,highly dramatic cinematic atmosphere)),((the very detailed background is imposing,with angular intimidating,artdeco style architectural designs)),the (terrifying shadow vampire looming over its adorable victim is part of dark and smokey shadows at nighttime in the (girly bedroom of the victim)),cinematic spiritual horror,dynamic,((double exposures)),very detailed background,ominous ethereal background,epiCRealism,epiCNegative,Photographer Martin Kimbell Style,ral-dissolve
+
+            fanciful,translucent vintage camera with metallic copper and silver details,filled with an array of soft pastel flowers including hues of pink and white and green inside it,floating golden sparkles,magical touch to the composition,<sdxl_glass:0.7>,<tranzp:0.7>,<add-detail-xl:1>
+
+            linquivera,Ink illustration,(anime:0.5),brown tones,aged black red paper,inkpunk,moonlight,surreal,a ghost standing on a boat in swampy wetlands,(at a distance),Will-o'-the-wisp,moonlit,lonely,solitude,windy,tall trees,willows,willowy,OverallDetail,extremely detailed,UHD,(long exposure ,dystopian but extremely beautiful:1.4),<Cute_Collectible:1>,<XL_boss_battle:0.6> <add-detail-xl:1>,<MJ52:1>
         """
+        gpt_user_prompt = "\nDetails for the prompt: " + details
+        gpt_user_prompt += "\n---------------------------------"
+        gpt_user_prompt += "\nQuantity of prompts: " + str(batch_quantity)
+        gpt_user_prompt += "\n---------------------------------"
+        gpt_user_prompt += "\nAvaiable loras: " + avaiable_loras
+        
         if keywoard_list != "":
-            gpt_user_prompt_5 = "Following are a list of keywoards you should NOT use. Create completly different prompts. Keywoard list: " + keywoard_list
-            message = [{"role": "assistant", "content": gpt_assistant_prompt}, {"role": "user", "content": gpt_user_prompt_1}, {"role": "user", "content": gpt_user_prompt_2}, {"role": "user", "content": gpt_user_prompt_3}, {"role": "user", "content": gpt_user_prompt_4}, {"role": "user", "content": gpt_user_prompt_5}]
-        else:
-            message = [{"role": "assistant", "content": gpt_assistant_prompt}, {"role": "user", "content": gpt_user_prompt_1}, {"role": "user", "content": gpt_user_prompt_2}, {"role": "user", "content": gpt_user_prompt_3}, {"role": "user", "content": gpt_user_prompt_4}]
-        max_tokens = 4095 # Max tokens is used to control the length of the output
+            gpt_user_prompt += "\n---------------------------------"
+            gpt_user_prompt += "\nAvoid prompts similar to the following keywoards: " + keywoard_list
+        
         response = client.chat.completions.create(
             model=gpt if gpt_custom == "" else gpt_custom,
-            messages=message,
+            messages=[{"role": "assistant", "content": re.sub(r"^\s+", "", gpt_assistant_prompt, flags=re.MULTILINE)}, {"role": "user", "content": re.sub(r"^\s+", "", gpt_user_prompt, flags=re.MULTILINE)}],
             temperature=temperature,
-            max_tokens=max_tokens,
+            max_tokens=4095,
             frequency_penalty=frequency_penalty,
             presence_penalty=presence_penalty,
         )
+        
         # Check for errors or empty responses
         if response.choices[0].message.content == "" or response.choices[0].message.content == " ": # or response.choices[0].message.content == "No prompts found":
             print("No prompts found")
@@ -1249,19 +1365,22 @@ class PromptFromAI:
         prompt = response.choices[0].message.content
 
         # Get a new overview of the prompts (Keywoards like "castle", "underwater sear world", ...)
-        gpt_assistant_prompt = "You will receive an overview of prompts. Create a short keywoard list of prompts I can use, to prevent furhter generations of the same prompts later. Keep it short but detailed. Start directly with the keywoards! Seperate the keywoards with a comma. If already a keywoard list is provided, attach it to the end of the list."
+        gpt_assistant_prompt = """
+            You will receive an overview of prompts. Create a short keywoard list of prompts I can use, to prevent furhter generations of the same or similiar prompts later. Dont be too detailed.
+            Start directly with the keywoards! Seperate the keywoards with a comma. If already a keywoard list is provided, attach it to the end of the list.
+        """
         if keywoard_list != "":
-            gp_user_prompt_1 = "Prompts:\n\n" + response.choices[0].message.content
-            gp_user_prompt_2 = "Keywoard list: " + keywoard_list
-            message = [{"role": "assistant", "content": gpt_assistant_prompt}, {"role": "user", "content": gp_user_prompt_1}, {"role": "user", "content": gp_user_prompt_2}]
+            gpt_user_prompt = "Prompts:\n\n" + response.content[0].text
+            gpt_user_prompt += "\n---------------------------------"
+            gpt_user_prompt += "Keywoard list: " + keywoard_list
         else:
-            gp_user_prompt = "Prompts:\n\n" + response.choices[0].message.content
-            message = [{"role": "assistant", "content": gpt_assistant_prompt}, {"role": "user", "content": gp_user_prompt}]
+            gpt_user_prompt = "Prompts:\n\n" + response.content[0].text
+
         responseKeywoarList = client.chat.completions.create(
             model="gpt-4-turbo",
-            messages=message,
+            messages=[{"role": "assistant", "content": re.sub(r"^\s+", "", gpt_assistant_prompt, flags=re.MULTILINE)}, {"role": "user", "content": re.sub(r"^\s+", "", gpt_user_prompt, flags=re.MULTILINE)}],
             temperature=0.8,
-            max_tokens=max_tokens,
+            max_tokens=4095,
             frequency_penalty=0.2,
             presence_penalty=0.2,
         )
@@ -1293,67 +1412,181 @@ class PromptFromAI:
         # Rerun get_prompt to get the first prompt or generate new if something went wrong
         return cls.get_prompt(api_key, gpt, gpt_custom, temperature, frequency_penalty, presence_penalty, details, append_prefix, append_suffix, batch_quantity, images_per_batch)
 
-    def get_next_prompt(cls, append_prefix, append_suffix, images_per_batch):
-        # Read prompt_from_ai.txt
+    def IS_CHANGED(self, **kwargs):
+        return float("nan")
+
+class PromptFromAIAnthropic:
+    @classmethod
+    def INPUT_TYPES(cls):
+        return {
+            "required": {
+                "api_key": ("STRING", {"default": ""}),
+                "gpt": (["claude-3.5-sonnet", "claude-3-opus"], {"default": "claude-3.5-sonnet"}),
+                "details": ("STRING", {"multiline": True}),
+                "append_prefix": ("STRING",  {"multiline": True}),
+                "append_suffix": ("STRING",  {"multiline": True}),
+                "batch_quantity": ("INT", {"default": 1}),
+                "images_per_batch": ("INT", {"default": 1}),
+            },
+            "hidden": {
+                "control_after_generate": (["fixed", "random", "increment"], {"default": "increment"}),
+                "value": ("INT", {"default": 0}),
+            },
+        }
+    
+    RETURN_TYPES = ("STRING",)
+    RETURN_NAMES = ("prompt",)
+    FUNCTION = "get_prompt"
+    CATEGORY = "t4ggno/utils"
+    OUTPUT_NODE = False
+
+    def get_prompt(cls, api_key, gpt, details, append_prefix, append_suffix, batch_quantity, images_per_batch):
+        
+        print("=============================")
+        print("== Get prompt from Anthropic")
+
+        next_prompt = get_next_prompt(cls, append_prefix, append_suffix, images_per_batch)
+        if next_prompt:
+            return next_prompt
+
+        # Get all avaiable loras
+        # Folder structure will be: category\[sub_category]?\[name].safetensors
+        avaiable_loras = folder_paths.get_filename_list("loras")
+        # Convert lora list to a json. For example: {"character": [ "JenniferLopez-V1.0", "Alita-V1.0" ], "effect": [ "GlowingEyes-V1.0" ]}
+        converted_loras = {}
+        for lora in avaiable_loras:
+            lora_split = lora.split("\\")
+            category = lora_split[0]
+            if category not in converted_loras:
+                converted_loras[category] = []
+            # Name is always the last element
+            converted_loras[category].append(lora_split[-1])
+        avaiable_loras = json.dumps(converted_loras)
+        # print("Avaiable loras: " + avaiable_loras)
+
+        # Get prompt from ChatGPT for GPT-4
+        client = Anthropic(
+            # This is the default and can be omitted
+            api_key=api_key,
+        )
+
+        # Load keywoar list from file if exists
+        keywoard_list = ""
         try:
-            with open("prompt_from_ai.txt", "r") as infile:
-                prompt_from_ai = infile.read()
+            with open("keywoard_list.txt", "r") as infile:
+                keywoard_list = infile.read()
         except:
-            print("prompt_from_ai.txt not found")
-            return None
-        # Split prompt_from_ai.txt by empty line (could contain whitespace) using regex
-        prompt_from_ai = re.split(r"^\s*$", prompt_from_ai, flags=re.MULTILINE)
-        # In first element is index and image count
-        index = int(prompt_from_ai[0].split("\n")[0].split(":")[1])
-        image_count = int(prompt_from_ai[0].split("\n")[1].split(":")[1])
-        # The rest are prompts
-        prompts = prompt_from_ai[1:]
-        # Return None if no prompts
-        if len(prompts) == 0:
+            print("keywoard_list.txt not found")
+
+        # Get new prompts from ChatGPT
+        gpt_assistant_prompt = "You are a Stable Diffusion prompt generator. The prompt should be detailed. Use Keyword sentences. The scene should be interesting and engaging. The prompt should be creative and unique. Start directly with the prompt and dont use a caption. If you have to create multiple prompts, add an empty line between them. Don't number them or title them! \nYou can also use loras in the following format: <loraname:strength>. But only use avaiable loras! \nYou can strengthen parts of the prompt using bradcks. For example: a white (cute cat) is playing with a (red ball:1.2)."
+        gpt_assistant_prompt += "\n---------------------------------"
+        gpt_assistant_prompt += """\nExample Output:
+            Bosstyle,Silhouette of a Woman fighting a giant DARK mononoke Monster Boss resembling a ethereal fox with seven tails: Capture the essence of nostalgia and color in this vintage photograph. Dominating the scene is a meticulously detailed,translucent dark-red Blood filled firefox,adorned with vibrant patterns,blending seamlessly with its surroundings. Its long tail,composed of intricately woven ribbons in a spectrum of colors,trails behind,adding to the spectacle of the moment. Amidst the quietude of the night,its presence exudes a sense of ancestral strength and resilience. Behind it,the low-toned hues of the Milky Way cast a mesmerizing backdrop,a cosmic tapestry weaving tales of both past and future. In this moment,the convergence of tradition and technology,of ancient wisdom and industrial progress,hangs palpably in the air.,atmospheric haze,Film grain,cinematic film still,shallow depth of field,highly detailed,high budget,cinemascope,moody,epic,OverallDetail,2000s vintage RAW photo,photorealistic,candid camera,color graded cinematic,eye catchlights,atmospheric lighting,imperfections,natural,shallow dof
+
+            strong and powerful dungeons and dragons epic movie poster, barbarian woman with cape charging into battle violent roar riding a vicious ice [wolf|tiger] beast leather and fur boots warriors and red banners (windy dust debris storm:1.1) volumetric lighting fog depth mist pass z pass great stone castle very bright morning sunlight from side
+
+            enchanting scene,a steaming cup of coffee,the liquid within the cup forms a swirling cosmic galaxy,The coffee surface is a mesmerizing mix of deep purples and blues and pinks dotted with stars and nebulae,fit the vastness of space inside the cup,The cup rests on a saucer that reflects the celestial patterns,surrounded by tiny star-shaped cookies and cosmic-themed decorations,The atmosphere is magical and dreamy,<EpicF4nta5yXL:0.7>
+
+            an anthropomorphic turtle with a large decorated shell,walking through a dense misty forest,the turtle is wearing a long flowing robe adorned with intricate patterns and holding a wooden staff,The shell is filled with various items including flowers and pouches,wandering sage,towering trees background,moss-covered rocks,soft ethereal light filtering through the forest canopy,a magical and serene atmosphere,<detailed_notrigger:0.6>,<zavy-cntrst-sdxl:0.7>
+
+            Assasin,A closeup of fantastical image of a assasin false glory,darkness of night fall,Their filled with power and determination,clad in flowing,flowing scarf,wielding an scarf ornate,scarf ornate,as they wield the scarf n a fluid,sword carried behind the body,squatting on the roof of the clock tower building like an assassin,sitting squatting pose,hands touch the ground,squatting all four,action pose,clock tower,from behind view,cyberpunk city,neon city,skindentation,glowing,shiny,scifi,neon lights,intricate artistic color,cinematic light,radiant,vibrant,perfect symmetry,Grayscale,Dramatic spotlight,highly color focused,dynamic motion,very dark
+
+            A captivating paranormal photograph,(oddly tilted fisheyelens) that showcases intense dynamic composition of a (partiallyvaporous terrifying vampire that is part of the shadows) (emerging in a dark bedroom at night),(floating above) (an innocent,adorable,victim),((high angle photograph,highly dramatic cinematic atmosphere)),((the very detailed background is imposing,with angular intimidating,artdeco style architectural designs)),the (terrifying shadow vampire looming over its adorable victim is part of dark and smokey shadows at nighttime in the (girly bedroom of the victim)),cinematic spiritual horror,dynamic,((double exposures)),very detailed background,ominous ethereal background,epiCRealism,epiCNegative,Photographer Martin Kimbell Style,ral-dissolve
+
+            fanciful,translucent vintage camera with metallic copper and silver details,filled with an array of soft pastel flowers including hues of pink and white and green inside it,floating golden sparkles,magical touch to the composition,<sdxl_glass:0.7>,<tranzp:0.7>,<add-detail-xl:1>
+
+            linquivera,Ink illustration,(anime:0.5),brown tones,aged black red paper,inkpunk,moonlight,surreal,a ghost standing on a boat in swampy wetlands,(at a distance),Will-o'-the-wisp,moonlit,lonely,solitude,windy,tall trees,willows,willowy,OverallDetail,extremely detailed,UHD,(long exposure ,dystopian but extremely beautiful:1.4),<Cute_Collectible:1>,<XL_boss_battle:0.6> <add-detail-xl:1>,<MJ52:1>
+        """
+        gpt_user_prompt = "\nDetails for the prompt: " + details
+        gpt_user_prompt += "\n---------------------------------"
+        gpt_user_prompt += "\nQuantity of prompts: " + str(batch_quantity)
+        gpt_user_prompt += "\n---------------------------------"
+        gpt_user_prompt += "\nAvaiable loras: " + avaiable_loras
+
+        if keywoard_list != "":
+            gpt_user_prompt += "\n---------------------------------"
+            gpt_user_prompt += "\DONT use any of the following keywoards or similiar: " + keywoard_list
+
+        model = "claude-3-5-sonnet-20240620" if gpt == "claude-3.5-sonnet" else "claude-3-opus-20240229"
+
+        # Output request to console
+        print("Request prompt from AI:")
+        print("API key: " + api_key)
+        print("GPT: " + gpt)
+        print("System prompt: " + gpt_assistant_prompt)
+        print("User prompt: " + gpt_user_prompt)
+
+        response = client.messages.create(
+            max_tokens=1024,
+            system=re.sub(r"^\s+", "", gpt_assistant_prompt, flags=re.MULTILINE), # Remove leading whitespace
+            messages=[{"role": "user", "content": re.sub(r"^\s+", "", gpt_user_prompt, flags=re.MULTILINE)}],
+            model=model,
+        )
+
+        # Check for errors or empty responses
+        if len(response.content) == 0 or response.content[0].text == "":
             print("No prompts found")
-            return None
-        # Remove empty prompts (could contain whitespace and newlines)
-        prompts = list(filter(lambda x: x != "", prompts))
-        # If image_count is higher or equal than images_per_batch, reset image_count and increase index by 1
-        if image_count >= images_per_batch:
-            print("Image count higher or equal than images per batch -> Reset image count and increase index by 1")
-            image_count = 0
-            index += 1
-        # If index is higher than len(prompts), return None
-        if index >= len(prompts):
-            print("Index higher than len(prompts)")
-            return None
-        # Increase image_count by 1
-        image_count += 1
-        # Output index and image_count
-        print("Index: " + str(index))
-        print("Image count: " + str(image_count))
-        # Get prompt
-        prompt = prompts[index]
-        # Remove empty lines in prompt
-        prompt = re.sub(r"^\s*$", "", prompt, flags=re.MULTILINE)
-        # Write prompt_from_ai.txt
-        with open("prompt_from_ai.txt", "w") as outfile: outfile.write("index:" + str(index) + "\nimage:" + str(image_count) + "\n\n" + "\n".join(prompts))
-        # Return prompt
-        prompt_splitted = prompt.split("\n")
-        # Remove empty lines in prompt
-        prompt_splitted = list(filter(lambda x: x != "", prompt_splitted))
-        prompt = prompt_splitted[0]
-        # Append prefix and suffix
-        prompt = append_prefix + " " + prompt + " " + append_suffix
-        print("Prompt: " + prompt)
-        return (prompt,)
+            return cls.get_prompt(api_key, gpt, details, append_prefix, append_suffix, batch_quantity, images_per_batch)
+        else:
+            print("Response prompt: " + response.content[0].text)
 
-    """@classmethod
-    def IS_CHANGED(cls, token, details, append_prefix, append_suffix, batch_quantity, images_per_batch):
-        # Clear config file
-        if os.path.isfile("prompt_from_ai.txt"):
-            os.remove("prompt_from_ai.txt")
-        return True"""
+        prompt = response.content[0].text
 
-    def IS_CHANGED(cls, api_key, organization_id, details, append_prefix, append_suffix, batch_quantity, images_per_batch):
-        print("PARTY HARD")
+        # Get a new overview of the prompts (Keywoards like "castle", "underwater sear world", ...)
+        gpt_assistant_prompt = """
+            You will receive an overview of prompts. Create a short keywoard list of prompts I can use, to prevent furhter generations of the same or similiar prompts later. Dont be too detailed.
+            Start directly with the keywoards! Seperate the keywoards with a comma. If already a keywoard list is provided, attach it to the end of the list.
+        """
+        if keywoard_list != "":
+            gpt_user_prompt = "Prompts:\n\n" + response.content[0].text
+            gpt_user_prompt += "\n---------------------------------"
+            gpt_user_prompt += "Keywoard list: " + keywoard_list
+        else:
+            gpt_user_prompt = "Prompts:\n\n" + response.content[0].text
 
+        responseKeywoarList = client.messages.create(
+            max_tokens=1024,
+            system=re.sub(r"^\s+", "", gpt_assistant_prompt, flags=re.MULTILINE),
+            messages=[{"role": "user", "content": re.sub(r"^\s+", "", gpt_user_prompt, flags=re.MULTILINE)}],
+            model=model,
+        )
+
+        # Save prompt and keywoard list to files if response is not empty
+        if len(responseKeywoarList.content) > 0 and responseKeywoarList.content[0].text != "":
+
+            print("Response keywoard list: " + responseKeywoarList.content[0].text)
+
+            # Remove numbering from prompts - Via regex
+            prompt = re.sub(r"^\d+\.", "", prompt, flags=re.MULTILINE)
+
+            # Combines lines where none empty lines are between them
+            prompt = re.sub(r"([^\n])\n([^\n])", r"\1 \2", prompt)
+
+            # Fix invalid loras -> For example <Character:Gamora-V1.0.safetensors> to <lora:Gamora-V1.0> or <NSFW:NoBra-V1.0.safetensors> to <lora:NoBra-V1.0>
+            # Remove the part before the colon and probably the .safetenors part
+            prompt = re.sub(r"<(?:[\w\-. \\]+?)\:((?:[\w-]+?)(?:\-V\d+\.\d+))?(?:\.safetensors?)?>", r"<lora:\1>", prompt)
+
+            # Change <loraname: to <lora:
+            prompt = re.sub(r"<loraname:", "<lora:", prompt)
+
+            # Remove lines with only whitespace or "-----" or similar but not empty lines
+            prompt = re.sub(r"^\s*[\-]+\s*$", "", prompt, flags=re.MULTILINE)
+
+            # Write prompt to prompt_from_ai.txt
+            with open("prompt_from_ai.txt", "w") as outfile:
+                outfile.write("index:0\nimage:0\n\n" + prompt)
+            # Write keywoard list to keywoard_list.txt
+            with open("keywoard_list.txt", "w") as outfile:
+                outfile.write(responseKeywoarList.content[0].text)
+        else:
+            print("Failed to get keywoard list")
+
+        # Rerun get_prompt to get the first prompt or generate new if something went wrong
+        return cls.get_prompt(api_key, gpt, details, append_prefix, append_suffix, batch_quantity, images_per_batch)
+
+    def IS_CHANGED(self, **kwargs):
+        return float("nan")
 
 class LoraLoaderFromPrompt:
     def __init__(self):
@@ -1374,13 +1607,15 @@ class LoraLoaderFromPrompt:
     CATEGORY = "t4ggno/loaders"
 
     def load_loras(self, model, clip, prompt):
+        print("=============================")
+        print("== Load Loras from Prompt ==")
+
         avaialbe_loras = folder_paths.get_filename_list("loras")
         # print("Avaialbe loras: " + str(avaialbe_loras))
         # Extract lora from _prompt: <name:model_stremgth:clip_strength> or <name:model_stremgth> or <name::clip_strength> or <name> or <name::>
-        all_loras = re.findall(r"<([\w\-. \\]+?)(?:\:(-?[0-9](?:\.[0-9]*)?)|(?:\:(-?[0-9]+(?:\.[0-9]*)?|))(?:\:(-?[0-9]+(?:\.[0-9]*)?|)))?>", prompt)
-        print("All loras: " + str(all_loras))
+        all_loras = re.findall(r"<(?:lora:?)?([\w\-. \\]+?)(?:\:(-?[0-9](?:\.[0-9]*)?)|(?:\:(-?[0-9]+(?:\.[0-9]*)?|))(?:\:(-?[0-9]+(?:\.[0-9]*)?|)))?>", prompt)
         # Remove loras from prompt
-        prompt = re.sub(r"<([\w\-. \\]+?)(?:\:(-?[0-9](?:\.[0-9]*)?)|(?:\:(-?[0-9]+(?:\.[0-9]*)?|))(?:\:(-?[0-9]+(?:\.[0-9]*)?|)))?>", "", prompt)
+        prompt = re.sub(r"<(?:lora:?)?([\w\-. \\]+?)(?:\:(-?[0-9](?:\.[0-9]*)?)|(?:\:(-?[0-9]+(?:\.[0-9]*)?|))(?:\:(-?[0-9]+(?:\.[0-9]*)?|)))?>", "", prompt)
         # Map lora to object with name, model_strength and clip_strength
         all_loras = list(map(lambda x: {"name": x[0], "model_strength": x[1], "clip_strength": x[2]}, all_loras))
 
@@ -1436,7 +1671,6 @@ class LoraLoaderFromPrompt:
 
         # Filter out loras that are not available
         all_loras = list(filter(lambda x: x["name"] in avaialbe_loras, all_loras))
-        print(all_loras)
         if len(all_loras) == 0:
             return (model, clip, prompt)
         else:
@@ -1520,19 +1754,191 @@ class CurrentDateTime:
     OUTPUT_NODE = False
 
     def get_current_date_time(self, **kwargs):
+        print("=============================")
+        print("== Getting current date time")
+
         # Get current date time using python
         now = datetime.now()
         # Alert time for debugging
-        print("Current date and time : ")
-        print(now.strftime("%Y-%m-%d %H:%M:%S"))
+        print("Current date and time: ", now.strftime("%Y-%m-%d %H:%M:%S"))
         # Convert to "YYYY-MM-DD_HH-MM-SS"
         current_date_time = now.strftime("%Y-%m-%d_%H-%M-%S")
         return (current_date_time,)
 
     @classmethod
-    def IS_CHANGED(cls, **kwargs):
-        return True
+    def IS_CHANGED(self, **kwargs):
+        return float("nan")
 
+class RandomCheckpointLoader:
+    def __init__(self):
+        self.checkpoint_usage = defaultdict(int)
+    
+    @classmethod
+    def INPUT_TYPES(cls):
+        return {
+            "required": {
+                "whitelist_regex": ("STRING", {"default": "", "multiline": True}),
+                "blacklist_regex": ("STRING", {"default": "", "multiline": True}),
+                "usage_limit": ("INT", {"default": 1, "min": 1, "max": 100}),
+            },
+        }
+
+    RETURN_TYPES = ("MODEL", "CLIP", "VAE", "STRING")
+    RETURN_NAMES = ("model", "clip", "vae", "checkpoint_name")
+    FUNCTION = "load_random_checkpoint"
+    CATEGORY = "t4ggno/loaders"
+
+    def load_random_checkpoint(self, whitelist_regex, blacklist_regex, usage_limit):
+        print("=============================")
+        print("== Loading random checkpoint")
+
+        # Get all available checkpoints
+        all_checkpoints = comfy_paths.get_filename_list("checkpoints")
+        print(f"Total checkpoints found: {len(all_checkpoints)}")
+        
+        # Remove None values and empty strings
+        all_checkpoints = [cp for cp in all_checkpoints if cp]
+        print(f"Checkpoints after removing None and empty values: {len(all_checkpoints)}")
+        
+        # Process whitelist and blacklist regex
+        whitelist_patterns = [re.compile(pattern.strip()) for pattern in whitelist_regex.split('\n') if pattern.strip()]
+        blacklist_patterns = [re.compile(pattern.strip()) for pattern in blacklist_regex.split('\n') if pattern.strip()]
+        
+        # Filter checkpoints using regex
+        if whitelist_patterns:
+            checkpoints = [cp for cp in all_checkpoints if any(pattern.search(cp) for pattern in whitelist_patterns)]
+            print(f"Checkpoints after whitelist: {len(checkpoints)}")
+        else:
+            checkpoints = all_checkpoints
+        
+        checkpoints = [cp for cp in checkpoints if not any(pattern.search(cp) for pattern in blacklist_patterns)]
+        print(f"Checkpoints after blacklist: {len(checkpoints)}")
+        
+        if not checkpoints:
+            raise ValueError("No checkpoints available after applying whitelist and blacklist regex")
+        
+        # Find an eligible checkpoint
+        eligible_checkpoints = [cp for cp in checkpoints if self.checkpoint_usage[cp] < usage_limit]
+        print(f"Eligible checkpoints: {len(eligible_checkpoints)}")
+        
+        if not eligible_checkpoints:
+            # Reset usage count if all checkpoints have reached the limit
+            self.checkpoint_usage = defaultdict(int)
+            eligible_checkpoints = checkpoints
+        
+        # Shuffle the list of eligible checkpoints
+        numpy.random.shuffle(eligible_checkpoints)
+
+        for random_checkpoint in eligible_checkpoints:
+            print(f"Attempting to load checkpoint: {random_checkpoint}")
+            
+            # Increment usage count
+            self.checkpoint_usage[random_checkpoint] += 1
+            
+            # Load checkpoint
+            checkpoint_path = comfy_paths.get_full_path("checkpoints", random_checkpoint)
+            print(f"Loading checkpoint from: {checkpoint_path}")
+            
+            try:
+                result = comfy.sd.load_checkpoint_guess_config(checkpoint_path, output_vae=True, output_clip=True, embedding_directory=comfy_paths.get_folder_paths("embeddings"))
+                
+                if len(result) >= 3:
+                    model, clip, vae, *_ = result
+                else:
+                    raise ValueError(f"Unexpected number of return values from load_checkpoint_guess_config: {len(result)}")
+
+                if model is None or clip is None or vae is None:
+                    raise ValueError(f"Failed to load checkpoint: {random_checkpoint}")
+                
+                print(f"Successfully loaded checkpoint: {random_checkpoint}")
+                return (model, clip, vae, random_checkpoint)
+            except Exception as e:
+                print(f"Error loading checkpoint {random_checkpoint}: {e}")
+                print("Attempting to load next checkpoint...")
+
+        raise ValueError("Unable to load any checkpoints. All attempts failed.")
+    
+    @classmethod
+    def IS_CHANGED(self, **kwargs):
+        return float("nan")
+    
+class ColorMatch:
+    @classmethod
+    def INPUT_TYPES(cls):
+        return {
+            "required": {
+                "image_ref": ("IMAGE",),
+                "image_target": ("IMAGE",),
+                "method": ([   
+                    'mkl',
+                    'hm', 
+                    'reinhard', 
+                    'mvgd', 
+                    'hm-mvgd-hm', 
+                    'hm-mkl-hm',
+                ], {"default": 'mkl'}),
+            },
+        }
+    
+    RETURN_TYPES = ("IMAGE",)
+    RETURN_NAMES = ("image",)
+    FUNCTION = "colormatch"
+
+    CATEGORY = "t4ggno/utils"
+
+    DESCRIPTION = """
+MODIFIED VERSION OF: KJNodes/ColorMatch
+
+color-matcher enables color transfer across images which comes in handy for automatic  
+color-grading of photographs, paintings and film sequences as well as light-field  
+and stopmotion corrections.  
+
+The methods behind the mappings are based on the approach from Reinhard et al.,  
+the Monge-Kantorovich Linearization (MKL) as proposed by Pitie et al. and our analytical solution  
+to a Multi-Variate Gaussian Distribution (MVGD) transfer in conjunction with classical histogram   
+matching. As shown below our HM-MVGD-HM compound outperforms existing methods.   
+https://github.com/hahnec/color-matcher/
+
+"""
+    
+    def colormatch(self, image_ref, image_target, method):
+        try:
+            from color_matcher import ColorMatcher
+        except:
+            raise Exception("Can't import color-matcher, did you install requirements.txt? Manual install: pip install color-matcher")
+        
+        cm = ColorMatcher()
+        image_ref = image_ref.cpu()
+        image_target = image_target.cpu()
+        batch_size = image_target.size(0)
+        out = []
+        images_target = image_target.squeeze()
+        images_ref = image_ref.squeeze()
+
+        image_ref_np = images_ref.numpy()
+        images_target_np = images_target.numpy()
+
+        if image_ref.size(0) > 1 and image_ref.size(0) != batch_size:
+            raise ValueError("ColorMatch: Use either single reference image or a matching batch of reference images.")
+
+        for i in range(batch_size):
+            image_target_np = images_target_np if batch_size == 1 else images_target[i].numpy()
+            image_ref_np_i = image_ref_np if image_ref.size(0) == 1 else images_ref[i].numpy()
+            try:
+                image_result = cm.transfer(src=image_target_np, ref=image_ref_np_i, method=method)
+                out.append(torch.from_numpy(image_result))
+            except BaseException as e:
+                print(f"Error occurred during transfer for image {i}: {e}")
+                # Append the original image instead of the processed one
+                out.append(torch.from_numpy(image_target_np))
+
+        if not out:
+            print("ColorMatch: No images were successfully processed. Returning original target images.")
+            return (image_target,)
+
+        out = torch.stack(out, dim=0).to(torch.float32)
+        out.clamp_(0, 1)
+        return (out,)
 
 NODE_CLASS_MAPPINGS = {
     "Base64Decode": Base64Decode,
@@ -1540,12 +1946,16 @@ NODE_CLASS_MAPPINGS = {
     "PredefinedResolutions": PredefinedResolutions,
     "ResolutionSwitch": ResolutionSwitch,
     "LoraLoaderFromPrompt": LoraLoaderFromPrompt,
-    "PromptFromAI": PromptFromAI,
+    "PromptFromAI": PromptFromAIOpenAI,
+    "PromptFromAIOpenAI": PromptFromAIOpenAI,
+    "PromptFromAIAnthropic": PromptFromAIAnthropic,
     "CurrentDateTime": CurrentDateTime,
     "TextSwitch": TextSwitch,
     "TextReplacer": TextReplacer,
     "ImageSave": ImageSave,
     "AutoLoadImageForUpscaler": AutoLoadImageForUpscaler,
+    "RandomCheckpointLoader": RandomCheckpointLoader,
+    "ColorMatch": ColorMatch,
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
@@ -1554,10 +1964,14 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "PredefinedResolutions": "Predefined Resolutions",
     "ResolutionSwitch": "Switch Resolution",
     "LoraLoaderFromPrompt": "Load Lora From Prompt",
-    "PromptFromAI": "Prompt From AI",
+    "PromptFromAI": "Prompt From AI (Deprecated - OpenAI)",
+    "PromptFromAIOpenAI": "Prompt From AI (OpenAI)",
+    "PromptFromAIAnthropic": "Prompt From AI (Anthropic)",
     "CurrentDateTime": "Current Date Time",
     "TextSwitch": "Switch Text",
     "TextReplacer": "Replace Text",
     "ImageSave": "Save Image",
     "AutoLoadImageForUpscaler": "Auto Load Image For Upscaler",
+    "RandomCheckpointLoader": "Random Checkpoint Loader",
+    "ColorMatch": "Color Match",
 }

@@ -329,7 +329,7 @@ class ImageMetadataExtractor:
             files = os.listdir(folder)
             # Filter only for png images
             files = [file for file in files if file.endswith(".png")]
-            # Find image with lowest avaiable scale -> _1.0x, _2.0x, _3.5x, ...
+            # Find image with lowest available scale -> _1.0x, _2.0x, _3.5x, ...
             # Create a collection of images. Remove all lower scales than current scale and also if max_width or max_height is exceeded
             images = []
             for file in files:
@@ -464,7 +464,7 @@ class AutoLoadImageForUpscaler:
             files = os.listdir(folder)
             # Filter only for png images
             files = [file for file in files if file.endswith(".png")]
-            # Find image with lowest avaiable scale -> _1.0x, _2.0x, _3.5x, ...
+            # Find image with lowest available scale -> _1.0x, _2.0x, _3.5x, ...
             # Create a collection of images. Remove all lower scales than current scale and also if max_width or max_height is exceeded
             images = []
             for file in files:
@@ -1332,20 +1332,20 @@ class PromptFromAIOpenAI:
         if next_prompt:
             return next_prompt
 
-        # Get all avaiable loras
+        # Get all available loras
         # Folder structure will be: category\[sub_category]?\[name].safetensors
-        avaiable_loras = folder_paths.get_filename_list("loras")
+        available_loras = folder_paths.get_filename_list("loras")
         # Convert lora list to a json. For example: {"character": [ "JenniferLopez-V1.0", "Alita-V1.0" ], "effect": [ "GlowingEyes-V1.0" ]}
         converted_loras = {}
-        for lora in avaiable_loras:
+        for lora in available_loras:
             lora_split = lora.split("\\")
             category = lora_split[0]
             if category not in converted_loras:
                 converted_loras[category] = []
             # Name is always the last element
             converted_loras[category].append(lora_split[-1])
-        avaiable_loras = json.dumps(converted_loras)
-        # print("Avaiable loras: " + avaiable_loras)
+        available_loras = json.dumps(converted_loras)
+        # print("Available loras: " + available_loras)
 
         # Get prompt from ChatGPT for GPT-4
         client = OpenAI(
@@ -1384,7 +1384,7 @@ class PromptFromAIOpenAI:
         gpt_user_prompt += "\n---------------------------------"
         gpt_user_prompt += "\nQuantity of prompts: " + str(batch_quantity)
         gpt_user_prompt += "\n---------------------------------"
-        gpt_user_prompt += "\nAvaiable loras: " + avaiable_loras
+        gpt_user_prompt += "\nAvailable loras: " + available_loras
 
         if keywoard_list != "":
             gpt_user_prompt += "\n---------------------------------"
@@ -1470,6 +1470,8 @@ class PromptFromAIAnthropic:
                 "append_suffix": ("STRING",  {"multiline": True}),
                 "batch_quantity": ("INT", {"default": 1}),
                 "images_per_batch": ("INT", {"default": 1}),
+                "lora_whitelist_regex": ("STRING", {"default": "", "multiline": True}),
+                "lora_blacklist_regex": ("STRING", {"default": "", "multiline": True}),
             },
             "hidden": {
                 "control_after_generate": (["fixed", "random", "increment"], {"default": "increment"}),
@@ -1483,7 +1485,7 @@ class PromptFromAIAnthropic:
     CATEGORY = "t4ggno/utils"
     OUTPUT_NODE = False
 
-    def get_prompt(cls, api_key, gpt, details, append_prefix, append_suffix, batch_quantity, images_per_batch):
+    def get_prompt(cls, api_key, gpt, details, append_prefix, append_suffix, batch_quantity, images_per_batch, lora_whitelist_regex, lora_blacklist_regex):
 
         print("=============================")
         print("== Get prompt from Anthropic")
@@ -1492,20 +1494,63 @@ class PromptFromAIAnthropic:
         if next_prompt:
             return next_prompt
 
-        # Get all avaiable loras
+        # Get all available loras
         # Folder structure will be: category\[sub_category]?\[name].safetensors
-        avaiable_loras = folder_paths.get_filename_list("loras")
-        # Convert lora list to a json. For example: {"character": [ "JenniferLopez-V1.0", "Alita-V1.0" ], "effect": [ "GlowingEyes-V1.0" ]}
+        lora_paths = folder_paths.get_folder_paths("loras")
+        if len(lora_paths) == 0:
+            raise Exception("No lora paths found")
+        # Output path list
+        available_loras = folder_paths.get_filename_list("loras")
+        # Remove loras that are not in the whitelist (partial match)
+        # Process whitelist and blacklist regex
+        if lora_whitelist_regex != "":
+            whitelist_patterns = [re.compile(pattern.strip()) for pattern in lora_whitelist_regex.split('\n') if pattern.strip()]
+            available_loras = [lora for lora in available_loras if any(pattern.match(lora) for pattern in whitelist_patterns)]
+        if lora_blacklist_regex != "":
+            blacklist_patterns = [re.compile(pattern.strip()) for pattern in lora_blacklist_regex.split('\n') if pattern.strip()]
+            available_loras = [lora for lora in available_loras if not any(pattern.match(lora) for pattern in blacklist_patterns)]
+        # Convert lora list to a json. For example: 
+        # {
+        #   "character":[
+        #       {
+        #           name:"JenniferLopez-V1.0",
+        #       },
+        #       { 
+        #           name:"Alita-V1.0",
+        #           description:"Female cyborg with big eyes and a lot of attitude. Movie character from Alita: Battle Angel."
+        #       }
+        #   ],
+        #   "effect":[
+        #       {
+        #           name:"GlowingEyes-V1.0",
+        #           description:"A lora that adds glowing eyes to a character."
+        #       }
+        #   ]
+        # }
+        # We will extract the description from a "description.txt" file in the same folder as the lora (if exists)
         converted_loras = {}
-        for lora in avaiable_loras:
+        for lora in available_loras:
             lora_split = lora.split("\\")
-            category = lora_split[0]
+            # If there is no sub category, use "general"
+            if len(lora_split) == 1:
+                category = "General"
+            else:
+                category = lora_split[0]
             if category not in converted_loras:
                 converted_loras[category] = []
             # Name is always the last element
-            converted_loras[category].append(lora_split[-1])
-        avaiable_loras = json.dumps(converted_loras)
-        # print("Avaiable loras: " + avaiable_loras)
+            lora_name = lora_split[-1]
+            # Check if description file exists
+            description_file = os.path.join(lora_paths[0], lora.replace(".safetensors", ".txt"))
+            description = None
+            if os.path.isfile(description_file):
+                with open(description_file, "r") as infile:
+                    description = infile.read()
+            if description is None or description.strip() == "":
+                converted_loras[category].append({"name": lora_name.replace(".safetensors", "")})
+            else:
+                converted_loras[category].append({"name": lora_name.replace(".safetensors", ""), "description": description})
+        available_loras = json.dumps(converted_loras)
 
         # Get prompt from ChatGPT for GPT-4
         client = Anthropic(
@@ -1522,7 +1567,7 @@ class PromptFromAIAnthropic:
             print("keywoard_list.txt not found")
 
         # Get new prompts from ChatGPT
-        gpt_assistant_prompt = "You are a Stable Diffusion prompt generator. The prompt should be detailed. Use Keyword sentences. The scene should be interesting and engaging. The prompt should be creative and unique. Start directly with the prompt and dont use a caption. If you have to create multiple prompts, add an empty line between them. Don't number them or title them! \nYou can also use loras in the following format: <loraname:strength>. But only use avaiable loras! \nYou can strengthen parts of the prompt using bradcks. For example: a white (cute cat) is playing with a (red ball:1.2)."
+        gpt_assistant_prompt = "You are a Stable Diffusion prompt generator. The prompt should be detailed. Use Keyword sentences. The scene should be interesting and engaging. The prompt should be creative and unique. Start directly with the prompt and dont use a caption. If you have to create multiple prompts, add an empty line between them. Don't number them or title them! \nYou can also use loras in the following format: <loraname:strength>. Loras are plugins to create specific effects or characters. But only use available loras! \nYou can strengthen parts of the prompt using bradcks. For example: a white (cute cat) is playing with a (red ball:1.2)."
         gpt_assistant_prompt += "\n---------------------------------"
         gpt_assistant_prompt += """\nExample Output:
             Bosstyle,Silhouette of a Woman fighting a giant DARK mononoke Monster Boss resembling a ethereal fox with seven tails: Capture the essence of nostalgia and color in this vintage photograph. Dominating the scene is a meticulously detailed,translucent dark-red Blood filled firefox,adorned with vibrant patterns,blending seamlessly with its surroundings. Its long tail,composed of intricately woven ribbons in a spectrum of colors,trails behind,adding to the spectacle of the moment. Amidst the quietude of the night,its presence exudes a sense of ancestral strength and resilience. Behind it,the low-toned hues of the Milky Way cast a mesmerizing backdrop,a cosmic tapestry weaving tales of both past and future. In this moment,the convergence of tradition and technology,of ancient wisdom and industrial progress,hangs palpably in the air.,atmospheric haze,Film grain,cinematic film still,shallow depth of field,highly detailed,high budget,cinemascope,moody,epic,OverallDetail,2000s vintage RAW photo,photorealistic,candid camera,color graded cinematic,eye catchlights,atmospheric lighting,imperfections,natural,shallow dof
@@ -1545,7 +1590,7 @@ class PromptFromAIAnthropic:
         gpt_user_prompt += "\n---------------------------------"
         gpt_user_prompt += "\nQuantity of prompts: " + str(batch_quantity)
         gpt_user_prompt += "\n---------------------------------"
-        gpt_user_prompt += "\nAvaiable loras: " + avaiable_loras
+        gpt_user_prompt += "\nAvailable loras: " + available_loras
 
         if keywoard_list != "":
             gpt_user_prompt += "\n---------------------------------"
@@ -1570,7 +1615,7 @@ class PromptFromAIAnthropic:
         # Check for errors or empty responses
         if len(response.content) == 0 or response.content[0].text == "":
             print("No prompts found")
-            return cls.get_prompt(api_key, gpt, details, append_prefix, append_suffix, batch_quantity, images_per_batch)
+            return cls.get_prompt(api_key, gpt, details, append_prefix, append_suffix, batch_quantity, images_per_batch, lora_whitelist_regex, lora_blacklist_regex)
         else:
             print("Response prompt: " + response.content[0].text)
 
@@ -1626,7 +1671,7 @@ class PromptFromAIAnthropic:
             print("Failed to get keywoard list")
 
         # Rerun get_prompt to get the first prompt or generate new if something went wrong
-        return cls.get_prompt(api_key, gpt, details, append_prefix, append_suffix, batch_quantity, images_per_batch)
+        return cls.get_prompt(api_key, gpt, details, append_prefix, append_suffix, batch_quantity, images_per_batch, lora_whitelist_regex, lora_blacklist_regex)
 
     @classmethod
     def IS_CHANGED(self, **kwargs):
@@ -1729,7 +1774,7 @@ class LoraLoaderFromPrompt:
                 # Strenght
                 model_strength = float(lora["model_strength"]) if lora["model_strength"] != "" else 1.0
                 clip_strength = float(lora["clip_strength"]) if lora["clip_strength"] != "" else float(lora["model_strength"]) if lora["model_strength"] != "" else 1.0
-                model, clip = comfy.sd.load_lora_for_models(model, clip, loaded_lora, model_strength, clip_strength) # Overwrite model and clip with new model and clip
+                model, clip = comfy.sd.load_lora_for_models(model, clip, loaded_lora, model_strength, clip_strength)  # Overwrite model and clip with new model and clip
                 print("Loaded lora: " + lora_path + " with model strength: " + str(model_strength) + " and clip strength: " + str(clip_strength))
 
                 # Load metadata from prompt and check if trigger word exists in prompt. The metadata is in file as string as JSON.
@@ -1782,7 +1827,7 @@ class LoraLoaderFromPrompt:
                                     print("Added trigger word: '" + randomTriggerWord.split("_")[1] + "' to prompt")
                 except:
                     print("Error while extracting metadata from file: " + lora_path)
-            
+
             print("Text prompt after loading loras: " + prompt)
 
             return (model, clip, prompt)

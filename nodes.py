@@ -83,32 +83,21 @@ class LayoutSwitch:
         print("== Layout Switch")
 
         if layout == "Landscape":
+            print("Output: " + str(size1) + "x" + str(size2))
             if size1 > size2:
                 return (size1, size2)
             else:
                 return (size2, size1)
         elif layout == "Portrait":
+            print("Output: " + str(size2) + "x" + str(size1))
             if size1 > size2:
                 return (size2, size1)
             else:
                 return (size1, size2)
         elif layout == "Square":
+            print("Output: " + str(size1) + "x" + str(size1))
             size = (size1 + size2) / 2
             return (size, size)
-
-
-"""
-NOTE: For SDXL, it is recommended to use trained values listed below:
- - 1024 x 1024
- - 1152 x 896
- - 896  x 1152
- - 1216 x 832
- - 832  x 1216
- - 1344 x 768
- - 768  x 1344
- - 1536 x 640
- - 640  x 1536
-"""
 
 
 class PredefinedResolutions:
@@ -123,8 +112,11 @@ class PredefinedResolutions:
                 "at_random_enable_landscape_ultra_wide": (["true", "false"], {"default": "true"}),
                 "at_random_enable_portrait": (["true", "false"], {"default": "true"}),
                 "at_random_enable_portrait_ultra_tall": (["true", "false"], {"default": "true"}),
-                "seed": ("INT", {"default": 0, "min": 0, "max": 0xffffffffffffffff}),
                 "scale": ("FLOAT", {"default": 1, "min": 1, "max": 100, "step": 0.1}),
+            },
+            "hidden": {
+                "control_after_generate": (["fixed", "random", "increment"], {"default": "increment"}),
+                "value": ("INT", {"default": 0}),
             },
         }
 
@@ -134,12 +126,13 @@ class PredefinedResolutions:
     CATEGORY = "t4ggno/utils"
     OUTPUT_NODE = False
 
-    def render_resolution(self, dimension, layout, at_random_enable_square, at_random_enable_landscape, at_random_enable_landscape_ultra_wide, at_random_enable_portrait, at_random_enable_portrait_ultra_tall, seed, scale):
+    def render_resolution(self, dimension, layout, at_random_enable_square, at_random_enable_landscape, at_random_enable_landscape_ultra_wide, at_random_enable_portrait, at_random_enable_portrait_ultra_tall, scale):
 
         print("=============================")
         print("== Predefined Resolutions")
 
         if layout == "Random":
+            print("Random layout...")
             allowed_layouts = []
             if at_random_enable_square == "true":
                 allowed_layouts.append("Square")
@@ -152,9 +145,11 @@ class PredefinedResolutions:
             if at_random_enable_portrait_ultra_tall == "true":
                 allowed_layouts.append("Portrait (Ultra Tall)")
             layout = random.choice(allowed_layouts)
+        print("Layout: " + layout)
 
         resolution = None
         if (dimension == "1.5"):
+            print("Dimension: 1.5")
             if layout == "Square":
                 resolution = (512, 512)
             elif layout == "Landscape":
@@ -168,6 +163,7 @@ class PredefinedResolutions:
             else:
                 resolution = (512, 512)
         elif (dimension == "SDXL"):
+            print("Dimension: SDXL")
             if layout == "Square":
                 resolution = (1024, 1024)
             elif layout == "Landscape":
@@ -181,6 +177,7 @@ class PredefinedResolutions:
             else:
                 resolution = (1024, 1024)
         elif (dimension == "Famous"):
+            print("Dimension: Famous")
             if layout == "Square":
                 resolution = (1024, 1024)
             elif layout == "Landscape":
@@ -193,8 +190,14 @@ class PredefinedResolutions:
                 resolution = (684, 1596)
             else:
                 resolution = (1024, 1024)
+
         # Scale and floor
+        print("Scale: " + str(scale) + "x -> " + str(int(resolution[0] * scale)) + "x" + str(int(resolution[1] * scale)))
         return (int(resolution[0] * scale), int(resolution[1] * scale))
+
+    @classmethod
+    def IS_CHANGED(self, **kwargs):
+        return float("nan")
 
 
 class ResolutionSwitch:
@@ -271,7 +274,10 @@ class ImageMetadataExtractor:
                 "max_scale": ("FLOAT", {"default": 100000, "min": 1, "max": 100000, "step": 1}),
                 "fallback_positive_prompt": ("STRING", {"default": "", "multiline": True}),
                 "fallback_negative_prompt": ("STRING", {"default": "", "multiline": True}),
-                "seed": ("INT", {"default": 0, "min": 0, "max": 0xffffffffffffffff}),
+            },
+            "hidden": {
+                "control_after_generate": (["fixed", "random", "increment"], {"default": "increment"}),
+                "value": ("INT", {"default": 0}),
             },
         }
 
@@ -313,7 +319,7 @@ class ImageMetadataExtractor:
                 return_additional_prompt += additional_text
         return (return_positive_prompt, return_negative_prompt, return_additional_prompt)
 
-    def load_image(self, folder, max_width, max_height, scale, max_scale, fallback_positive_prompt, fallback_negative_prompt, seed):
+    def load_image(self, folder, max_width, max_height, scale, max_scale, fallback_positive_prompt, fallback_negative_prompt):
 
         print("=============================")
         print("== Image Metadata Extractor")
@@ -386,6 +392,10 @@ class ImageMetadataExtractor:
             # Wait 10 seconds and try again
             time.sleep(10)
 
+    @classmethod
+    def IS_CHANGED(self, **kwargs):
+        return float("nan")
+
 
 class AutoLoadImageForUpscaler:
     @classmethod
@@ -399,7 +409,10 @@ class AutoLoadImageForUpscaler:
                 "max_scale": ("FLOAT", {"default": 100000, "min": 1, "max": 100000, "step": 1}),
                 "fallback_positive_prompt": ("STRING", {"default": "", "multiline": True}),
                 "fallback_negative_prompt": ("STRING", {"default": "", "multiline": True}),
-                "seed": ("INT", {"default": 0, "min": 0, "max": 0xffffffffffffffff}),
+            },
+            "hidden": {
+                "control_after_generate": (["fixed", "random", "increment"], {"default": "increment"}),
+                "value": ("INT", {"default": 0}),
             },
         }
 
@@ -441,7 +454,7 @@ class AutoLoadImageForUpscaler:
                 return_additional_prompt += additional_text
         return (return_positive_prompt, return_negative_prompt, return_additional_prompt)
 
-    def load_image(self, folder, max_width, max_height, scale, max_scale, fallback_positive_prompt, fallback_negative_prompt, seed):
+    def load_image(self, folder, max_width, max_height, scale, max_scale, fallback_positive_prompt, fallback_negative_prompt):
 
         print("=============================")
         print("== Auto Load Image For Upscaler")
@@ -513,6 +526,10 @@ class AutoLoadImageForUpscaler:
 
             # Wait 10 seconds and try again
             time.sleep(10)
+
+    @classmethod
+    def IS_CHANGED(self, **kwargs):
+        return float("nan")
 
 
 class ImageSave:
@@ -622,13 +639,17 @@ class ImageSave:
         subfolder_path = os.sep.join(subfolder_parts[:-1])
         return subfolder_path
 
+
 class TextReplacer:
     @classmethod
     def INPUT_TYPES(cls):
         return {
             "required": {
                 "text": ("STRING", {"default": ""}),
-                "seed": ("INT", {"default": 0, "min": 0, "max": 0xffffffffffffffff}),
+            },
+            "hidden": {
+                "control_after_generate": (["fixed", "random", "increment"], {"default": "increment"}),
+                "value": ("INT", {"default": 0}),
             },
         }
 
@@ -638,7 +659,7 @@ class TextReplacer:
     CATEGORY = "t4ggno/utils"
     OUTPUT_NODE = False
 
-    def replace_text(self, text, seed):
+    def replace_text(self, text):
 
         print("=============================")
         print("== Text Replacer")
@@ -653,6 +674,11 @@ class TextReplacer:
         # Remove comments - Either # or ''' '''
         text = re.sub(r"#.*", "", text)  # Fallbck for now
         text = re.sub(r"'''(?:.|\n)*?'''", "", text)
+
+        # Remove empty lines and trim
+        text = "\n".join([line.strip() for line in text.split("\n") if line.strip() != ""])
+        print("Text (After removing comments and empty lines): " + text)
+
         # Load global whitelist and blacklist - Schema: [Blacklist:TriggerWord:Category,Category,...] and / or [Whitelist:TriggerWord:Category,Category,...]
         globalWhitelist = []
         globalBlacklist = []
@@ -669,25 +695,23 @@ class TextReplacer:
                 found = False
                 for globalWhitelistEntry in globalWhitelist:
                     if globalWhitelistEntry["triggerWord"] == triggerWord:
-                        globalWhitelistEntry["categories"] = list(
-                            set(globalWhitelistEntry["categories"] + categories))
+                        globalWhitelistEntry["categories"] = list(set(globalWhitelistEntry["categories"] + categories))
                         found = True
                         break
                 if not found:
-                    globalWhitelist.append(
-                        {"triggerWord": triggerWord, "categories": categories})
+                    print("Add to Whitelist: " + str({"triggerWord": triggerWord, "categories": categories}))
+                    globalWhitelist.append({"triggerWord": triggerWord, "categories": categories})
             elif type == "Blacklist":
                 # Check if triggerWord already in globalBlacklist
                 found = False
                 for globalBlacklistEntry in globalBlacklist:
                     if globalBlacklistEntry["triggerWord"] == triggerWord:
-                        globalBlacklistEntry["categories"] = list(
-                            set(globalBlacklistEntry["categories"] + categories))
+                        globalBlacklistEntry["categories"] = list(set(globalBlacklistEntry["categories"] + categories))
                         found = True
                         break
                 if not found:
-                    globalBlacklist.append(
-                        {"triggerWord": triggerWord, "categories": categories})
+                    print("Add to Blacklist: " + str({"triggerWord": triggerWord, "categories": categories}))
+                    globalBlacklist.append({"triggerWord": triggerWord, "categories": categories})
             # Remove from text
             text = text.replace(completeString, "")
         print("Global whitelist: " + str(globalWhitelist))
@@ -696,7 +720,6 @@ class TextReplacer:
         # Replace [PickOne:Option1,Option2,...] with random option - We need to do this before the other replacements, because they might contain [PickOne:Option1,Option2,...]
         while True:
             somethingReplaced = False
-
             pickOneMatches = re.findall(r"(\[PickOne:(\[(.+?)\]|.+?)\])", text)
             for match in pickOneMatches:
                 completeString = match[0]
@@ -709,6 +732,10 @@ class TextReplacer:
 
             if not somethingReplaced:
                 break
+
+        # Remove empty lines and trim
+        text = "\n".join([line.strip() for line in text.split("\n") if line.strip() != ""])
+        print("Text (After PickOne replacement): " + text)
 
         # Now replace all other things
         while True:
@@ -902,7 +929,7 @@ class TextReplacer:
             replaceUsingJson("SexToysBondage", "sex_toys_bondage.json")
             # Replace [SexPositions] (if exists) with random stuff
             replaceUsingJson("SexPositions", "sex_positions.json")
-            
+
             # Replace [SexualActs] (if exists) with random stuff
             replaceUsingJson("SexualActs", "sexual_acts.json")
             # Replace [SexualAttireBDSM] (if exists) with random stuff
@@ -1152,6 +1179,10 @@ class TextReplacer:
             if not somethingReplaced:
                 break
 
+        # Remove empty lines and trim
+        text = "\n".join([line.strip() for line in text.split("\n") if line.strip() != ""])
+        print("Text (After all replacements): " + text)
+
         # Remove unmatched "If" statements
         while True:
             somethingRemoved = False
@@ -1164,6 +1195,10 @@ class TextReplacer:
                     somethingRemoved = True
             if not somethingRemoved:
                 break
+
+        # Remove empty lines and trim
+        text = "\n".join([line.strip() for line in text.split("\n") if line.strip() != ""])
+        print("Text (After removing unmatched If statements): " + text)
 
         # Replace regex lora with random lora
         all_loras_regex = re.findall(r"<RE\:(.+?)(?:\:(-?[0-9](?:\.[0-9]*)?)|(?:\:(-?[0-9]+(?:\.[0-9]*)?|))(?:\:(-?[0-9]+(?:\.[0-9]*)?|)))?>", text)
@@ -1191,17 +1226,21 @@ class TextReplacer:
                 # Replace lora with random_lora
                 text = text.replace("<RE:" + lora[0], "<" + random_lora)
 
+        # Remove empty lines and trim
+        text = "\n".join([line.strip() for line in text.split("\n") if line.strip() != ""])
+        print("Text (After replacing regex lora with random lora): " + text)
+
         # Cleanup - Remove empty lines, trim, remove multiple spaces, remove multiple commas, etc
         text = "\n".join([line.strip() for line in text.split("\n") if line.strip() != ""])
         text = re.sub(r"\s+", " ", text)
         text = re.sub(r"\,+?", ",", text)
 
-        print("Text: " + text)
+        print("Final text: " + text)
         return (text,)
 
-    @classmethod
     def IS_CHANGED(cls, **kwargs):
         return True
+
 
 def get_next_prompt(cls, append_prefix, append_suffix, images_per_batch):
     # Read prompt_from_ai.txt
@@ -1243,7 +1282,8 @@ def get_next_prompt(cls, append_prefix, append_suffix, images_per_batch):
     # Remove empty lines in prompt
     prompt = re.sub(r"^\s*$", "", prompt, flags=re.MULTILINE)
     # Write prompt_from_ai.txt
-    with open("prompt_from_ai.txt", "w") as outfile: outfile.write("index:" + str(index) + "\nimage:" + str(image_count) + "\n\n" + "\n".join(prompts))
+    with open("prompt_from_ai.txt", "w") as outfile:
+        outfile.write("index:" + str(index) + "\nimage:" + str(image_count) + "\n\n" + "\n".join(prompts))
     # Return prompt
     prompt_splitted = prompt.split("\n")
     # Remove empty lines in prompt
@@ -1254,13 +1294,14 @@ def get_next_prompt(cls, append_prefix, append_suffix, images_per_batch):
     print("Prompt: " + prompt)
     return (prompt,)
 
+
 class PromptFromAIOpenAI:
     @classmethod
     def INPUT_TYPES(cls):
         return {
             "required": {
                 "api_key": ("STRING", {"default": ""}),
-                "gpt": (["gpt-3.5-turbo","gpt-3.5-turbo-16K","gpt-4","gpt-4-turbo","gpt-4o","Custom"], {"default": "gpt-4o"}),
+                "gpt": (["gpt-3.5-turbo", "gpt-3.5-turbo-16K", "gpt-4", "gpt-4-turbo", "gpt-4o", "Custom"], {"default": "gpt-4o"}),
                 "gpt_custom": ("STRING", {"default": ""}),
                 "temperature": ("FLOAT", {"default": 1.1}),
                 "frequency_penalty": ("FLOAT", {"default": 0.2}),
@@ -1276,7 +1317,7 @@ class PromptFromAIOpenAI:
                 "value": ("INT", {"default": 0}),
             },
         }
-    
+
     RETURN_TYPES = ("STRING",)
     RETURN_NAMES = ("prompt",)
     FUNCTION = "get_prompt"
@@ -1344,11 +1385,11 @@ class PromptFromAIOpenAI:
         gpt_user_prompt += "\nQuantity of prompts: " + str(batch_quantity)
         gpt_user_prompt += "\n---------------------------------"
         gpt_user_prompt += "\nAvaiable loras: " + avaiable_loras
-        
+
         if keywoard_list != "":
             gpt_user_prompt += "\n---------------------------------"
             gpt_user_prompt += "\nAvoid prompts similar to the following keywoards: " + keywoard_list
-        
+
         response = client.chat.completions.create(
             model=gpt if gpt_custom == "" else gpt_custom,
             messages=[{"role": "assistant", "content": re.sub(r"^\s+", "", gpt_assistant_prompt, flags=re.MULTILINE)}, {"role": "user", "content": re.sub(r"^\s+", "", gpt_user_prompt, flags=re.MULTILINE)}],
@@ -1357,9 +1398,9 @@ class PromptFromAIOpenAI:
             frequency_penalty=frequency_penalty,
             presence_penalty=presence_penalty,
         )
-        
+
         # Check for errors or empty responses
-        if response.choices[0].message.content == "" or response.choices[0].message.content == " ": # or response.choices[0].message.content == "No prompts found":
+        if response.choices[0].message.content == "" or response.choices[0].message.content == " ":  # or response.choices[0].message.content == "No prompts found":
             print("No prompts found")
             return cls.get_prompt(api_key, gpt, gpt_custom, temperature, frequency_penalty, presence_penalty, details, append_prefix, append_suffix, batch_quantity, images_per_batch)
         prompt = response.choices[0].message.content
@@ -1412,8 +1453,10 @@ class PromptFromAIOpenAI:
         # Rerun get_prompt to get the first prompt or generate new if something went wrong
         return cls.get_prompt(api_key, gpt, gpt_custom, temperature, frequency_penalty, presence_penalty, details, append_prefix, append_suffix, batch_quantity, images_per_batch)
 
+    @classmethod
     def IS_CHANGED(self, **kwargs):
         return float("nan")
+
 
 class PromptFromAIAnthropic:
     @classmethod
@@ -1433,7 +1476,7 @@ class PromptFromAIAnthropic:
                 "value": ("INT", {"default": 0}),
             },
         }
-    
+
     RETURN_TYPES = ("STRING",)
     RETURN_NAMES = ("prompt",)
     FUNCTION = "get_prompt"
@@ -1441,7 +1484,7 @@ class PromptFromAIAnthropic:
     OUTPUT_NODE = False
 
     def get_prompt(cls, api_key, gpt, details, append_prefix, append_suffix, batch_quantity, images_per_batch):
-        
+
         print("=============================")
         print("== Get prompt from Anthropic")
 
@@ -1488,7 +1531,7 @@ class PromptFromAIAnthropic:
 
             enchanting scene,a steaming cup of coffee,the liquid within the cup forms a swirling cosmic galaxy,The coffee surface is a mesmerizing mix of deep purples and blues and pinks dotted with stars and nebulae,fit the vastness of space inside the cup,The cup rests on a saucer that reflects the celestial patterns,surrounded by tiny star-shaped cookies and cosmic-themed decorations,The atmosphere is magical and dreamy,<EpicF4nta5yXL:0.7>
 
-            an anthropomorphic turtle with a large decorated shell,walking through a dense misty forest,the turtle is wearing a long flowing robe adorned with intricate patterns and holding a wooden staff,The shell is filled with various items including flowers and pouches,wandering sage,towering trees background,moss-covered rocks,soft ethereal light filtering through the forest canopy,a magical and serene atmosphere,<detailed_notrigger:0.6>,<zavy-cntrst-sdxl:0.7>
+            An anthropomorphic turtle with a large decorated shell,walking through a dense misty forest,the turtle is wearing a long flowing robe adorned with intricate patterns and holding a wooden staff,The shell is filled with various items including flowers and pouches,wandering sage,towering trees background,moss-covered rocks,soft ethereal light filtering through the forest canopy,a magical and serene atmosphere,<detailed_notrigger:0.6>,<zavy-cntrst-sdxl:0.7>
 
             Assasin,A closeup of fantastical image of a assasin false glory,darkness of night fall,Their filled with power and determination,clad in flowing,flowing scarf,wielding an scarf ornate,scarf ornate,as they wield the scarf n a fluid,sword carried behind the body,squatting on the roof of the clock tower building like an assassin,sitting squatting pose,hands touch the ground,squatting all four,action pose,clock tower,from behind view,cyberpunk city,neon city,skindentation,glowing,shiny,scifi,neon lights,intricate artistic color,cinematic light,radiant,vibrant,perfect symmetry,Grayscale,Dramatic spotlight,highly color focused,dynamic motion,very dark
 
@@ -1519,7 +1562,7 @@ class PromptFromAIAnthropic:
 
         response = client.messages.create(
             max_tokens=1024,
-            system=re.sub(r"^\s+", "", gpt_assistant_prompt, flags=re.MULTILINE), # Remove leading whitespace
+            system=re.sub(r"^\s+", "", gpt_assistant_prompt, flags=re.MULTILINE),  # Remove leading whitespace
             messages=[{"role": "user", "content": re.sub(r"^\s+", "", gpt_user_prompt, flags=re.MULTILINE)}],
             model=model,
         )
@@ -1585,8 +1628,10 @@ class PromptFromAIAnthropic:
         # Rerun get_prompt to get the first prompt or generate new if something went wrong
         return cls.get_prompt(api_key, gpt, details, append_prefix, append_suffix, batch_quantity, images_per_batch)
 
+    @classmethod
     def IS_CHANGED(self, **kwargs):
         return float("nan")
+
 
 class LoraLoaderFromPrompt:
     def __init__(self):
@@ -1635,12 +1680,16 @@ class LoraLoaderFromPrompt:
                     found_exact = True
                     break
             if not found_exact:
+                possible_loras = []
                 for avaialbe_lora in avaialbe_loras:
                     # Check if avaialbe_lora contains current_name
                     if avaialbe_lora.find(current_name) != -1:
                         print("Found lora as: " + avaialbe_lora)
-                        lora["name"] = avaialbe_lora
+                        possible_loras.append(avaialbe_lora)
                         break
+                if len(possible_loras) > 0:
+                    possible_loras = sorted(possible_loras, key=lambda x: x.split("-V")[1], reverse=True)
+                    lora["name"] = possible_loras[0]
 
         # Go thorugh all loras and warn if lora not available
         for lora in all_loras:
@@ -1676,12 +1725,11 @@ class LoraLoaderFromPrompt:
         else:
             for lora in all_loras:
                 lora_path = folder_paths.get_full_path("loras", lora["name"])
-                loaded_lora = comfy.utils.load_torch_file(
-                    lora_path, safe_load=True)
+                loaded_lora = comfy.utils.load_torch_file(lora_path, safe_load=True)
                 # Strenght
                 model_strength = float(lora["model_strength"]) if lora["model_strength"] != "" else 1.0
                 clip_strength = float(lora["clip_strength"]) if lora["clip_strength"] != "" else float(lora["model_strength"]) if lora["model_strength"] != "" else 1.0
-                model, clip = comfy.sd.load_lora_for_models(model, clip, loaded_lora, model_strength, clip_strength)
+                model, clip = comfy.sd.load_lora_for_models(model, clip, loaded_lora, model_strength, clip_strength) # Overwrite model and clip with new model and clip
                 print("Loaded lora: " + lora_path + " with model strength: " + str(model_strength) + " and clip strength: " + str(clip_strength))
 
                 # Load metadata from prompt and check if trigger word exists in prompt. The metadata is in file as string as JSON.
@@ -1734,6 +1782,8 @@ class LoraLoaderFromPrompt:
                                     print("Added trigger word: '" + randomTriggerWord.split("_")[1] + "' to prompt")
                 except:
                     print("Error while extracting metadata from file: " + lora_path)
+            
+            print("Text prompt after loading loras: " + prompt)
 
             return (model, clip, prompt)
 
@@ -1742,8 +1792,9 @@ class CurrentDateTime:
     @classmethod
     def INPUT_TYPES(cls):
         return {
-            "required": {
-                "seed": ("INT", {"default": 0, "min": 0, "max": 0xffffffffffffffff}),
+            "hidden": {
+                "control_after_generate": (["fixed", "random", "increment"], {"default": "increment"}),
+                "value": ("INT", {"default": 0}),
             },
         }
 
@@ -1752,6 +1803,9 @@ class CurrentDateTime:
     FUNCTION = "get_current_date_time"
     CATEGORY = "t4ggno/utils"
     OUTPUT_NODE = False
+    DESCRIPTION = """
+Get the current date and time as a string in the format "YYYY-MM-DD_HH-MM-SS". The date and time are obtained using the Python `datetime` module. 
+"""
 
     def get_current_date_time(self, **kwargs):
         print("=============================")
@@ -1769,10 +1823,11 @@ class CurrentDateTime:
     def IS_CHANGED(self, **kwargs):
         return float("nan")
 
+
 class RandomCheckpointLoader:
     def __init__(self):
         self.checkpoint_usage = defaultdict(int)
-    
+
     @classmethod
     def INPUT_TYPES(cls):
         return {
@@ -1787,6 +1842,14 @@ class RandomCheckpointLoader:
     RETURN_NAMES = ("model", "clip", "vae", "checkpoint_name")
     FUNCTION = "load_random_checkpoint"
     CATEGORY = "t4ggno/loaders"
+    DESCRIPTION = """
+Load a random checkpoint from the available checkpoints. The checkpoint is selected randomly from the list of available checkpoints. 
+The checkpoint is loaded only if it has not reached the usage limit. The usage limit is the maximum number of times a checkpoint can be loaded before it is reset. 
+The checkpoint is selected based on the whitelist and blacklist regex patterns. The whitelist regex is used to filter the checkpoints that match the pattern. 
+The blacklist regex is used to exclude the checkpoints that match the pattern. 
+If no checkpoints are available after applying the whitelist and blacklist regex, an error is raised. 
+If all checkpoints have reached the usage limit, the usage count is reset, and the process is repeated until an eligible checkpoint is found.
+"""
 
     def load_random_checkpoint(self, whitelist_regex, blacklist_regex, usage_limit):
         print("=============================")
@@ -1795,53 +1858,53 @@ class RandomCheckpointLoader:
         # Get all available checkpoints
         all_checkpoints = comfy_paths.get_filename_list("checkpoints")
         print(f"Total checkpoints found: {len(all_checkpoints)}")
-        
+
         # Remove None values and empty strings
         all_checkpoints = [cp for cp in all_checkpoints if cp]
         print(f"Checkpoints after removing None and empty values: {len(all_checkpoints)}")
-        
+
         # Process whitelist and blacklist regex
         whitelist_patterns = [re.compile(pattern.strip()) for pattern in whitelist_regex.split('\n') if pattern.strip()]
         blacklist_patterns = [re.compile(pattern.strip()) for pattern in blacklist_regex.split('\n') if pattern.strip()]
-        
+
         # Filter checkpoints using regex
         if whitelist_patterns:
             checkpoints = [cp for cp in all_checkpoints if any(pattern.search(cp) for pattern in whitelist_patterns)]
             print(f"Checkpoints after whitelist: {len(checkpoints)}")
         else:
             checkpoints = all_checkpoints
-        
+
         checkpoints = [cp for cp in checkpoints if not any(pattern.search(cp) for pattern in blacklist_patterns)]
         print(f"Checkpoints after blacklist: {len(checkpoints)}")
-        
+
         if not checkpoints:
             raise ValueError("No checkpoints available after applying whitelist and blacklist regex")
-        
+
         # Find an eligible checkpoint
         eligible_checkpoints = [cp for cp in checkpoints if self.checkpoint_usage[cp] < usage_limit]
         print(f"Eligible checkpoints: {len(eligible_checkpoints)}")
-        
+
         if not eligible_checkpoints:
             # Reset usage count if all checkpoints have reached the limit
             self.checkpoint_usage = defaultdict(int)
             eligible_checkpoints = checkpoints
-        
+
         # Shuffle the list of eligible checkpoints
         numpy.random.shuffle(eligible_checkpoints)
 
         for random_checkpoint in eligible_checkpoints:
             print(f"Attempting to load checkpoint: {random_checkpoint}")
-            
+
             # Increment usage count
             self.checkpoint_usage[random_checkpoint] += 1
-            
+
             # Load checkpoint
             checkpoint_path = comfy_paths.get_full_path("checkpoints", random_checkpoint)
             print(f"Loading checkpoint from: {checkpoint_path}")
-            
+
             try:
                 result = comfy.sd.load_checkpoint_guess_config(checkpoint_path, output_vae=True, output_clip=True, embedding_directory=comfy_paths.get_folder_paths("embeddings"))
-                
+
                 if len(result) >= 3:
                     model, clip, vae, *_ = result
                 else:
@@ -1849,7 +1912,7 @@ class RandomCheckpointLoader:
 
                 if model is None or clip is None or vae is None:
                     raise ValueError(f"Failed to load checkpoint: {random_checkpoint}")
-                
+
                 print(f"Successfully loaded checkpoint: {random_checkpoint}")
                 return (model, clip, vae, random_checkpoint)
             except Exception as e:
@@ -1857,11 +1920,13 @@ class RandomCheckpointLoader:
                 print("Attempting to load next checkpoint...")
 
         raise ValueError("Unable to load any checkpoints. All attempts failed.")
-    
+
+    @classmethod
     @classmethod
     def IS_CHANGED(self, **kwargs):
         return float("nan")
-    
+
+
 class ColorMatch:
     @classmethod
     def INPUT_TYPES(cls):
@@ -1869,17 +1934,17 @@ class ColorMatch:
             "required": {
                 "image_ref": ("IMAGE",),
                 "image_target": ("IMAGE",),
-                "method": ([   
+                "method": ([
                     'mkl',
-                    'hm', 
-                    'reinhard', 
-                    'mvgd', 
-                    'hm-mvgd-hm', 
+                    'hm',
+                    'reinhard',
+                    'mvgd',
+                    'hm-mvgd-hm',
                     'hm-mkl-hm',
                 ], {"default": 'mkl'}),
             },
         }
-    
+
     RETURN_TYPES = ("IMAGE",)
     RETURN_NAMES = ("image",)
     FUNCTION = "colormatch"
@@ -1900,13 +1965,13 @@ matching. As shown below our HM-MVGD-HM compound outperforms existing methods.
 https://github.com/hahnec/color-matcher/
 
 """
-    
+
     def colormatch(self, image_ref, image_target, method):
         try:
             from color_matcher import ColorMatcher
         except:
             raise Exception("Can't import color-matcher, did you install requirements.txt? Manual install: pip install color-matcher")
-        
+
         cm = ColorMatcher()
         image_ref = image_ref.cpu()
         image_target = image_target.cpu()
@@ -1939,6 +2004,7 @@ https://github.com/hahnec/color-matcher/
         out = torch.stack(out, dim=0).to(torch.float32)
         out.clamp_(0, 1)
         return (out,)
+
 
 NODE_CLASS_MAPPINGS = {
     "Base64Decode": Base64Decode,

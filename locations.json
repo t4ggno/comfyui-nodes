@@ -951,5 +951,22 @@
         "Secluded Waterfall Swimming Hole",
         "Elegant Botanical Conservatory",
         "Passionate Dance Studio"
+    ],
+    "Disturbed": [
+        "After Apocalypse Bunker",
+        "Haunted Asylum",
+        "Abandoned Morgue",
+        "Cursed Castle",
+        "Possessed Dollhouse",
+        "Sinister Circus",
+        "Malevolent Manor",
+        "Twisted Carnival",
+        "Haunted Hotel",
+        "Creepy Orphanage",
+        "Underground War Bunker",
+        "Eerie Lighthouse",
+        "Abandoned Insane Asylum",
+        "Cursed Amusement Park",
+        "Possessed Mansion"
     ]
 }

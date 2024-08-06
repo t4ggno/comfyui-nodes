@@ -4,7 +4,7 @@
 
 import io
 import base64
-from PIL import Image
+from PIL import Image, ImageOps, ImageSequence, ImageFile
 from PIL.PngImagePlugin import PngInfo
 import torch
 import folder_paths
@@ -27,6 +27,8 @@ import time
 from openai import OpenAI
 from anthropic import Anthropic
 from collections import defaultdict
+import hashlib
+import node_helpers
 
 dirPath = os.path.dirname(os.path.realpath(__file__))
 ALLOWED_EXT = ('jpeg', 'jpg', 'png', 'tiff', 'gif', 'bmp', 'webp')
@@ -261,136 +263,84 @@ class TextSwitch:
             print("Output: " + text2)
             return (text2,)
 
+def get_prompt_data_from_image(image: Image, fallback_positive_prompt: str, fallback_negative_prompt: str):
+    return_positive_prompt = fallback_positive_prompt
+    return_negative_prompt = fallback_negative_prompt
+    return_positive_prompt_original = fallback_positive_prompt
+    return_negative_prompt_original = fallback_negative_prompt
+    return_additional_prompt = ""
+    return_checkpoint = ""
+    return_checkpoint_without_extension = ""
+    # Get metadata
+    metadata = image.info
+    # Convert metadata to JSON
+    metadata_json = json.dumps(metadata)
+    # Check if metadata contains PositiveText, NegativeText and AdditionalText
+    if "PositiveText" in metadata_json:
+        positive_text = metadata["PositiveText"].strip()
+        if positive_text != "":
+            return_positive_prompt = positive_text
+    if "PositiveTextOriginal" in metadata_json:
+        positive_text_original = metadata["PositiveTextOriginal"].strip()
+        if positive_text_original.strip() != "":
+            return_positive_prompt_original = positive_text_original
+    if "NegativeText" in metadata_json:
+        negative_text = metadata["NegativeText"].strip()
+        if negative_text != "":
+            return_negative_prompt += negative_text
+    if "NegativeTextOriginal" in metadata_json:
+        negative_text_original = metadata["NegativeTextOriginal"].strip()
+        if negative_text_original != "":
+            return_negative_prompt_original = negative_text_original
+    if "AdditionalText" in metadata_json:
+        additional_text = metadata["AdditionalText"].strip()
+        if additional_text != "":
+            return_additional_prompt = additional_text
+    if "Checkpoint" in metadata_json:
+        checkpoint = metadata["Checkpoint"].strip()
+        if checkpoint != "":
+            return_checkpoint = checkpoint
+    if "CheckpointWithoutExtension" in metadata_json:
+        checkpoint_without_extension = metadata["CheckpointWithoutExtension"].strip()
+        if checkpoint_without_extension != "":
+            return_checkpoint_without_extension = checkpoint_without_extension
+    return (return_positive_prompt, return_negative_prompt, return_positive_prompt_original, return_negative_prompt_original, return_additional_prompt, return_checkpoint, return_checkpoint_without_extension)
 
 class ImageMetadataExtractor:
     @classmethod
     def INPUT_TYPES(cls):
         return {
             "required": {
-                "folder": ("STRING", {"default": ""}),
-                "max_width": ("INT", {"default": 8192, "min": 1, "max": 100000, "step": 1}),
-                "max_height": ("INT", {"default": 8192, "min": 1, "max": 100000, "step": 1}),
-                "scale": ("FLOAT", {"default": 2, "min": 1, "max": 100, "step": 1}),
-                "max_scale": ("FLOAT", {"default": 100000, "min": 1, "max": 100000, "step": 1}),
+                "image": ("IMAGE", ),
                 "fallback_positive_prompt": ("STRING", {"default": "", "multiline": True}),
                 "fallback_negative_prompt": ("STRING", {"default": "", "multiline": True}),
             },
-            "hidden": {
-                "control_after_generate": (["fixed", "random", "increment"], {"default": "increment"}),
-                "value": ("INT", {"default": 0}),
-            },
         }
 
-    RETURN_TYPES = ("IMAGE", "STRING", "FLOAT", "STRING", "STRING", "FLOAT")
-    RETURN_NAMES = ("image", "filename_without_scale", "current_scale", "positive_prompt", "negative_prompt", "next_scale")
+    RETURN_TYPES = ("STRING", "STRING", "STRING", "STRING", "STRING", "STRING", "STRING")
+    RETURN_NAMES = ("positive_prompt", "negative_prompt", "positive_prompt_original", "negative_prompt_original", "checkpoint", "checkpoint_without_extension", "additional_prompt")
     FUNCTION = "load_image"
     CATEGORY = "t4ggno/image"
     OUTPUT_NODE = False
 
-    def get_prompt_data_from_image(self, image, positive_prompt, negative_prompt):
-        return_positive_prompt = positive_prompt
-        return_negative_prompt = negative_prompt
-        return_additional_prompt = ""
-        # Get metadata
-        metadata = image.info
-        # Convert metadata to JSON
-        metadata_json = json.dumps(metadata)
-        # Check if metadata contains PositiveText, NegativeText and AdditionalText
-        if "PositiveText" in metadata_json:
-            # Get PositiveText
-            positive_text = metadata["PositiveText"]
-            # Check if PositiveText is not empty
-            if positive_text.strip() != "":
-                # Add to positive_prompt
-                return_positive_prompt += positive_text
-        if "NegativeText" in metadata_json:
-            # Get NegativeText
-            negative_text = metadata["NegativeText"]
-            # Check if NegativeText is not empty
-            if negative_text.strip() != "":
-                # Add to negative_prompt
-                return_negative_prompt += negative_text
-        if "AdditionalText" in metadata_json:
-            # Get AdditionalText
-            additional_text = metadata["AdditionalText"]
-            # Check if AdditionalText is not empty
-            if additional_text.strip() != "":
-                # Add to additional_prompt
-                return_additional_prompt += additional_text
-        return (return_positive_prompt, return_negative_prompt, return_additional_prompt)
-
-    def load_image(self, folder, max_width, max_height, scale, max_scale, fallback_positive_prompt, fallback_negative_prompt):
+    def load_image(self: object, image: torch.Tensor, fallback_positive_prompt: str, fallback_negative_prompt: str):
 
         print("=============================")
         print("== Image Metadata Extractor")
-
-        while True:
-            # Load files from folder
-            files = os.listdir(folder)
-            # Filter only for png images
-            files = [file for file in files if file.endswith(".png")]
-            # Find image with lowest available scale -> _1.0x, _2.0x, _3.5x, ...
-            # Create a collection of images. Remove all lower scales than current scale and also if max_width or max_height is exceeded
-            images = []
-            for file in files:
-                # Get filename and scale using regex
-                filename_regex = re.search(r"(.+?)(?:_(\d(?:\.\d+)?)x)\.png", file)
-                if filename_regex != None:
-                    filename_regex_name = filename_regex.group(1)
-                    filename_regex_scale = float(filename_regex.group(2))
-
-                    # Check if same filename but with higher scale is in images list -> Continue if yes, else add to images list
-                    higher_scale_exists = False
-                    for image in images:
-                        if image["filename"] == filename_regex_name and image["scale"] > scale:
-                            higher_scale_exists = True
-                            break
-                    if higher_scale_exists:
-                        print("Higher scale exists")
-                        continue
-                    # Remove lower scales of same filename if in images list
-                    images = [image for image in images if not (image["filename"] == filename_regex_name)]
-                    # Check if image is lower than max_width and max_height
-                    images.append({"filename": filename_regex_name, "scale": filename_regex_scale, "file": file})
-            # Remove images with scale * 2 > max_scale
-            images = [image for image in images if not (image["scale"] * 2 > max_scale)]
-            # Remove images with size higher than max_width or max_height
-            for image in images:
-                image = Image.open(folder + "/" + file)
-                if image.width > max_width or image.height > max_height:
-                    images.remove(image)
-            # Check if list empty
-            if len(images) > 0:
-                # Get image with lowest scale
-                lower_scale = None
-                for image in images:
-                    if lower_scale == None or image["scale"] < lower_scale["scale"]:
-                        lower_scale = image
-                # Use that image
-                loaded_image = Image.open(folder + "/" + lower_scale["file"])
-                # Calculate if scale is possible, else calculate optimal scale
-                """ Disabled because not needed currently
-                width_after_scale = loaded_image.width * scale
-                height_after_scale = loaded_image.height * scale
-                if width_after_scale > max_width or height_after_scale > max_height:
-                    use_scale = min(max_width / loaded_image.width, max_height / loaded_image.height)
-                else:
-                    use_scale = scale"""
-                use_scale = scale
-                # Read positive and negative prompt from metadata
-                positive_prompt, negative_prompt, additional_prompt = self.get_prompt_data_from_image(loaded_image, fallback_positive_prompt, fallback_negative_prompt)
-                print("====================================")
-                print("Image: " + lower_scale["file"])
-                print("Current scale: " + str(lower_scale["scale"]) + (lower_scale["scale"] == 1 and " (Base)" or ""))
-                print("Next scale: " + str(use_scale))
-                print("Positive prompt: " + positive_prompt)
-                print("Negative prompt: " + negative_prompt)
-                print("====================================")
-                # Return
-                return (torch.from_numpy(numpy.array(loaded_image).astype(numpy.float32) / 255.0).unsqueeze(0), lower_scale["filename"], image["scale"], positive_prompt, negative_prompt, use_scale)
-
-            # Wait 10 seconds and try again
-            time.sleep(10)
+        
+        # Read positive and negative prompt from metadata
+        positive_prompt, negative_prompt, positive_prompt_original, negative_prompt_original, additional_prompt, checkpoint, checkpoint_without_extension = get_prompt_data_from_image(image, fallback_positive_prompt, fallback_negative_prompt)
+        print("====================================")
+        print("Positive Prompt: " + positive_prompt)
+        print("Positive Prompt Original: " + positive_prompt_original)
+        print("Negative Prompt: " + negative_prompt)
+        print("Negative Prompt Original: " + negative_prompt_original)
+        print("Additional Prompt: " + additional_prompt)
+        print("Checkpoint: " + checkpoint)
+        print("Checkpoint Without Extension: " + checkpoint_without_extension)
+        print("====================================")
+        # Return
+        return (positive_prompt, negative_prompt, positive_prompt_original, negative_prompt_original, checkpoint, checkpoint_without_extension, additional_prompt)
 
     @classmethod
     def IS_CHANGED(self, **kwargs):
@@ -405,8 +355,8 @@ class AutoLoadImageForUpscaler:
                 "folder": ("STRING", {"default": ""}),
                 "max_width": ("INT", {"default": 8192, "min": 1, "max": 100000, "step": 1}),
                 "max_height": ("INT", {"default": 8192, "min": 1, "max": 100000, "step": 1}),
-                "scale": ("FLOAT", {"default": 2, "min": 1, "max": 100, "step": 1}),
-                "max_scale": ("FLOAT", {"default": 100000, "min": 1, "max": 100000, "step": 1}),
+                "scale": ("FLOAT", {"default": 2, "min": 1, "max": 100, "step": 0.1}),
+                "max_scale": ("FLOAT", {"default": 100000, "min": 1, "max": 100000, "step": 0.1}),
                 "fallback_positive_prompt": ("STRING", {"default": "", "multiline": True}),
                 "fallback_negative_prompt": ("STRING", {"default": "", "multiline": True}),
             },
@@ -416,45 +366,13 @@ class AutoLoadImageForUpscaler:
             },
         }
 
-    RETURN_TYPES = ("IMAGE", "STRING", "FLOAT", "STRING", "STRING", "FLOAT")
-    RETURN_NAMES = ("image", "filename_without_scale", "current_scale", "positive_prompt", "negative_prompt", "next_scale")
+    RETURN_TYPES = ("IMAGE", "STRING", "FLOAT", "STRING", "STRING", "FLOAT", "STRING", "STRING", "STRING", "STRING", "STRING")
+    RETURN_NAMES = ("image", "filename_without_scale", "current_scale", "positive_prompt", "negative_prompt", "next_scale", "positive_prompt_original", "negative_prompt_original", "checkpoint", "checkpoint_without_extension", "additional_prompt")
     FUNCTION = "load_image"
     CATEGORY = "t4ggno/image"
     OUTPUT_NODE = False
 
-    def get_prompt_data_from_image(self, image, positive_prompt, negative_prompt):
-        return_positive_prompt = positive_prompt
-        return_negative_prompt = negative_prompt
-        return_additional_prompt = ""
-        # Get metadata
-        metadata = image.info
-        # Convert metadata to JSON
-        metadata_json = json.dumps(metadata)
-        # Check if metadata contains PositiveText, NegativeText and AdditionalText
-        if "PositiveText" in metadata_json:
-            # Get PositiveText
-            positive_text = metadata["PositiveText"]
-            # Check if PositiveText is not empty
-            if positive_text.strip() != "":
-                # Add to positive_prompt
-                return_positive_prompt += positive_text
-        if "NegativeText" in metadata_json:
-            # Get NegativeText
-            negative_text = metadata["NegativeText"]
-            # Check if NegativeText is not empty
-            if negative_text.strip() != "":
-                # Add to negative_prompt
-                return_negative_prompt += negative_text
-        if "AdditionalText" in metadata_json:
-            # Get AdditionalText
-            additional_text = metadata["AdditionalText"]
-            # Check if AdditionalText is not empty
-            if additional_text.strip() != "":
-                # Add to additional_prompt
-                return_additional_prompt += additional_text
-        return (return_positive_prompt, return_negative_prompt, return_additional_prompt)
-
-    def load_image(self, folder, max_width, max_height, scale, max_scale, fallback_positive_prompt, fallback_negative_prompt):
+    def load_image(self: object, folder: str, max_width: int, max_height: int, scale: float, max_scale: float, fallback_positive_prompt: str, fallback_negative_prompt: str):
 
         print("=============================")
         print("== Auto Load Image For Upscaler")
@@ -513,16 +431,19 @@ class AutoLoadImageForUpscaler:
                     use_scale = scale"""
                 use_scale = scale
                 # Read positive and negative prompt from metadata
-                positive_prompt, negative_prompt, additional_prompt = self.get_prompt_data_from_image(loaded_image, fallback_positive_prompt, fallback_negative_prompt)
-                print("====================================")
+                positive_prompt, negative_prompt, positive_prompt_original, negative_prompt_original, additional_prompt, checkpoint, checkpoint_without_extension = get_prompt_data_from_image(loaded_image, fallback_positive_prompt, fallback_negative_prompt)
                 print("Image: " + lower_scale["file"])
                 print("Current scale: " + str(lower_scale["scale"]) + (lower_scale["scale"] == 1 and " (Base)" or ""))
                 print("Next scale: " + str(use_scale))
-                print("Positive prompt: " + positive_prompt)
-                print("Negative prompt: " + negative_prompt)
-                print("====================================")
+                print("Positive Prompt: " + positive_prompt)
+                print("Positive Prompt Original: " + positive_prompt_original)
+                print("Negative Prompt: " + negative_prompt)
+                print("Negative Prompt Original: " + negative_prompt_original)
+                print("Additional Prompt: " + additional_prompt)
+                print("Checkpoint: " + checkpoint)
+                print("Checkpoint Without Extension: " + checkpoint_without_extension)
                 # Return
-                return (torch.from_numpy(numpy.array(loaded_image).astype(numpy.float32) / 255.0).unsqueeze(0), lower_scale["filename"], image["scale"], positive_prompt, negative_prompt, use_scale)
+                return (torch.from_numpy(numpy.array(loaded_image).astype(numpy.float32) / 255.0).unsqueeze(0), lower_scale["filename"], image["scale"], positive_prompt, negative_prompt, use_scale, positive_prompt_original, negative_prompt_original, checkpoint, checkpoint_without_extension, additional_prompt)
 
             # Wait 10 seconds and try again
             time.sleep(10)
@@ -530,6 +451,99 @@ class AutoLoadImageForUpscaler:
     @classmethod
     def IS_CHANGED(self, **kwargs):
         return float("nan")
+    
+class LoadImageWithMetadata:
+    @classmethod
+    def INPUT_TYPES(s):
+        input_dir = folder_paths.get_input_directory()
+        files = [f for f in os.listdir(input_dir) if os.path.isfile(os.path.join(input_dir, f))]
+        return {"required":
+                    {"image": (sorted(files), {"image_upload": True})},
+                }
+
+    RETURN_TYPES = ("IMAGE", "MASK", "STRING", "STRING", "STRING", "STRING", "STRING", "STRING", "STRING", "STRING")
+    RETURN_NAMES = ("image", "mask", "filename", "positive_prompt", "negative_prompt", "positive_prompt_original", "negative_prompt_original", "checkpoint", "checkpoint_without_extension", "additional_prompt")
+    FUNCTION = "load_image"
+    CATEGORY = "t4ggno/image"
+    OUTPUT_NODE = False
+
+    def load_image(self: object, image: str):
+
+        print("=============================")
+        print("== Auto Load Image For Upscaler")
+
+        # Use that image
+        loaded_image = Image.open(folder_paths.get_annotated_filepath(image))
+        # Read positive and negative prompt from metadata
+        positive_prompt, negative_prompt, positive_prompt_original, negative_prompt_original, additional_prompt, checkpoint, checkpoint_without_extension = get_prompt_data_from_image(loaded_image, "", "")
+        print("====================================")
+        print("Positive Prompt: " + positive_prompt)
+        print("Positive Prompt Original: " + positive_prompt_original)
+        print("Negative Prompt: " + negative_prompt)
+        print("Negative Prompt Original: " + negative_prompt_original)
+        print("Additional Prompt: " + additional_prompt)
+        print("Checkpoint: " + checkpoint)
+        print("Checkpoint Without Extension: " + checkpoint_without_extension)
+        print("====================================")
+
+        image_path = folder_paths.get_annotated_filepath(image)
+        
+        img = node_helpers.pillow(Image.open, image_path)
+        
+        output_images = []
+        output_masks = []
+        w, h = None, None
+
+        excluded_formats = ['MPO']
+        
+        for i in ImageSequence.Iterator(img):
+            i = node_helpers.pillow(ImageOps.exif_transpose, i)
+
+            if i.mode == 'I':
+                i = i.point(lambda i: i * (1 / 255))
+            image = i.convert("RGB")
+
+            if len(output_images) == 0:
+                w = image.size[0]
+                h = image.size[1]
+            
+            if image.size[0] != w or image.size[1] != h:
+                continue
+            
+            image = numpy.array(image).astype(numpy.float32) / 255.0
+            image = torch.from_numpy(image)[None,]
+            if 'A' in i.getbands():
+                mask = numpy.array(i.getchannel('A')).astype(numpy.float32) / 255.0
+                mask = 1. - torch.from_numpy(mask)
+            else:
+                mask = torch.zeros((64,64), dtype=torch.float32, device="cpu")
+            output_images.append(image)
+            output_masks.append(mask.unsqueeze(0))
+
+        if len(output_images) > 1 and img.format not in excluded_formats:
+            output_image = torch.cat(output_images, dim=0)
+            output_mask = torch.cat(output_masks, dim=0)
+        else:
+            output_image = output_images[0]
+            output_mask = output_masks[0]
+
+        # Return
+        return (output_image, output_mask, image, positive_prompt, negative_prompt, positive_prompt_original, negative_prompt_original, checkpoint, checkpoint_without_extension, additional_prompt)
+
+    @classmethod
+    def IS_CHANGED(s, image):
+        image_path = folder_paths.get_annotated_filepath(image)
+        m = hashlib.sha256()
+        with open(image_path, 'rb') as f:
+            m.update(f.read())
+        return m.digest().hex()
+
+    @classmethod
+    def VALIDATE_INPUTS(s, image):
+        if not folder_paths.exists_annotated_filepath(image):
+            return "Invalid image file: {}".format(image)
+
+        return True
 
 
 class ImageSave:
@@ -548,10 +562,12 @@ class ImageSave:
                 "quality": ("INT", {"default": 100, "min": 1, "max": 100, "step": 1}),
                 "lossless_webp": (["false", "true"],),
                 "show_previews": (["true", "false"],),
-                "positive_text": ("STRING", {"default": "", }),
-                "negative_text": ("STRING", {"default": "", }),
-                "additional_text": ("STRING", {"default": "", }),
-                "model": ("STRING", {"default": ""}),
+                "positive_text": ("STRING", {"default": "", }), # Positive prompt with loras
+                "negative_text": ("STRING", {"default": "", }), # Negative prompt with loras
+                "additional_text": ("STRING", {"default": "", }), # Additional information
+                "model": ("STRING", {"default": ""}), # Checkpoint used
+                "positive_text_original": ("STRING", {"default": "", }), # Text before replacement
+                "negative_text_original": ("STRING", {"default": "", }), # Text before replacement
             },
         }
 
@@ -560,12 +576,16 @@ class ImageSave:
     OUTPUT_NODE = True
     CATEGORY = "t4ggno/image"
 
-    def save_images(self, images, filename="", output_path="", extension='png', quality=100, lossless_webp="false", show_previews="true", positive_text="", negative_text="", additional_text="", model=""):
+    def save_images(self, images, filename="", output_path="", extension='png', quality=100, lossless_webp="false", show_previews="true", positive_text="", negative_text="", additional_text="", model="", positive_text_original="", negative_text_original=""):
 
         print("=============================")
         print("== Image Save")
 
         lossless_webp = (lossless_webp == "true")
+
+        # Remove category from model. For example: "Anime\Counterfeit-V2.5.safetensors" -> "Counterfeit-V2.5.safetensors" or  "Anime/Counterfeit-V2.5.safetensors" -> "Counterfeit-V2.5.safetensors"
+        model = model.split("/")[-1] # For Linux
+        model = model.split("\\")[-1] # For Windows
 
         # Setup output path
         now = datetime.now()
@@ -590,9 +610,12 @@ class ImageSave:
             # Create JSON with positive, negative and additional text
             metadata = PngInfo()
             metadata.add_text("PositiveText", positive_text)
+            metadata.add_text("PositiveTextOriginal", positive_text_original)
             metadata.add_text("NegativeText", negative_text)
+            metadata.add_text("NegativeTextOriginal", negative_text_original)
             metadata.add_text("AdditionalText", additional_text)
             metadata.add_text("Checkpoint", model)
+            metadata.add_text("CheckpointWithoutExtension", os.path.splitext(model)[0])
 
             # If filename is empty, use "yyyy-mm-dd_hh-mm-ss" as filename
             if filename.strip() == '':
@@ -606,7 +629,7 @@ class ImageSave:
                 if extension == 'png':
                     img.save(output_file, pnginfo=metadata, optimize=True)
                 elif extension == 'webp':
-                    img.save(output_file, quality=quality, lossless=lossless_webp, exif=metadata)
+                    img.save(output_file, quality=quality, lossless=lossless_webp)
                 elif extension == 'jpeg':
                     img.save(output_file, quality=quality, optimize=True)
                 elif extension == 'tiff':
@@ -614,9 +637,12 @@ class ImageSave:
 
                 print(f"Image file saved to: {output_file}")
                 print(f"Positive Text: {positive_text}")
+                print(f"Positive Text Original: {positive_text_original}")
                 print(f"Negative Text: {negative_text}")
+                print(f"Negative Text Original: {negative_text_original}")
                 print(f"Additional Text: {additional_text}")
                 print(f"Checkpoint: {model}")
+                print(f"Checkpoint Without Extension: {model.split('.')[0]}")
                 results.append({"filename": filename, "path": output_file})
 
             except OSError as e:
@@ -638,7 +664,6 @@ class ImageSave:
         subfolder_parts = image_parts[len(common_parts):]
         subfolder_path = os.sep.join(subfolder_parts[:-1])
         return subfolder_path
-
 
 class TextReplacer:
     @classmethod
@@ -1677,7 +1702,6 @@ class PromptFromAIAnthropic:
     def IS_CHANGED(self, **kwargs):
         return float("nan")
 
-
 class LoraLoaderFromPrompt:
     def __init__(self):
         self.loaded_loras = None
@@ -1733,8 +1757,8 @@ class LoraLoaderFromPrompt:
                         possible_loras.append(avaialbe_lora)
                         break
                 if len(possible_loras) > 0:
-                    possible_loras = sorted(possible_loras, key=lambda x: x.split("-V")[1], reverse=True)
-                    lora["name"] = possible_loras[0]
+                    # Pick one random lora
+                    lora["name"] = possible_loras[numpy.random.randint(0, len(possible_loras))]
 
         # Go thorugh all loras and warn if lora not available
         for lora in all_loras:
@@ -1868,6 +1892,82 @@ Get the current date and time as a string in the format "YYYY-MM-DD_HH-MM-SS". T
     def IS_CHANGED(self, **kwargs):
         return float("nan")
 
+class CheckpointLoaderByName:
+    @classmethod
+    def INPUT_TYPES(cls):
+        return {
+            "required": {
+                "type": (["Detect (Manual)","Detect (Random)"], {"default": "Detect (Manual)"}),
+                "checkpoint_name": ("STRING", {"default": ""}),
+                "fallback": (comfy_paths.get_filename_list("checkpoints"),),
+            }
+        }
+
+    RETURN_TYPES = ("MODEL", "CLIP", "VAE", "STRING")
+    RETURN_NAMES = ("MODEL", "CLIP", "VAE", "NAME_STRING")
+    FUNCTION = "load_checkpoint"
+    CATEGORY = "t4ggno/utils"
+    OUTPUT_NODE = False
+
+    def load_checkpoint(cls, type, checkpoint_name, fallback):
+        print("=============================")
+        print("== Load Checkpoint by Name ==")
+        print("Type: " + type)
+
+        avaiable_checkpoints:list[str] = comfy_paths.get_filename_list("checkpoints")
+
+        if checkpoint_name != "":
+            # checkpoint is for example "BetterThanWords-V3.0.safetensors"
+            # Step 1: Try to find exact match: BetterThanWords-V3.0.safetensors
+            # Step 2: Try to find checkpoint without extension: BetterThanWords-V3.0
+            # Step 3: Try to find checkpoint without version and extension: BetterThanWords
+
+            # Step 1
+            checkpoint_path = comfy_paths.get_full_path("checkpoints", checkpoint_name)
+            if checkpoint_path is not None and os.path.isfile(checkpoint_path):
+                print("Load checkpoint [Exact Match]: " + checkpoint_name + " | " + os.path.basename(checkpoint_path))
+                out = comfy.sd.load_checkpoint_guess_config(checkpoint_path, output_vae=True, output_clip=True, embedding_directory=comfy_paths.get_folder_paths("embeddings"))
+                return (out[0], out[1], out[2], os.path.splitext(checkpoint_name)[0])
+            # Step 2
+            checkpoint_name_without_extension = os.path.splitext(checkpoint_name)[0]
+            avaiable_checkpoint_filtered = []
+            for avaiable_checkpoint in avaiable_checkpoints:
+                if avaiable_checkpoint.find(checkpoint_name_without_extension) != -1:
+                    avaiable_checkpoint_filtered = avaiable_checkpoint_filtered + [avaiable_checkpoint]
+            if len(avaiable_checkpoint_filtered) > 0:
+                checkpoint_path = comfy_paths.get_full_path("checkpoints", avaiable_checkpoint_filtered[0])
+                print("Load checkpoint [Without Extension]: " + checkpoint_name_without_extension + " | " + os.path.basename(checkpoint_path))
+                out = comfy.sd.load_checkpoint_guess_config(checkpoint_path, output_vae=True, output_clip=True, embedding_directory=comfy_paths.get_folder_paths("embeddings"))
+                return (out[0], out[1], out[2], os.path.splitext(avaiable_checkpoint_filtered[0])[0])
+            # Step 3
+            checkpoint_name_without_extension_and_version = re.sub(r"-V\d+\.\d+", "", checkpoint_name_without_extension)
+            avaiable_checkpoint_filtered = []
+            for avaiable_checkpoint in avaiable_checkpoints:
+                if avaiable_checkpoint.find(checkpoint_name_without_extension_and_version) != -1:
+                    avaiable_checkpoint_filtered = avaiable_checkpoint_filtered + [avaiable_checkpoint]
+            if len(avaiable_checkpoint_filtered) > 0:
+                checkpoint_path = comfy_paths.get_full_path("checkpoints", avaiable_checkpoint_filtered[0])
+                print("Load checkpoint [Without Version and Extension]: " + checkpoint_name_without_extension_and_version + " | " + os.path.basename(checkpoint_path))
+                out = comfy.sd.load_checkpoint_guess_config(checkpoint_path, output_vae=True, output_clip=True, embedding_directory=comfy_paths.get_folder_paths("embeddings"))
+                return (out[0], out[1], out[2], os.path.splitext(avaiable_checkpoint_filtered[0])[0])
+        else:
+            print("Missing checkpoint name")
+        
+        # Fallback
+        if type == "Detect (Random)":
+            checkpoint_path = comfy_paths.get_full_path("checkpoints", numpy.random.choice(avaiable_checkpoints))
+            print("Load checkpoint [Random]: " + os.path.basename(checkpoint_path))
+            out = comfy.sd.load_checkpoint_guess_config(checkpoint_path, output_vae=True, output_clip=True, embedding_directory=comfy_paths.get_folder_paths("embeddings"))
+            return (out[0], out[1], out[2], os.path.splitext(os.path.basename(checkpoint_path))[0])
+        else:
+            checkpoint_path = comfy_paths.get_full_path("checkpoints", fallback)
+            out = comfy.sd.load_checkpoint_guess_config(checkpoint_path, output_vae=True, output_clip=True, embedding_directory=comfy_paths.get_folder_paths("embeddings"))
+            print("Load checkpoint [Fallback]: " + os.path.basename(checkpoint_path))
+            return (out[0], out[1], out[2], os.path.splitext(os.path.basename(checkpoint_path))[0])
+
+    @classmethod
+    def IS_CHANGED(self, **kwargs):
+        return float("nan")
 
 class RandomCheckpointLoader:
     def __init__(self):
@@ -2067,6 +2167,9 @@ NODE_CLASS_MAPPINGS = {
     "AutoLoadImageForUpscaler": AutoLoadImageForUpscaler,
     "RandomCheckpointLoader": RandomCheckpointLoader,
     "ColorMatch": ColorMatch,
+    "CheckpointLoaderByName": CheckpointLoaderByName,
+    "ImageMetadataExtractor": ImageMetadataExtractor,
+    "LoadImageWithMetadata": LoadImageWithMetadata,
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
@@ -2085,4 +2188,7 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "AutoLoadImageForUpscaler": "Auto Load Image For Upscaler",
     "RandomCheckpointLoader": "Random Checkpoint Loader",
     "ColorMatch": "Color Match",
+    "CheckpointLoaderByName": "Checkpoint Loader By Name",
+    "ImageMetadataExtractor": "Image Metadata Extractor",
+    "LoadImageWithMetadata": "Load Image With Metadata",
 }

@@ -29,6 +29,7 @@ from anthropic import Anthropic
 from collections import defaultdict
 import hashlib
 import node_helpers
+import requests
 
 dirPath = os.path.dirname(os.path.realpath(__file__))
 ALLOWED_EXT = ('jpeg', 'jpg', 'png', 'tiff', 'gif', 'bmp', 'webp')
@@ -1413,7 +1414,7 @@ class PromptFromAIOpenAI:
 
         if keywoard_list != "":
             gpt_user_prompt += "\n---------------------------------"
-            gpt_user_prompt += "\nAvoid prompts similar to the following keywoards: " + keywoard_list
+            gpt_user_prompt += "\nDONT use any of the following keywoards or similiar: " + keywoard_list
 
         response = client.chat.completions.create(
             model=gpt if gpt_custom == "" else gpt_custom,
@@ -1432,7 +1433,7 @@ class PromptFromAIOpenAI:
 
         # Get a new overview of the prompts (Keywoards like "castle", "underwater sear world", ...)
         gpt_assistant_prompt = """
-            You will receive an overview of prompts. Create a short keywoard list of prompts I can use, to prevent furhter generations of the same or similiar prompts later. Dont be too detailed.
+            You will receive an overview of prompts. Create a short keywoard list of prompts I can use, to prevent further generations of the same or similiar prompts later. Dont be too detailed.
             Start directly with the keywoards! Seperate the keywoards with a comma. If already a keywoard list is provided, attach it to the end of the list.
         """
         if keywoard_list != "":
@@ -1619,7 +1620,7 @@ class PromptFromAIAnthropic:
 
         if keywoard_list != "":
             gpt_user_prompt += "\n---------------------------------"
-            gpt_user_prompt += "\DONT use any of the following keywoards or similiar: " + keywoard_list
+            gpt_user_prompt += "\nDONT use any of the following keywoards or similiar: " + keywoard_list
 
         model = "claude-3-5-sonnet-20240620" if gpt == "claude-3.5-sonnet" else "claude-3-opus-20240229"
 
@@ -1648,7 +1649,7 @@ class PromptFromAIAnthropic:
 
         # Get a new overview of the prompts (Keywoards like "castle", "underwater sear world", ...)
         gpt_assistant_prompt = """
-            You will receive an overview of prompts. Create a short keywoard list of prompts I can use, to prevent furhter generations of the same or similiar prompts later. Dont be too detailed.
+            You will receive an overview of prompts. Create a short keywoard list of prompts I can use, to prevent further generations of the same or similiar prompts later. Dont be too detailed.
             Start directly with the keywoards! Seperate the keywoards with a comma. If already a keywoard list is provided, attach it to the end of the list.
         """
         if keywoard_list != "":
@@ -1697,6 +1698,89 @@ class PromptFromAIAnthropic:
 
         # Rerun get_prompt to get the first prompt or generate new if something went wrong
         return cls.get_prompt(api_key, gpt, details, append_prefix, append_suffix, batch_quantity, images_per_batch, lora_whitelist_regex, lora_blacklist_regex)
+
+    @classmethod
+    def IS_CHANGED(self, **kwargs):
+        return float("nan")
+    
+class PromptFromOllama:
+    @classmethod
+    def INPUT_TYPES(cls):
+        return {
+            "required": {
+                "host": ("STRING", {"default": "http://localhost:11434/api/generate"}),
+                "model": ("STRING", {"default": "mistral-nemo"}),
+                "details": ("STRING", {"multiline": True}),
+                "append_prefix": ("STRING",  {"multiline": True}),
+                "append_suffix": ("STRING",  {"multiline": True}),
+            },
+            "hidden": {
+                "control_after_generate": (["fixed", "random", "increment"], {"default": "increment"}),
+                "value": ("INT", {"default": 0}),
+            },
+        }
+
+    RETURN_TYPES = ("STRING",)
+    RETURN_NAMES = ("prompt",)
+    FUNCTION = "get_prompt"
+    CATEGORY = "t4ggno/utils"
+    OUTPUT_NODE = False
+
+    def get_prompt(cls, host, model, details, append_prefix, append_suffix):
+
+        print("=============================")
+        print("== Get prompt from Ollama")
+
+        # Load keywoard list from file if exists
+        keywoard_list = ""
+        try:
+            with open("keywoard_list.txt", "r") as infile:
+                keywoard_list = infile.read()
+        except:
+            print("keywoard_list.txt not found")
+
+        # Get new prompts from ChatGPT
+        gpt_assistant_prompt = "You are a Stable Diffusion / DALL-E / Midjourney prompt generator. The prompt should be detailed. Use Keyword sentences. The scene should be interesting and engaging. The prompt should be creative and unique. Start directly with the prompt and dont use a caption. Remember, its for an image and neither for a video nor for a book. The prompt should be 100 words long"
+        gpt_user_prompt = "\nDetails for the prompt: " + details
+
+        if keywoard_list != "":
+            gpt_user_prompt += "\n---------------------------------"
+            gpt_user_prompt += "\nDONT use any of the following keywoards or similiar: " + keywoard_list
+
+        # Output request to console
+        print("Request prompt from AI:")
+        print("Model: " + model)
+        print("System prompt: " + gpt_assistant_prompt)
+        print("User prompt: " + gpt_user_prompt)
+
+        """response = client.messages.create(
+            max_tokens=1024,
+            system=re.sub(r"^\s+", "", gpt_assistant_prompt, flags=re.MULTILINE),  # Remove leading whitespace
+            messages=[{"role": "user", "content": re.sub(r"^\s+", "", gpt_user_prompt, flags=re.MULTILINE)}],
+            model=model,
+        )"""
+        # We will use requests instead of the OpenAI client
+        url = host
+        data = {
+            "model": model,
+            "system": re.sub(r"^\s+", "", gpt_assistant_prompt, flags=re.MULTILINE),
+            "prompt": re.sub(r"^\s+", "", gpt_user_prompt, flags=re.MULTILINE),
+            "stream": False,
+        }
+        headers = {
+            "Content-Type": "application/json",
+        }
+        response = requests.post(url, data=json.dumps(data), headers=headers)
+
+        # Check for errors or empty responses
+        if response.status_code != 200 or response.json().get("response") == "":
+            print("No prompts found")
+            return cls.get_prompt(host, model, details, append_prefix, append_suffix)
+        else:
+            print("Response prompt: " + response.json().get("response"))
+
+        prompt = response.json().get("response")
+        return append_prefix + " " + prompt + " " + append_suffix
 
     @classmethod
     def IS_CHANGED(self, **kwargs):
@@ -2170,6 +2254,7 @@ NODE_CLASS_MAPPINGS = {
     "CheckpointLoaderByName": CheckpointLoaderByName,
     "ImageMetadataExtractor": ImageMetadataExtractor,
     "LoadImageWithMetadata": LoadImageWithMetadata,
+    "PromptFromOllama": PromptFromOllama,
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
@@ -2191,4 +2276,5 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "CheckpointLoaderByName": "Checkpoint Loader By Name",
     "ImageMetadataExtractor": "Image Metadata Extractor",
     "LoadImageWithMetadata": "Load Image With Metadata",
+    "PromptFromOllama": "Prompt From Ollama",
 }

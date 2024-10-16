@@ -1227,7 +1227,7 @@ class TextReplacer:
         print("Text (After removing unmatched If statements): " + text)
 
         # Replace regex lora with random lora
-        all_loras_regex = re.findall(r"<RE\:(.+?)(?:\:(-?[0-9](?:\.[0-9]*)?)|(?:\:(-?[0-9]+(?:\.[0-9]*)?|))(?:\:(-?[0-9]+(?:\.[0-9]*)?|)))?>", text)
+        all_loras_regex = re.findall(r"<RE\:(.+?)(?:\:(-?[0-9]+(?:\.[0-9]*)?)|(?:\:(-?[0-9]+(?:\.[0-9]*)?|))(?:\:(-?[0-9]+(?:\.[0-9]*)?|)))?>", text)
         if len(all_loras_regex) > 0:
             avaialbe_loras = folder_paths.get_filename_list("loras")
             print("All loras: " + str(avaialbe_loras))
@@ -1337,6 +1337,8 @@ class PromptFromAIOpenAI:
                 "append_suffix": ("STRING",  {"multiline": True}),
                 "batch_quantity": ("INT", {"default": 1}),
                 "images_per_batch": ("INT", {"default": 1}),
+                "lora_whitelist_regex": ("STRING", {"default": "", "multiline": True}),
+                "lora_blacklist_regex": ("STRING", {"default": "", "multiline": True}),
             },
             "hidden": {
                 "control_after_generate": (["fixed", "random", "increment"], {"default": "increment"}),
@@ -1350,7 +1352,7 @@ class PromptFromAIOpenAI:
     CATEGORY = "t4ggno/utils"
     OUTPUT_NODE = False
 
-    def get_prompt(cls, api_key, gpt, gpt_custom, temperature, frequency_penalty, presence_penalty, details, append_prefix, append_suffix, batch_quantity, images_per_batch):
+    def get_prompt(cls, api_key, gpt, gpt_custom, temperature, frequency_penalty, presence_penalty, details, append_prefix, append_suffix, batch_quantity, images_per_batch, lora_whitelist_regex, lora_blacklist_regex):
         print("=============================")
         print("== Get prompt from OpenAI")
 
@@ -1360,18 +1362,61 @@ class PromptFromAIOpenAI:
 
         # Get all available loras
         # Folder structure will be: category\[sub_category]?\[name].safetensors
+        lora_paths = folder_paths.get_folder_paths("loras")
+        if len(lora_paths) == 0:
+            raise Exception("No lora paths found")
+        # Output path list
         available_loras = folder_paths.get_filename_list("loras")
-        # Convert lora list to a json. For example: {"character": [ "JenniferLopez-V1.0", "Alita-V1.0" ], "effect": [ "GlowingEyes-V1.0" ]}
+        # Remove loras that are not in the whitelist (partial match)
+        # Process whitelist and blacklist regex
+        if lora_whitelist_regex != "":
+            whitelist_patterns = [re.compile(pattern.strip()) for pattern in lora_whitelist_regex.split('\n') if pattern.strip()]
+            available_loras = [lora for lora in available_loras if any(pattern.match(lora) for pattern in whitelist_patterns)]
+        if lora_blacklist_regex != "":
+            blacklist_patterns = [re.compile(pattern.strip()) for pattern in lora_blacklist_regex.split('\n') if pattern.strip()]
+            available_loras = [lora for lora in available_loras if not any(pattern.match(lora) for pattern in blacklist_patterns)]
+        # Convert lora list to a json. For example: 
+        # {
+        #   "character":[
+        #       {
+        #           name:"JenniferLopez-V1.0",
+        #       },
+        #       { 
+        #           name:"Alita-V1.0",
+        #           description:"Female cyborg with big eyes and a lot of attitude. Movie character from Alita: Battle Angel."
+        #       }
+        #   ],
+        #   "effect":[
+        #       {
+        #           name:"GlowingEyes-V1.0",
+        #           description:"A lora that adds glowing eyes to a character."
+        #       }
+        #   ]
+        # }
+        # We will extract the description from a "description.txt" file in the same folder as the lora (if exists)
         converted_loras = {}
         for lora in available_loras:
             lora_split = lora.split("\\")
-            category = lora_split[0]
+            # If there is no sub category, use "general"
+            if len(lora_split) == 1:
+                category = "General"
+            else:
+                category = lora_split[0]
             if category not in converted_loras:
                 converted_loras[category] = []
             # Name is always the last element
-            converted_loras[category].append(lora_split[-1])
+            lora_name = lora_split[-1]
+            # Check if description file exists
+            description_file = os.path.join(lora_paths[0], lora.replace(".safetensors", ".txt"))
+            description = None
+            if os.path.isfile(description_file):
+                with open(description_file, "r") as infile:
+                    description = infile.read()
+            if description is None or description.strip() == "":
+                converted_loras[category].append({"name": lora_name.replace(".safetensors", "")})
+            else:
+                converted_loras[category].append({"name": lora_name.replace(".safetensors", ""), "description": description})
         available_loras = json.dumps(converted_loras)
-        # print("Available loras: " + available_loras)
 
         # Get prompt from ChatGPT for GPT-4
         client = OpenAI(
@@ -1387,16 +1432,17 @@ class PromptFromAIOpenAI:
             print("keywoard_list.txt not found")
 
         # Get new prompts from ChatGPT
-        gpt_assistant_prompt = "You are a Stable Diffusion prompt generator. The prompt should be detailed. Use Keyword sentences. The scene should be interesting and engaging. The prompt should be creative and unique. Start directly with the prompt and dont use a caption. If you have to create multiple prompts, add an empty line between them. Don't number them! \nYou can also use loras in the following format: <loraname:strength>. \nYou can strengthen parts of the prompt using bradcks. For example: a white (cute cat) is playing with a (red ball:1.2)."
+        #gpt_assistant_prompt = "You are a Stable Diffusion prompt generator. The prompt should be detailed. Use Keyword sentences. The scene should be interesting and engaging. The prompt should be creative and unique. Start directly with the prompt and dont use a caption. If you have to create multiple prompts, add an empty line between them. Don't number them or title them! \nYou can also use loras in the following format: <loraname:strength>. Loras are plugins to create specific effects or characters. But only use available loras! \nYou can strengthen parts of the prompt using bradcks. For example: a white (cute cat) is playing with a (red ball:1.2)."
+        gpt_assistant_prompt = "You are a Stable Diffusion prompt generator. Generate detailed and creative prompts for unique and engaging scenes. Use keyword-rich sentences to describe the visuals. If the scene requires specific effects or characters, you may use loras in the format: `<loraname:strength>`, ensuring only to use available loras. Emphasize important aspects of the scene by using brackets, for example: a white (cute cat) is playing with a (red ball:1.2). If generating multiple prompts, separate them with an empty line. Start directly with the prompt without any captions, titles, or numbering. Ensure clarity and creativity in each prompt."
         gpt_assistant_prompt += "\n---------------------------------"
-        gpt_assistant_prompt += """\nExample Output:
+        """gpt_assistant_prompt += \nExample Output:
             Bosstyle,Silhouette of a Woman fighting a giant DARK mononoke Monster Boss resembling a ethereal fox with seven tails: Capture the essence of nostalgia and color in this vintage photograph. Dominating the scene is a meticulously detailed,translucent dark-red Blood filled firefox,adorned with vibrant patterns,blending seamlessly with its surroundings. Its long tail,composed of intricately woven ribbons in a spectrum of colors,trails behind,adding to the spectacle of the moment. Amidst the quietude of the night,its presence exudes a sense of ancestral strength and resilience. Behind it,the low-toned hues of the Milky Way cast a mesmerizing backdrop,a cosmic tapestry weaving tales of both past and future. In this moment,the convergence of tradition and technology,of ancient wisdom and industrial progress,hangs palpably in the air.,atmospheric haze,Film grain,cinematic film still,shallow depth of field,highly detailed,high budget,cinemascope,moody,epic,OverallDetail,2000s vintage RAW photo,photorealistic,candid camera,color graded cinematic,eye catchlights,atmospheric lighting,imperfections,natural,shallow dof
 
-            strong and powerful dungeons and dragons epic movie poster barbarian woman with cape charging into battle violent roar riding a vicious ice [wolf|tiger] beast leather and fur boots warriors and red banners (windy dust debris storm:1.1) volumetric lighting fog depth mist pass z pass great stone castle very bright morning sunlight from side
+            strong and powerful dungeons and dragons epic movie poster, barbarian woman with cape charging into battle violent roar riding a vicious ice [wolf|tiger] beast leather and fur boots warriors and red banners (windy dust debris storm:1.1) volumetric lighting fog depth mist pass z pass great stone castle very bright morning sunlight from side
 
             enchanting scene,a steaming cup of coffee,the liquid within the cup forms a swirling cosmic galaxy,The coffee surface is a mesmerizing mix of deep purples and blues and pinks dotted with stars and nebulae,fit the vastness of space inside the cup,The cup rests on a saucer that reflects the celestial patterns,surrounded by tiny star-shaped cookies and cosmic-themed decorations,The atmosphere is magical and dreamy,<EpicF4nta5yXL:0.7>
 
-            an anthropomorphic turtle with a large decorated shell,walking through a dense misty forest,the turtle is wearing a long flowing robe adorned with intricate patterns and holding a wooden staff,The shell is filled with various items including flowers and pouches,wandering sage,towering trees background,moss-covered rocks,soft ethereal light filtering through the forest canopy,a magical and serene atmosphere,<detailed_notrigger:0.6>,<zavy-cntrst-sdxl:0.7>
+            An anthropomorphic turtle with a large decorated shell,walking through a dense misty forest,the turtle is wearing a long flowing robe adorned with intricate patterns and holding a wooden staff,The shell is filled with various items including flowers and pouches,wandering sage,towering trees background,moss-covered rocks,soft ethereal light filtering through the forest canopy,a magical and serene atmosphere,<detailed_notrigger:0.6>,<zavy-cntrst-sdxl:0.7>
 
             Assasin,A closeup of fantastical image of a assasin false glory,darkness of night fall,Their filled with power and determination,clad in flowing,flowing scarf,wielding an scarf ornate,scarf ornate,as they wield the scarf n a fluid,sword carried behind the body,squatting on the roof of the clock tower building like an assassin,sitting squatting pose,hands touch the ground,squatting all four,action pose,clock tower,from behind view,cyberpunk city,neon city,skindentation,glowing,shiny,scifi,neon lights,intricate artistic color,cinematic light,radiant,vibrant,perfect symmetry,Grayscale,Dramatic spotlight,highly color focused,dynamic motion,very dark
 
@@ -1414,7 +1460,7 @@ class PromptFromAIOpenAI:
 
         if keywoard_list != "":
             gpt_user_prompt += "\n---------------------------------"
-            gpt_user_prompt += "\nDONT use any of the following keywoards or similiar: " + keywoard_list
+            gpt_user_prompt += "\nDo NOT use the following keywoards or similiar keywoards (IMPORTANT): " + keywoard_list
 
         response = client.chat.completions.create(
             model=gpt if gpt_custom == "" else gpt_custom,
@@ -1428,28 +1474,26 @@ class PromptFromAIOpenAI:
         # Check for errors or empty responses
         if response.choices[0].message.content == "" or response.choices[0].message.content == " ":  # or response.choices[0].message.content == "No prompts found":
             print("No prompts found")
-            return cls.get_prompt(api_key, gpt, gpt_custom, temperature, frequency_penalty, presence_penalty, details, append_prefix, append_suffix, batch_quantity, images_per_batch)
+            return cls.get_prompt(api_key, gpt, gpt_custom, temperature, frequency_penalty, presence_penalty, details, append_prefix, append_suffix, batch_quantity, images_per_batch, lora_whitelist_regex, lora_blacklist_regex)
         prompt = response.choices[0].message.content
 
         # Get a new overview of the prompts (Keywoards like "castle", "underwater sear world", ...)
         gpt_assistant_prompt = """
-            You will receive an overview of prompts. Create a short keywoard list of prompts I can use, to prevent further generations of the same or similiar prompts later. Dont be too detailed.
-            Start directly with the keywoards! Seperate the keywoards with a comma. If already a keywoard list is provided, attach it to the end of the list.
+            You will receive an overview of prompts. Create a keywoard list of prompts I can use to prevent further generations of the same or similiar prompts later.
+            Start directly with the keywoards! Seperate the keywoards with a comma. If already a keywoard list is provided you must add the new keywoards to the existing list and avoid duplicates.
         """
         if keywoard_list != "":
-            gpt_user_prompt = "Prompts:\n\n" + response.content[0].text
+            gpt_user_prompt = "Prompts:\n\n" + response.choices[0].message.content
             gpt_user_prompt += "\n---------------------------------"
             gpt_user_prompt += "Keywoard list: " + keywoard_list
         else:
-            gpt_user_prompt = "Prompts:\n\n" + response.content[0].text
+            gpt_user_prompt = "Prompts:\n\n" + response.choices[0].message.content
 
         responseKeywoarList = client.chat.completions.create(
             model="gpt-4-turbo",
             messages=[{"role": "assistant", "content": re.sub(r"^\s+", "", gpt_assistant_prompt, flags=re.MULTILINE)}, {"role": "user", "content": re.sub(r"^\s+", "", gpt_user_prompt, flags=re.MULTILINE)}],
             temperature=0.8,
             max_tokens=4095,
-            frequency_penalty=0.2,
-            presence_penalty=0.2,
         )
 
         print("Response prompt: " + response.choices[0].message.content)
@@ -1477,12 +1521,11 @@ class PromptFromAIOpenAI:
         with open("keywoard_list.txt", "w") as outfile:
             outfile.write(responseKeywoarList.choices[0].message.content)
         # Rerun get_prompt to get the first prompt or generate new if something went wrong
-        return cls.get_prompt(api_key, gpt, gpt_custom, temperature, frequency_penalty, presence_penalty, details, append_prefix, append_suffix, batch_quantity, images_per_batch)
+        return cls.get_prompt(api_key, gpt, gpt_custom, temperature, frequency_penalty, presence_penalty, details, append_prefix, append_suffix, batch_quantity, images_per_batch, lora_whitelist_regex, lora_blacklist_regex)
 
     @classmethod
     def IS_CHANGED(self, **kwargs):
         return float("nan")
-
 
 class PromptFromAIAnthropic:
     @classmethod
@@ -1593,9 +1636,10 @@ class PromptFromAIAnthropic:
             print("keywoard_list.txt not found")
 
         # Get new prompts from ChatGPT
-        gpt_assistant_prompt = "You are a Stable Diffusion prompt generator. The prompt should be detailed. Use Keyword sentences. The scene should be interesting and engaging. The prompt should be creative and unique. Start directly with the prompt and dont use a caption. If you have to create multiple prompts, add an empty line between them. Don't number them or title them! \nYou can also use loras in the following format: <loraname:strength>. Loras are plugins to create specific effects or characters. But only use available loras! \nYou can strengthen parts of the prompt using bradcks. For example: a white (cute cat) is playing with a (red ball:1.2)."
+        #gpt_assistant_prompt = "You are a Stable Diffusion prompt generator. The prompt should be detailed. Use Keyword sentences. The scene should be interesting and engaging. The prompt should be creative and unique. Start directly with the prompt and dont use a caption. If you have to create multiple prompts, add an empty line between them. Don't number them or title them! \nYou can also use loras in the following format: <loraname:strength>. Loras are plugins to create specific effects or characters. But only use available loras! \nYou can strengthen parts of the prompt using bradcks. For example: a white (cute cat) is playing with a (red ball:1.2)."
+        gpt_assistant_prompt = "You are a Stable Diffusion prompt generator. Generate detailed and creative prompts for unique and engaging scenes. Use keyword-rich sentences to describe the visuals. If the scene requires specific effects or characters, you may use loras in the format: `<loraname:strength>`, ensuring only to use available loras. Emphasize important aspects of the scene by using brackets, for example: a white (cute cat) is playing with a (red ball:1.2). If generating multiple prompts, separate them with an empty line. Start directly with the prompt without any captions, titles, or numbering. Ensure clarity and creativity in each prompt."
         gpt_assistant_prompt += "\n---------------------------------"
-        gpt_assistant_prompt += """\nExample Output:
+        """gpt_assistant_prompt += \nExample Output:
             Bosstyle,Silhouette of a Woman fighting a giant DARK mononoke Monster Boss resembling a ethereal fox with seven tails: Capture the essence of nostalgia and color in this vintage photograph. Dominating the scene is a meticulously detailed,translucent dark-red Blood filled firefox,adorned with vibrant patterns,blending seamlessly with its surroundings. Its long tail,composed of intricately woven ribbons in a spectrum of colors,trails behind,adding to the spectacle of the moment. Amidst the quietude of the night,its presence exudes a sense of ancestral strength and resilience. Behind it,the low-toned hues of the Milky Way cast a mesmerizing backdrop,a cosmic tapestry weaving tales of both past and future. In this moment,the convergence of tradition and technology,of ancient wisdom and industrial progress,hangs palpably in the air.,atmospheric haze,Film grain,cinematic film still,shallow depth of field,highly detailed,high budget,cinemascope,moody,epic,OverallDetail,2000s vintage RAW photo,photorealistic,candid camera,color graded cinematic,eye catchlights,atmospheric lighting,imperfections,natural,shallow dof
 
             strong and powerful dungeons and dragons epic movie poster, barbarian woman with cape charging into battle violent roar riding a vicious ice [wolf|tiger] beast leather and fur boots warriors and red banners (windy dust debris storm:1.1) volumetric lighting fog depth mist pass z pass great stone castle very bright morning sunlight from side
@@ -1620,7 +1664,7 @@ class PromptFromAIAnthropic:
 
         if keywoard_list != "":
             gpt_user_prompt += "\n---------------------------------"
-            gpt_user_prompt += "\nDONT use any of the following keywoards or similiar: " + keywoard_list
+            gpt_user_prompt += "\nDo NOT use the following keywoards or similiar keywoards (IMPORTANT): " + keywoard_list
 
         model = "claude-3-5-sonnet-20240620" if gpt == "claude-3.5-sonnet" else "claude-3-opus-20240229"
 
@@ -1649,8 +1693,8 @@ class PromptFromAIAnthropic:
 
         # Get a new overview of the prompts (Keywoards like "castle", "underwater sear world", ...)
         gpt_assistant_prompt = """
-            You will receive an overview of prompts. Create a short keywoard list of prompts I can use, to prevent further generations of the same or similiar prompts later. Dont be too detailed.
-            Start directly with the keywoards! Seperate the keywoards with a comma. If already a keywoard list is provided, attach it to the end of the list.
+            You will receive an overview of prompts. Create a keywoard list of prompts I can use, to prevent further generations of the same or similiar prompts later.
+            Start directly with the keywoards! Seperate the keywoards with a comma. If already a keywoard list is provided you must add the new keywoards to the existing list and avoid duplicates.
         """
         if keywoard_list != "":
             gpt_user_prompt = "Prompts:\n\n" + response.content[0].text
@@ -1811,9 +1855,9 @@ class LoraLoaderFromPrompt:
         avaialbe_loras = folder_paths.get_filename_list("loras")
         # print("Avaialbe loras: " + str(avaialbe_loras))
         # Extract lora from _prompt: <name:model_stremgth:clip_strength> or <name:model_stremgth> or <name::clip_strength> or <name> or <name::>
-        all_loras = re.findall(r"<(?:lora:?)?([\w\-. \\]+?)(?:\:(-?[0-9](?:\.[0-9]*)?)|(?:\:(-?[0-9]+(?:\.[0-9]*)?|))(?:\:(-?[0-9]+(?:\.[0-9]*)?|)))?>", prompt)
+        all_loras = re.findall(r"<(?:lora:?)?([\w\-. \\]+?)(?:\:(-?[0-9]+(?:\.[0-9]*)?)|(?:\:(-?[0-9]+(?:\.[0-9]*)?|))(?:\:(-?[0-9]+(?:\.[0-9]*)?|)))?>", prompt)
         # Remove loras from prompt
-        prompt = re.sub(r"<(?:lora:?)?([\w\-. \\]+?)(?:\:(-?[0-9](?:\.[0-9]*)?)|(?:\:(-?[0-9]+(?:\.[0-9]*)?|))(?:\:(-?[0-9]+(?:\.[0-9]*)?|)))?>", "", prompt)
+        prompt = re.sub(r"<(?:lora:?)?([\w\-. \\]+?)(?:\:(-?[0-9]+(?:\.[0-9]*)?)|(?:\:(-?[0-9]+(?:\.[0-9]*)?|))(?:\:(-?[0-9]+(?:\.[0-9]*)?|)))?>", "", prompt)
         # Map lora to object with name, model_strength and clip_strength
         all_loras = list(map(lambda x: {"name": x[0], "model_strength": x[1], "clip_strength": x[2]}, all_loras))
 

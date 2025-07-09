@@ -1,19 +1,125 @@
 {
-    "Japanese": [
-      "kimono",
-      "furisode",
-      "yukata",
-      "uchikake"
-    ],
-    "Chinese": [
-      "qipao",
-      "cheongsam",
-      "hanfu"
-    ],
-    "Korean": [
-      "hanbok"
-    ],
-    "Vietnamese": [
-      "ao dai"
-    ]
-  }
+  "Japanese": [
+    "kimono",
+    "furisode",
+    "yukata",
+    "uchikake",
+    "tomesode",
+    "houmongi",
+    "komon",
+    "iromuji",
+    "susohiki",
+    "jinbei",
+    "haori",
+    "hakama",
+    "obi",
+    "geta",
+    "zori",
+    "tabi",
+    "kanzashi",
+    "sensu"
+  ],
+  "Chinese": [
+    "qipao",
+    "cheongsam",
+    "hanfu",
+    "tangzhuang",
+    "ruqun",
+    "aoqun",
+    "shenyi",
+    "banbi",
+    "beizi",
+    "mamianqun",
+    "xiuhe",
+    "fengguan",
+    "xiapei"
+  ],
+  "Korean": [
+    "hanbok",
+    "jeogori",
+    "chima",
+    "jokduri",
+    "daenggi",
+    "norigae",
+    "beoseon",
+    "gomusin",
+    "dopo",
+    "wonsam",
+    "hwalot"
+  ],
+  "Vietnamese": [
+    "ao dai",
+    "ao tu than",
+    "ao ba ba",
+    "ao yem",
+    "non la",
+    "khan dong",
+    "ao gam"
+  ],
+  "Indian": [
+    "sari",
+    "lehenga",
+    "salwar kameez",
+    "churidar",
+    "anarkali",
+    "dupatta",
+    "ghagra",
+    "choli",
+    "sharara",
+    "patiala",
+    "kurti",
+    "palazzo",
+    "saree blouse",
+    "petticoat"
+  ],
+  "Middle Eastern": [
+    "abaya",
+    "kaftan",
+    "jalabiya",
+    "thobe",
+    "hijab",
+    "niqab",
+    "burqa",
+    "chador",
+    "jilbab",
+    "takchita",
+    "djellaba"
+  ],
+  "European": [
+    "dirndl",
+    "lederhosen",
+    "flamenco dress",
+    "toga",
+    "chiton",
+    "peplos",
+    "mantilla",
+    "farthingale",
+    "corset",
+    "bustle",
+    "crinoline",
+    "folk costume"
+  ],
+  "African": [
+    "dashiki",
+    "kente",
+    "boubou",
+    "kaftan",
+    "habesha kemis",
+    "kitenge",
+    "gele",
+    "headwrap",
+    "kaba",
+    "slit",
+    "agbada"
+  ],
+  "South American": [
+    "huipil",
+    "rebozo",
+    "pollera",
+    "manta",
+    "poncho",
+    "guayabera",
+    "traditional embroidered dress",
+    "folk dress"
+  ]
+}

@@ -1,8 +1,63 @@
 {
-    "General": [
-        "unitard",
-        "leotard",
-        "bikesuit",
-        "racing suit"
-    ]
+  "Athletic Bodysuits": [
+    "unitard",
+    "leotard",
+    "bikesuit",
+    "racing suit",
+    "triathlon suit",
+    "swimming bodysuit",
+    "cycling bodysuit",
+    "running bodysuit",
+    "track suit",
+    "athletic one-piece",
+    "compression bodysuit",
+    "performance bodysuit",
+    "sport bodysuit",
+    "wetsuit",
+    "diving suit",
+    "surf suit"
+  ],
+  "Professional Bodysuits": [
+    "flight suit",
+    "pilot suit",
+    "military bodysuit",
+    "tactical bodysuit",
+    "work coveralls",
+    "mechanic coveralls",
+    "protective bodysuit",
+    "safety suit",
+    "hazmat suit",
+    "cleanroom suit",
+    "industrial coveralls"
+  ],
+  "Performance Wear": [
+    "dance bodysuit",
+    "gymnastics bodysuit",
+    "acrobatic bodysuit",
+    "circus performer suit",
+    "stage performance suit",
+    "theatrical bodysuit",
+    "costume bodysuit",
+    "character suit"
+  ],
+  "Casual Bodysuits": [
+    "casual bodysuit",
+    "everyday bodysuit",
+    "comfortable bodysuit",
+    "loungewear bodysuit",
+    "basic bodysuit",
+    "fitted bodysuit",
+    "stretchy bodysuit",
+    "cotton bodysuit"
+  ],
+  "Specialized Suits": [
+    "space suit",
+    "astronaut suit",
+    "diving bell suit",
+    "underwater suit",
+    "extreme weather suit",
+    "arctic suit",
+    "desert suit",
+    "survival suit"
+  ]
 }

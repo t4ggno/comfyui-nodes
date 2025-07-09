@@ -1,11 +1,92 @@
 {
-    "Shoes": [
-      "dress shoes",
-      "loafers",
-      "oxfords",
-      "monk shoes"
-    ],
-    "Boots": [
-      "work boots"
-    ]
-  }
+  "Dress Shoes": [
+    "dress shoes",
+    "loafers",
+    "oxfords",
+    "monk shoes",
+    "brogues",
+    "wingtips",
+    "derbies",
+    "bluchers",
+    "patent leather shoes",
+    "formal shoes",
+    "business shoes",
+    "tuxedo shoes",
+    "evening shoes",
+    "slip-on dress shoes"
+  ],
+  "Casual Shoes": [
+    "sneakers",
+    "canvas shoes",
+    "boat shoes",
+    "moccasins",
+    "driving shoes",
+    "slip-on shoes",
+    "lace-up casual shoes",
+    "tennis shoes",
+    "walking shoes",
+    "casual loafers",
+    "deck shoes",
+    "espadrilles"
+  ],
+  "Athletic Shoes": [
+    "running shoes",
+    "basketball shoes",
+    "cross-trainers",
+    "gym shoes",
+    "tennis shoes",
+    "soccer cleats",
+    "football cleats",
+    "baseball cleats",
+    "golf shoes",
+    "hiking shoes",
+    "trail running shoes",
+    "cycling shoes",
+    "skateboard shoes",
+    "wrestling shoes"
+  ],
+  "Boots": [
+    "work boots",
+    "combat boots",
+    "hiking boots",
+    "cowboy boots",
+    "chelsea boots",
+    "chukka boots",
+    "desert boots",
+    "motorcycle boots",
+    "snow boots",
+    "rain boots",
+    "steel-toe boots",
+    "military boots",
+    "tactical boots",
+    "engineer boots",
+    "logger boots",
+    "riding boots"
+  ],
+  "Specialty Footwear": [
+    "sandals",
+    "flip-flops",
+    "slides",
+    "clogs",
+    "water shoes",
+    "beach shoes",
+    "house slippers",
+    "indoor slippers",
+    "pool shoes",
+    "shower shoes",
+    "recovery sandals",
+    "orthopedic shoes"
+  ],
+  "Seasonal Footwear": [
+    "winter boots",
+    "insulated boots",
+    "waterproof shoes",
+    "breathable shoes",
+    "mesh shoes",
+    "leather shoes",
+    "suede shoes",
+    "canvas sneakers",
+    "rubber boots",
+    "wellington boots"
+  ]
+}

@@ -1,9 +1,82 @@
 {
-    "General": [
-        "leotard",
-        "bodysuit",
-        "unitard",
-        "catsuit",
-        "playboy bunny suit"
-    ]
+  "Basic Bodysuits": [
+    "leotard",
+    "bodysuit",
+    "unitard",
+    "catsuit",
+    "playboy bunny suit",
+    "basic bodysuit",
+    "fitted bodysuit",
+    "stretchy bodysuit",
+    "seamless bodysuit",
+    "sleeveless bodysuit",
+    "long-sleeve bodysuit",
+    "short-sleeve bodysuit"
+  ],
+  "Athletic Bodysuits": [
+    "gymnastics leotard",
+    "dance leotard",
+    "ballet leotard",
+    "athletic bodysuit",
+    "sports bodysuit",
+    "yoga bodysuit",
+    "fitness bodysuit",
+    "running bodysuit",
+    "cycling bodysuit",
+    "swimming bodysuit",
+    "diving suit",
+    "triathlon suit",
+    "competition leotard",
+    "training leotard"
+  ],
+  "Fashion Bodysuits": [
+    "fashion bodysuit",
+    "designer bodysuit",
+    "evening bodysuit",
+    "cocktail bodysuit",
+    "party bodysuit",
+    "club bodysuit",
+    "going-out bodysuit",
+    "statement bodysuit",
+    "trendy bodysuit",
+    "stylish bodysuit"
+  ],
+  "Specialty Bodysuits": [
+    "mesh bodysuit",
+    "lace bodysuit",
+    "sheer bodysuit",
+    "cut-out bodysuit",
+    "backless bodysuit",
+    "strapless bodysuit",
+    "halter bodysuit",
+    "off-shoulder bodysuit",
+    "long-sleeve bodysuit",
+    "turtleneck bodysuit",
+    "plunging bodysuit",
+    "high-neck bodysuit"
+  ],
+  "Costume Bodysuits": [
+    "costume bodysuit",
+    "character bodysuit",
+    "superhero bodysuit",
+    "anime bodysuit",
+    "fantasy bodysuit",
+    "roleplay bodysuit",
+    "themed bodysuit",
+    "Halloween bodysuit",
+    "cosplay bodysuit",
+    "performance bodysuit"
+  ],
+  "Material Types": [
+    "leather bodysuit",
+    "latex bodysuit",
+    "spandex bodysuit",
+    "cotton bodysuit",
+    "silk bodysuit",
+    "metallic bodysuit",
+    "sequined bodysuit",
+    "velvet bodysuit",
+    "satin bodysuit",
+    "jersey bodysuit"
+  ]
 }

@@ -1,6 +1,60 @@
 {
-    "General": [
-        "contrapposto",
-        "sway back"
-    ]
+  "Hip Positions": [
+    "contrapposto",
+    "sway back",
+    "hip out",
+    "hip thrust",
+    "hip sway",
+    "hip tilt",
+    "hip drop",
+    "hip shift",
+    "hip cock",
+    "hip pop",
+    "hip forward",
+    "hip back",
+    "hip to side"
+  ],
+  "Hip Movements": [
+    "hip roll",
+    "hip circle",
+    "hip swing",
+    "hip bump",
+    "hip grind",
+    "hip twist",
+    "hip rotation",
+    "hip sway motion",
+    "hip bounce",
+    "hip gyration"
+  ],
+  "Stance Variations": [
+    "weight on one hip",
+    "balanced hips",
+    "shifted weight",
+    "asymmetrical stance",
+    "relaxed hip position",
+    "straight hips",
+    "angled hips",
+    "tilted pelvis",
+    "forward pelvis",
+    "neutral pelvis"
+  ],
+  "Dance Positions": [
+    "dance hip position",
+    "latin dance hip",
+    "ballroom hip position",
+    "contemporary hip stance",
+    "ballet hip alignment",
+    "jazz hip position",
+    "street dance hip",
+    "salsa hip position"
+  ],
+  "Athletic Stances": [
+    "athletic hip position",
+    "sports stance hips",
+    "power stance hips",
+    "ready position hips",
+    "defensive hip stance",
+    "offensive hip position",
+    "balanced athletic hips"
+  ]
 }

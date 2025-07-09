@@ -1,11 +1,88 @@
 {
-    "General": [
-        "one-piece swimsuit",
-        "bikini",
-        "tankini",
-        "monokini",
-        "slingshot swimsuit",
-        "school swimsuit",
-        "rash guard"
-    ]
+  "One-Piece Swimsuits": [
+    "one-piece swimsuit",
+    "maillot",
+    "athletic one-piece",
+    "racing swimsuit",
+    "competition swimsuit",
+    "training swimsuit",
+    "lap swimsuit",
+    "sport one-piece",
+    "chlorine resistant suit",
+    "performance swimsuit",
+    "tech suit",
+    "drag suit"
+  ],
+  "Bikinis": [
+    "bikini",
+    "triangle bikini",
+    "bandeau bikini",
+    "halter bikini",
+    "string bikini",
+    "push-up bikini",
+    "high-waisted bikini",
+    "cheeky bikini",
+    "brazilian bikini",
+    "cut-out bikini",
+    "wrap bikini",
+    "tie-side bikini",
+    "strapless bikini",
+    "underwire bikini"
+  ],
+  "Alternative Styles": [
+    "tankini",
+    "monokini",
+    "slingshot swimsuit",
+    "cutout swimsuit",
+    "mesh swimsuit",
+    "sheer swimsuit",
+    "keyhole swimsuit",
+    "plunge swimsuit",
+    "deep-v swimsuit",
+    "backless swimsuit",
+    "high-neck swimsuit",
+    "off-shoulder swimsuit"
+  ],
+  "Specialty Swimwear": [
+    "school swimsuit",
+    "rash guard",
+    "surf suit",
+    "wetsuit",
+    "shorty wetsuit",
+    "full wetsuit",
+    "neoprene suit",
+    "diving suit",
+    "triathlon suit",
+    "water polo suit",
+    "synchronized swimming suit",
+    "aqua aerobics suit"
+  ],
+  "Fashion Swimwear": [
+    "designer swimsuit",
+    "luxury swimwear",
+    "high-end bikini",
+    "couture swimsuit",
+    "fashion bikini",
+    "trendy swimwear",
+    "statement swimsuit",
+    "printed swimsuit",
+    "patterned bikini",
+    "embellished swimwear",
+    "sequined swimsuit",
+    "metallic swimsuit"
+  ],
+  "Functional Features": [
+    "tummy control swimsuit",
+    "slimming swimsuit",
+    "supportive swimsuit",
+    "underwire swimsuit",
+    "padded swimsuit",
+    "adjustable swimsuit",
+    "removable cups",
+    "built-in bra",
+    "shelf bra swimsuit",
+    "compression swimsuit",
+    "quick-dry swimsuit",
+    "UV protection swimsuit"
+  ]
 }

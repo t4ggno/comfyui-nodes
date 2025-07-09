@@ -1,11 +1,91 @@
 {
-    "General": [
-      "balaclava",
-      "crown",
-      "headband",
-      "forehead protector",
-      "sweatband",
-      "hachimaki",
-      "mongkhon"
-    ]
-  }
+  "Caps and Hats": [
+    "baseball cap",
+    "snapback",
+    "fitted cap",
+    "trucker hat",
+    "bucket hat",
+    "beanie",
+    "winter hat",
+    "knit cap",
+    "fedora",
+    "panama hat",
+    "sun hat",
+    "cowboy hat",
+    "derby hat",
+    "bowler hat",
+    "newsboy cap",
+    "flat cap",
+    "beret",
+    "military cap",
+    "patrol cap",
+    "garrison cap"
+  ],
+  "Athletic Headwear": [
+    "headband",
+    "sweatband",
+    "hachimaki",
+    "sports headband",
+    "compression headband",
+    "moisture-wicking headband",
+    "tennis headband",
+    "basketball headband",
+    "running headband",
+    "workout headband",
+    "gym headband",
+    "athletic cap"
+  ],
+  "Protective Headwear": [
+    "balaclava",
+    "forehead protector",
+    "face mask",
+    "ski mask",
+    "motorcycle helmet",
+    "bicycle helmet",
+    "hard hat",
+    "safety helmet",
+    "tactical helmet",
+    "climbing helmet",
+    "construction helmet",
+    "winter face mask"
+  ],
+  "Formal Headwear": [
+    "crown",
+    "top hat",
+    "formal hat",
+    "dress hat",
+    "ceremonial hat",
+    "military dress hat",
+    "officer cap",
+    "peaked cap",
+    "service cap",
+    "uniform hat"
+  ],
+  "Cultural Headwear": [
+    "mongkhon",
+    "turban",
+    "kufi",
+    "taqiyah",
+    "kippah",
+    "fez",
+    "sombrero",
+    "traditional hat",
+    "cultural headwear",
+    "ethnic hat",
+    "religious headwear"
+  ],
+  "Specialty Headwear": [
+    "bandana",
+    "do-rag",
+    "skull cap",
+    "stocking cap",
+    "watch cap",
+    "boonie hat",
+    "safari hat",
+    "fishing hat",
+    "hiking hat",
+    "outdoor hat",
+    "adventure hat",
+    "tactical cap"
+  ]
+}

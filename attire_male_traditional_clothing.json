@@ -1,16 +1,111 @@
 {
-    "Japanese": [
-      "hakama",
-      "yukata",
-      "kimono",
-      "haori",
-      "fundoshi"
-    ],
-    "Chinese": [
-      "changshan",
-      "tangzhuang"
-    ],
-    "Korean": [
-      "hanbok"
-    ]
-  }
+  "Japanese": [
+    "hakama",
+    "yukata",
+    "kimono",
+    "haori",
+    "fundoshi",
+    "jinbei",
+    "montsuki",
+    "samue",
+    "geta",
+    "zori",
+    "tabi",
+    "obi",
+    "hachimaki",
+    "happi coat",
+    "kamishimo"
+  ],
+  "Chinese": [
+    "changshan",
+    "tangzhuang",
+    "hanfu",
+    "zhongshan suit",
+    "qipao",
+    "cheongsam",
+    "mandarin jacket",
+    "tang suit",
+    "changpao",
+    "magua",
+    "dudou",
+    "pienfu",
+    "shenyi"
+  ],
+  "Korean": [
+    "hanbok",
+    "jeogori",
+    "baji",
+    "durumagi",
+    "jokduri",
+    "gat",
+    "beoseon",
+    "gomusin",
+    "dopo",
+    "sim",
+    "magoja"
+  ],
+  "Indian": [
+    "dhoti",
+    "kurta",
+    "sherwani",
+    "lungi",
+    "mundu",
+    "bandhgala",
+    "achkan",
+    "churidar",
+    "pajama",
+    "nehru jacket",
+    "turban",
+    "pagri",
+    "angarkha"
+  ],
+  "Middle Eastern": [
+    "thobe",
+    "dishdasha",
+    "jalabiya",
+    "kaftan",
+    "abaya",
+    "bisht",
+    "ghutra",
+    "keffiyeh",
+    "agal",
+    "sirwal",
+    "qamis"
+  ],
+  "European": [
+    "lederhosen",
+    "dirndl",
+    "kilt",
+    "tartan",
+    "toga",
+    "tunic",
+    "doublet",
+    "hose",
+    "breeches",
+    "waistcoat",
+    "frock coat",
+    "morning coat"
+  ],
+  "African": [
+    "dashiki",
+    "agbada",
+    "boubou",
+    "kente",
+    "kufi",
+    "fez",
+    "djellaba",
+    "kanzu",
+    "habesha kemis",
+    "grand boubou"
+  ],
+  "South American": [
+    "poncho",
+    "guayabera",
+    "charro suit",
+    "sombrero",
+    "serape",
+    "rebozo",
+    "huipil",
+    "boleadora"
+  ]
+}

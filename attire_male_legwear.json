@@ -1,6 +1,65 @@
 {
-    "Socks": [
-      "socks",
-      "ankle socks"
-    ]
-  }
+  "Socks": [
+    "socks",
+    "ankle socks",
+    "crew socks",
+    "dress socks",
+    "athletic socks",
+    "compression socks",
+    "wool socks",
+    "cotton socks",
+    "knee-high socks",
+    "no-show socks",
+    "tube socks",
+    "thermal socks",
+    "hiking socks",
+    "running socks",
+    "business socks",
+    "casual socks",
+    "sport socks",
+    "crew cut socks",
+    "mid-calf socks",
+    "over-the-calf socks"
+  ],
+  "Hosiery": [
+    "pantyhose",
+    "tights",
+    "stockings",
+    "knee-high stockings",
+    "thigh-high stockings",
+    "compression stockings",
+    "sheer stockings",
+    "opaque tights",
+    "fishnet stockings",
+    "patterned tights",
+    "colored tights",
+    "support hose"
+  ],
+  "Leg Warmers": [
+    "leg warmers",
+    "knee warmers",
+    "calf warmers",
+    "fleece leg warmers",
+    "knitted leg warmers",
+    "athletic leg warmers",
+    "dance leg warmers",
+    "yoga leg warmers"
+  ],
+  "Gaiters": [
+    "hiking gaiters",
+    "snow gaiters",
+    "boot gaiters",
+    "waterproof gaiters",
+    "canvas gaiters",
+    "nylon gaiters",
+    "leather gaiters"
+  ],
+  "Protective Gear": [
+    "shin guards",
+    "knee guards",
+    "leg guards",
+    "calf guards",
+    "protective padding",
+    "sports leg protection"
+  ]
+}

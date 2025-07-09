@@ -1,16 +1,93 @@
 {
-    "General": [
-      "hug"
-    ],
-    "SingleCharacter": [
-      "hugging own legs",
-      "hugging object",
-      "hugging tail",
-      "wing hug"
-    ],
-    "MultipleCharacters": [
-      "arm hug",
-      "hug from behind",
-      "waist hug"
-    ]
-  }
+  "Basic Hugs": [
+    "hug",
+    "embrace",
+    "cuddle",
+    "snuggle",
+    "squeeze",
+    "hold",
+    "clasp",
+    "envelop",
+    "wrap arms around",
+    "gentle hug",
+    "tight hug",
+    "warm hug",
+    "loving hug",
+    "affectionate hug"
+  ],
+  "Self Hugs": [
+    "hugging own legs",
+    "hugging object",
+    "hugging tail",
+    "wing hug",
+    "self embrace",
+    "hugging pillow",
+    "hugging stuffed animal",
+    "hugging blanket",
+    "hugging book",
+    "hugging knees",
+    "hugging teddy bear",
+    "protective self hug",
+    "comfort hug",
+    "self soothing hug"
+  ],
+  "Partner Hugs": [
+    "arm hug",
+    "hug from behind",
+    "waist hug",
+    "bear hug",
+    "side hug",
+    "front hug",
+    "back hug",
+    "shoulder hug",
+    "neck hug",
+    "chest hug",
+    "full body hug",
+    "protective hug",
+    "romantic hug",
+    "friendly hug",
+    "comfort hug",
+    "greeting hug",
+    "goodbye hug"
+  ],
+  "Group Hugs": [
+    "group hug",
+    "family hug",
+    "team hug",
+    "circle hug",
+    "sandwich hug",
+    "pile hug",
+    "collective embrace",
+    "supportive group hug",
+    "celebration hug",
+    "reunion hug"
+  ],
+  "Hug Positions": [
+    "standing hug",
+    "sitting hug",
+    "lying down hug",
+    "kneeling hug",
+    "crouching hug",
+    "leaning hug",
+    "reaching hug",
+    "stretching hug",
+    "bending hug",
+    "twisting hug"
+  ],
+  "Hug Intensities": [
+    "gentle embrace",
+    "tender hug",
+    "soft hug",
+    "firm hug",
+    "strong hug",
+    "passionate hug",
+    "desperate hug",
+    "clingy hug",
+    "brief hug",
+    "long hug",
+    "lingering hug",
+    "hesitant hug",
+    "awkward hug",
+    "natural hug"
+  ]
+}

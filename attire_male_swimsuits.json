@@ -1,10 +1,62 @@
 {
-    "General": [
-        "swim trunks",
-        "board shorts",
-        "speedo",
-        "swim briefs",
-        "jammers",
-        "rash guard"
-    ]
+  "Swim Trunks": [
+    "swim trunks",
+    "board shorts",
+    "swim shorts",
+    "beach shorts",
+    "quick-dry shorts",
+    "mesh lined shorts",
+    "cargo swim trunks",
+    "printed swim trunks",
+    "solid color trunks",
+    "tropical print trunks",
+    "stripe swim trunks",
+    "hybrid shorts"
+  ],
+  "Competitive Swimwear": [
+    "speedo",
+    "swim briefs",
+    "jammers",
+    "racing swimsuit",
+    "competition swimwear",
+    "performance swimsuit",
+    "tech suit",
+    "drag suit",
+    "training suit",
+    "chlorine resistant suit"
+  ],
+  "Water Sports": [
+    "rash guard",
+    "surf shirt",
+    "wetsuit",
+    "shorty wetsuit",
+    "full wetsuit",
+    "neoprene suit",
+    "diving suit",
+    "triathlon suit",
+    "water polo suit",
+    "surf trunks"
+  ],
+  "Casual Swimwear": [
+    "beach trunks",
+    "leisure swim shorts",
+    "vacation swimwear",
+    "resort wear",
+    "pool shorts",
+    "swimming trunks",
+    "casual swimsuit",
+    "comfort fit trunks",
+    "elastic waist trunks",
+    "drawstring trunks"
+  ],
+  "Specialty Swimwear": [
+    "sun protection swimwear",
+    "UV protection suit",
+    "long sleeve swimsuit",
+    "aqua shorts",
+    "swim joggers",
+    "swim leggings",
+    "thermal swimsuit",
+    "cold water suit"
+  ]
 }

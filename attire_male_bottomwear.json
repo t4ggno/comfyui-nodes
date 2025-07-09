@@ -1,15 +1,97 @@
 {
-    "Pants": [
-        "pants",
-        "jeans",
-        "slacks",
-        "cargo pants"
-    ],
-    "Shorts": [
-        "shorts",
-        "gym shorts"
-    ],
-    "Other": [
-        "kilt"
-    ]
+  "Casual Pants": [
+    "jeans",
+    "casual pants",
+    "khakis",
+    "chinos",
+    "cargo pants",
+    "joggers",
+    "sweatpants",
+    "track pants",
+    "athletic pants",
+    "lounge pants",
+    "slim fit jeans",
+    "straight leg jeans",
+    "bootcut jeans",
+    "skinny jeans",
+    "wide leg jeans",
+    "relaxed fit jeans",
+    "distressed jeans",
+    "dark wash jeans",
+    "light wash jeans"
+  ],
+  "Dress Pants": [
+    "pants",
+    "slacks",
+    "dress pants",
+    "suit pants",
+    "formal pants",
+    "business pants",
+    "trousers",
+    "dress trousers",
+    "wool pants",
+    "pleated pants",
+    "flat front pants",
+    "tailored pants",
+    "tuxedo pants",
+    "evening pants"
+  ],
+  "Shorts": [
+    "shorts",
+    "gym shorts",
+    "athletic shorts",
+    "running shorts",
+    "basketball shorts",
+    "swim shorts",
+    "board shorts",
+    "cargo shorts",
+    "khaki shorts",
+    "denim shorts",
+    "jean shorts",
+    "casual shorts",
+    "dress shorts",
+    "golf shorts",
+    "tennis shorts",
+    "workout shorts",
+    "compression shorts",
+    "mesh shorts"
+  ],
+  "Specialty Bottoms": [
+    "kilt",
+    "sarong",
+    "dhoti",
+    "hakama",
+    "traditional pants",
+    "ceremonial pants",
+    "cultural bottoms",
+    "ethnic wear",
+    "formal shorts",
+    "bermuda shorts"
+  ],
+  "Activewear": [
+    "leggings",
+    "tights",
+    "compression pants",
+    "yoga pants",
+    "exercise pants",
+    "workout pants",
+    "training pants",
+    "sport pants",
+    "performance pants",
+    "moisture-wicking pants",
+    "thermal pants",
+    "base layer pants"
+  ],
+  "Work Wear": [
+    "work pants",
+    "utility pants",
+    "mechanic pants",
+    "construction pants",
+    "industrial pants",
+    "safety pants",
+    "protective pants",
+    "flame resistant pants",
+    "high-visibility pants",
+    "uniform pants"
+  ]
 }

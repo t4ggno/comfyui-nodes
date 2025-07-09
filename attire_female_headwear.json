@@ -1,14 +1,95 @@
 {
-    "General": [
-      "hair bow",
-      "hair ribbon",
-      "hairband",
-      "tiara",
-      "veil",
-      "honggaitou"
-    ],
-    "Headdresses": [
-      "headdress",
-      "maid headdress"
-    ]
-  }
+  "Hair Accessories": [
+    "hair bow",
+    "hair ribbon",
+    "hairband",
+    "headband",
+    "hair clip",
+    "hair barrette",
+    "hair scrunchie",
+    "hair tie",
+    "hair elastic",
+    "hair comb",
+    "hair pin",
+    "bobby pin",
+    "hair flower",
+    "hair ornament",
+    "hair jewel",
+    "hair chain",
+    "hair vine",
+    "hair circlet"
+  ],
+  "Formal Headwear": [
+    "tiara",
+    "crown",
+    "diadem",
+    "veil",
+    "bridal veil",
+    "wedding veil",
+    "mantilla",
+    "fascinator",
+    "headpiece",
+    "cocktail hat",
+    "pillbox hat",
+    "cloche hat",
+    "formal hat",
+    "evening headwear"
+  ],
+  "Casual Hats": [
+    "baseball cap",
+    "sun hat",
+    "wide-brim hat",
+    "bucket hat",
+    "beanie",
+    "beret",
+    "newsboy cap",
+    "fedora",
+    "panama hat",
+    "cowboy hat",
+    "floppy hat",
+    "straw hat",
+    "visor",
+    "snapback"
+  ],
+  "Headdresses": [
+    "headdress",
+    "maid headdress",
+    "flower crown",
+    "leaf crown",
+    "ceremonial headdress",
+    "ethnic headdress",
+    "cultural headwear",
+    "traditional headdress",
+    "festival headdress",
+    "costume headdress",
+    "theatrical headpiece",
+    "dance headdress"
+  ],
+  "Cultural Headwear": [
+    "honggaitou",
+    "hijab",
+    "headscarf",
+    "turban",
+    "sari drape",
+    "dupatta",
+    "kimono hair ornament",
+    "geisha hair accessories",
+    "traditional hair pins",
+    "ethnic hair ornaments",
+    "cultural hair decorations"
+  ],
+  "Specialized Headwear": [
+    "nurse cap",
+    "graduation cap",
+    "chef's hat",
+    "safety helmet",
+    "riding helmet",
+    "motorcycle helmet",
+    "bicycle helmet",
+    "construction helmet",
+    "protective headwear",
+    "work hat",
+    "uniform cap",
+    "military cap"
+  ]
+}

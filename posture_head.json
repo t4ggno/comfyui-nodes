@@ -1,6 +1,67 @@
 {
-    "General": [
-        "head down",
-        "head tilt"
-    ]
+  "Head Position": [
+    "head down",
+    "head tilt",
+    "head up",
+    "head back",
+    "head forward",
+    "head to side",
+    "head turned left",
+    "head turned right",
+    "head tilted left",
+    "head tilted right",
+    "head straight",
+    "head slightly raised",
+    "head lowered",
+    "head cocked",
+    "head angled"
+  ],
+  "Head Movements": [
+    "nodding",
+    "shaking head",
+    "head bob",
+    "head swivel",
+    "head turn",
+    "head roll",
+    "head jerk",
+    "head snap",
+    "head swing",
+    "head twist"
+  ],
+  "Looking Directions": [
+    "looking up",
+    "looking down",
+    "looking left",
+    "looking right",
+    "looking away",
+    "looking back",
+    "looking over shoulder",
+    "looking sideways",
+    "looking ahead",
+    "looking around",
+    "looking past",
+    "looking through"
+  ],
+  "Head Angles": [
+    "profile view",
+    "three-quarter view",
+    "frontal view",
+    "back view",
+    "side view",
+    "angled view",
+    "tilted perspective",
+    "upward angle",
+    "downward angle"
+  ],
+  "Expressions Related": [
+    "chin up",
+    "chin down",
+    "chin out",
+    "chin tucked",
+    "jaw set",
+    "jaw clenched",
+    "jaw relaxed",
+    "mouth open",
+    "mouth closed"
+  ]
 }

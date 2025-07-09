@@ -1,12 +1,84 @@
 {
-    "General": [
-        "arched back",
-        "bent back",
-        "bent over",
-        "leaning back",
-        "leaning forward",
-        "slouching",
-        "sway back",
-        "twisted torso"
-    ]
+  "Back Positions": [
+    "arched back",
+    "bent back",
+    "sway back",
+    "straight back",
+    "curved back",
+    "hunched back",
+    "rounded back",
+    "hollow back",
+    "extended back",
+    "compressed back",
+    "flexible back",
+    "rigid back"
+  ],
+  "Torso Angles": [
+    "bent over",
+    "leaning back",
+    "leaning forward",
+    "twisted torso",
+    "torso turn",
+    "side lean",
+    "forward lean",
+    "backward lean",
+    "diagonal lean",
+    "lateral bend",
+    "spinal twist",
+    "torso rotation"
+  ],
+  "Posture Quality": [
+    "slouching",
+    "upright posture",
+    "good posture",
+    "poor posture",
+    "relaxed posture",
+    "tense posture",
+    "military posture",
+    "confident posture",
+    "defeated posture",
+    "proud posture",
+    "casual posture",
+    "formal posture"
+  ],
+  "Chest Positions": [
+    "chest out",
+    "chest forward",
+    "chest up",
+    "puffed chest",
+    "sunken chest",
+    "expanded chest",
+    "compressed chest",
+    "lifted chest",
+    "dropped chest",
+    "open chest",
+    "closed chest"
+  ],
+  "Shoulder Positions": [
+    "shoulders back",
+    "shoulders forward",
+    "shoulders up",
+    "shoulders down",
+    "rolled shoulders",
+    "square shoulders",
+    "slumped shoulders",
+    "raised shoulders",
+    "dropped shoulders",
+    "tense shoulders",
+    "relaxed shoulders",
+    "hunched shoulders"
+  ],
+  "Dynamic Torso": [
+    "torso stretch",
+    "torso compression",
+    "torso extension",
+    "torso flexion",
+    "torso spiral",
+    "torso wave",
+    "torso undulation",
+    "torso contraction",
+    "torso expansion",
+    "torso flow",
+    "torso rhythm"
+  ]
 }

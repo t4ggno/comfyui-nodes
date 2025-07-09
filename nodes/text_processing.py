@@ -30,7 +30,7 @@ class TextSwitch:
         }
         
         selected_text = text_map.get(active, text1)
-        print(f"Text Switch: Selected '{active}' -> '{selected_text[:50]}{'...' if len(selected_text) > 50 else ''}'")
+        print(f"Text Switch: Selected '{active}' -> '{selected_text}'")
         
         return (selected_text,)
 
@@ -576,7 +576,7 @@ class TextReplacer:
         try:
             # Initial cleanup
             text = self.clean_text(text)
-            print(f"After initial cleanup: {text[:100]}...")
+            print(f"After initial cleanup: {text}...")
             
             # Process global filters
             text = self.processor.process_global_filters(text)

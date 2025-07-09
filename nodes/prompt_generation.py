@@ -297,7 +297,7 @@ class SmartPromptBuilder:
         final_prompt = ", ".join(prompt_components)
         description = " | ".join(description_parts)
         
-        print(f"Generated {prompt_type} prompt: {final_prompt[:100]}...")
+        print(f"Generated {prompt_type} prompt: {final_prompt}...")
         return (final_prompt, description)
     
     def _get_random_from_file(self, base_path: str, filename: str) -> Optional[str]:
@@ -512,7 +512,7 @@ class PromptTemplateManager:
         final_prompt = ", ".join(prompt_parts)
         template_info = f"Template: {template} | Gender: {gender} | Variation: {variation_level}"
         
-        print(f"Generated template prompt: {final_prompt[:100]}...")
+        print(f"Generated template prompt: {final_prompt}...")
         return (final_prompt, template_info)
     
     def _get_random_from_file(self, base_path: str, filename: str) -> Optional[str]:
@@ -650,7 +650,7 @@ class PromptEnhancer:
         enhanced_prompt = f"{prompt}, {', '.join(selected_enhancements)}"
         enhancements_applied = f"Applied {enhancement_type} ({intensity}): {', '.join(selected_enhancements)}"
         
-        print(f"Enhanced prompt with {enhancement_type}: {enhanced_prompt[:100]}...")
+        print(f"Enhanced prompt with {enhancement_type}: {enhanced_prompt}...")
         return (enhanced_prompt, enhancements_applied)
     
     def _get_random_from_file(self, base_path: str, filename: str) -> Optional[str]:
@@ -932,7 +932,7 @@ class QuickPromptGenerator:
         prompt_breakdown = " | ".join(breakdown_parts)
         settings_used = f"Style: {prompt_style} | Subject: {subject_type} | Gender: {gender} | Quality: {quality_level}"
         
-        print(f"Generated complete prompt: {complete_prompt[:100]}...")
+        print(f"Generated complete prompt: {complete_prompt}...")
         return (complete_prompt, prompt_breakdown, settings_used)
     
     def _get_random_from_file(self, base_path: str, filename: str) -> Optional[str]:

@@ -1,30 +1,68 @@
 {
-    "LegLocation": [
-        "crossed ankles",
-        "folded",
-        "leg up",
-        "legs up",
-        "knees to chest",
-        "legs over head",
-        "leg lift",
-        "outstretched leg",
-        "split",
-        "pigeon pose",
-        "standing split",
-        "spread legs",
-        "watson cross"
-    ],
-    "KneeLocation": [
-        "knees apart feet together",
-        "knees together feet apart",
-        "knee up",
-        "knees up"
-    ],
-    "FootPosition": [
-        "dorsiflexion",
-        "pigeon-toed",
-        "plantar flexion",
-        "tiptoes",
-        "tiptoe kiss"
-    ]
+  "LegLocation": [
+    "crossed ankles",
+    "folded",
+    "leg up",
+    "legs up",
+    "knees to chest",
+    "legs over head",
+    "leg lift",
+    "outstretched leg",
+    "split",
+    "pigeon pose",
+    "standing split",
+    "spread legs",
+    "watson cross",
+    "legs crossed",
+    "legs apart",
+    "legs together",
+    "bent knee",
+    "straight leg",
+    "leg behind head",
+    "figure four",
+    "lotus position",
+    "butterfly position",
+    "straddle position"
+  ],
+  "KneeLocation": [
+    "knees apart feet together",
+    "knees together feet apart",
+    "knee up",
+    "knees up",
+    "kneeling",
+    "on one knee",
+    "bent knees",
+    "locked knees",
+    "knees bent",
+    "knees straight",
+    "knees to side"
+  ],
+  "FootPosition": [
+    "dorsiflexion",
+    "pigeon-toed",
+    "plantar flexion",
+    "tiptoes",
+    "tiptoe kiss",
+    "feet apart",
+    "feet together",
+    "heel raised",
+    "flat footed",
+    "pointing toes",
+    "flexed feet",
+    "crossed feet",
+    "parallel feet",
+    "duck feet",
+    "ballet position"
+  ],
+  "Dynamic": [
+    "stepping",
+    "walking",
+    "running pose",
+    "jumping",
+    "lunging",
+    "squatting",
+    "leg swing",
+    "high kick",
+    "leg extension"
+  ]
 }

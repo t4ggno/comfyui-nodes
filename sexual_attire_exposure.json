@@ -1,30 +1,61 @@
 {
-    "Crotchless": [
-        "Crotchless",
-        "crotchless panties",
-        "crotchless pants",
-        "crotchless swimsuit",
-        "crotchless pantyhose",
-        "crotchless leotard",
-        "crotchless bloomers",
-        "crotchless buruma"
-    ],
-    "AssCutout": [
-        "Ass Cutout",
-        "assless swimsuit",
-        "backless panties",
-        "backless pants"
-    ],
-    "BreastExposure": [
-        "breastless clothes",
-        "nippleless clothes",
-        "cupless bikini",
-        "cupless bra"
-    ],
-    "RevealingClothes": [
-        "revealing clothes",
-        "reverse outfit",
-        "reverse bikini armor",
-        "reverse bunnysuit"
-    ]
+  "Crotchless": [
+    "Crotchless",
+    "crotchless panties",
+    "crotchless pants",
+    "crotchless swimsuit",
+    "crotchless pantyhose",
+    "crotchless leotard",
+    "crotchless bloomers",
+    "crotchless buruma",
+    "crotchless bodysuit",
+    "crotchless teddy",
+    "crotchless lingerie",
+    "open crotch"
+  ],
+  "AssCutout": [
+    "Ass Cutout",
+    "assless swimsuit",
+    "backless panties",
+    "backless pants",
+    "assless chaps",
+    "backless bodysuit",
+    "open back design",
+    "rear cutout",
+    "butt window",
+    "assless leggings"
+  ],
+  "BreastExposure": [
+    "breastless clothes",
+    "nippleless clothes",
+    "cupless bikini",
+    "cupless bra",
+    "open cup bra",
+    "shelf bra",
+    "peekaboo bra",
+    "underboob cutout",
+    "sideboob cutout",
+    "cleavage cutout"
+  ],
+  "RevealingClothes": [
+    "revealing clothes",
+    "reverse outfit",
+    "reverse bikini armor",
+    "reverse bunnysuit",
+    "strategically placed fabric",
+    "barely there outfit",
+    "micro clothing",
+    "string bikini",
+    "dental floss bikini",
+    "keyhole cutout"
+  ],
+  "SeeThrough": [
+    "sheer fabric",
+    "transparent clothing",
+    "see-through top",
+    "mesh clothing",
+    "fishnet outfit",
+    "gauze fabric",
+    "lace transparency"
+  ]
 }

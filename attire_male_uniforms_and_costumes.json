@@ -1,20 +1,68 @@
 {
-    "Professional": [
-      "suit",
-      "business suit",
-      "tuxedo",
-      "military uniform",
-      "pilot suit",
-      "sailor uniform"
-    ],
-    "Costumes": [
-      "armor",
-      "hazmat suit",
-      "santa costume",
-      "cowboy western outfit"
-    ],
-    "School": [
-      "gakuran",
-      "school uniform"
-    ]
-  }
+  "Professional": [
+    "suit",
+    "business suit",
+    "tuxedo",
+    "military uniform",
+    "pilot suit",
+    "sailor uniform",
+    "chef uniform",
+    "doctor coat",
+    "lab coat",
+    "police uniform",
+    "firefighter uniform",
+    "security guard uniform",
+    "postal worker uniform",
+    "judge robes",
+    "clergy attire"
+  ],
+  "Costumes": [
+    "armor",
+    "hazmat suit",
+    "santa costume",
+    "cowboy western outfit",
+    "knight armor",
+    "medieval costume",
+    "pirate costume",
+    "superhero costume",
+    "vampire costume",
+    "zombie costume",
+    "wizard costume",
+    "samurai armor",
+    "roman centurion",
+    "viking costume",
+    "steampunk outfit"
+  ],
+  "School": [
+    "gakuran",
+    "school uniform",
+    "graduation cap and gown",
+    "academic robes",
+    "prep school blazer",
+    "varsity jacket",
+    "letterman jacket"
+  ],
+  "Sports": [
+    "football uniform",
+    "basketball uniform",
+    "baseball uniform",
+    "soccer jersey",
+    "hockey gear",
+    "wrestling singlet",
+    "swimming trunks",
+    "cycling gear",
+    "martial arts gi",
+    "boxing shorts"
+  ],
+  "Work Wear": [
+    "construction vest",
+    "coveralls",
+    "mechanic overalls",
+    "welder mask",
+    "hard hat outfit",
+    "mining gear",
+    "electrician uniform",
+    "plumber uniform",
+    "carpenter apron"
+  ]
+}

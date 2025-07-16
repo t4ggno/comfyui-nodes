@@ -1,19 +1,48 @@
 {
-    "Legwear": [
-      "garter belt",
-      "garter straps",
-      "legwear garter",
-      "kneehighs",
-      "leggings",
-      "leg warmers",
-      "over-kneehighs",
-      "pantyhose",
-      "thighband pantyhose",
-      "thighhighs",
-      "thigh strap"
-    ],
-    "Socks": [
-      "bobby socks",
-      "loose socks"
-    ]
-  }
+  "Legwear": [
+    "garter belt",
+    "garter straps",
+    "legwear garter",
+    "kneehighs",
+    "leggings",
+    "leg warmers",
+    "over-kneehighs",
+    "pantyhose",
+    "thighband pantyhose",
+    "thighhighs",
+    "thigh strap",
+    "fishnet stockings",
+    "lace stockings",
+    "sheer stockings",
+    "opaque tights",
+    "compression tights",
+    "athletic leggings",
+    "yoga pants",
+    "stirrup leggings",
+    "capri leggings"
+  ],
+  "Socks": [
+    "bobby socks",
+    "loose socks",
+    "ankle socks",
+    "crew socks",
+    "knee-high socks",
+    "tube socks",
+    "argyle socks",
+    "striped socks",
+    "polka dot socks",
+    "lace socks",
+    "ruffled socks",
+    "slouch socks"
+  ],
+  "Specialty": [
+    "compression stockings",
+    "medical stockings",
+    "support hose",
+    "dance tights",
+    "ballet tights",
+    "figure skating tights",
+    "costume legwear",
+    "character socks"
+  ]
+}

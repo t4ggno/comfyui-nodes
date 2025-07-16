@@ -1,26 +1,54 @@
 {
-    "TwoCharacters": [
-      "ass-to-ass",
-      "back-to-back",
-      "belly-to-belly",
-      "cheek-to-breast",
-      "cheek-to-cheek",
-      "eye contact",
-      "face-to-face",
-      "forehead-to-forehead",
-      "head on chest",
-      "heads together",
-      "holding hands",
-      "leg lock",
-      "locked arms",
-      "over the knee",
-      "nipple-to-nipple",
-      "noses touching",
-      "shoulder-to-shoulder",
-      "tail lock"
-    ],
-    "ThreeOrMoreCharacters": [
-      "circle formation",
-      "group hug"
-    ]
-  }
+  "TwoCharacters": [
+    "ass-to-ass",
+    "back-to-back",
+    "belly-to-belly",
+    "cheek-to-breast",
+    "cheek-to-cheek",
+    "eye contact",
+    "face-to-face",
+    "forehead-to-forehead",
+    "head on chest",
+    "heads together",
+    "holding hands",
+    "leg lock",
+    "locked arms",
+    "over the knee",
+    "nipple-to-nipple",
+    "noses touching",
+    "shoulder-to-shoulder",
+    "tail lock",
+    "embracing",
+    "intertwined",
+    "side by side",
+    "spooning",
+    "leaning on each other",
+    "arm around shoulder",
+    "hand on hip",
+    "mirroring poses"
+  ],
+  "ThreeOrMoreCharacters": [
+    "circle formation",
+    "group hug",
+    "pyramid formation",
+    "line formation",
+    "huddle",
+    "chain formation",
+    "cluster",
+    "triangle formation",
+    "group pose",
+    "team formation",
+    "synchronized poses",
+    "layered formation"
+  ],
+  "Intimate": [
+    "cuddling",
+    "snuggling",
+    "tender embrace",
+    "protective hold",
+    "loving gaze",
+    "gentle touch",
+    "caressing",
+    "whisper"
+  ]
+}

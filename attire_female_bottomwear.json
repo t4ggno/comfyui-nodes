@@ -1,25 +1,59 @@
 {
-    "Pants": [
-      "capri pants",
-      "yoga pants"
-    ],
-    "Shorts": [
-      "short shorts",
-      "micro shorts"
-    ],
-    "Skirts": [
-      "skirt",
-      "bubble skirt",
-      "high-waist skirt",
-      "high-low skirt",
-      "long skirt",
-      "microskirt",
-      "miniskirt",
-      "pleated skirt"
-    ],
-    "Other": [
-      "bloomers",
-      "petticoat",
-      "sarong"
-    ]
-  }
+  "Pants": [
+    "capri pants",
+    "yoga pants",
+    "leggings",
+    "skinny jeans",
+    "wide-leg pants",
+    "palazzo pants",
+    "bell-bottom pants",
+    "cargo pants",
+    "dress pants",
+    "trousers",
+    "slacks",
+    "culottes"
+  ],
+  "Shorts": [
+    "short shorts",
+    "micro shorts",
+    "bermuda shorts",
+    "hot pants",
+    "denim shorts",
+    "athletic shorts",
+    "cycling shorts",
+    "board shorts",
+    "high-waisted shorts",
+    "paperbag shorts"
+  ],
+  "Skirts": [
+    "skirt",
+    "bubble skirt",
+    "high-waist skirt",
+    "high-low skirt",
+    "long skirt",
+    "microskirt",
+    "miniskirt",
+    "pleated skirt",
+    "a-line skirt",
+    "pencil skirt",
+    "circle skirt",
+    "wrap skirt",
+    "tulle skirt",
+    "maxi skirt",
+    "midi skirt",
+    "flared skirt",
+    "tiered skirt"
+  ],
+  "Other": [
+    "bloomers",
+    "petticoat",
+    "sarong",
+    "romper",
+    "jumpsuit",
+    "overalls",
+    "dungarees",
+    "coveralls",
+    "palazzo jumpsuit",
+    "wide-leg jumpsuit"
+  ]
+}

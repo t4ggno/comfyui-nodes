@@ -70,6 +70,8 @@ class RandomJSONSelector:
             },
             "optional": {
                 "separator": ("STRING", {"default": ", "}),
+                "prefix": ("STRING", {"default": "", "multiline": True, "placeholder": "Elements to add at the beginning"}),
+                "suffix": ("STRING", {"default": "", "multiline": True, "placeholder": "Elements to add at the end"}),
             }
         }
 
@@ -79,7 +81,7 @@ class RandomJSONSelector:
     CATEGORY = "t4ggno/prompt_generation"
     OUTPUT_NODE = False
 
-    def select_random_items(self, json_file: str, category: str, count: int, seed: int, separator: str = ", ") -> Tuple[str, str]:
+    def select_random_items(self, json_file: str, category: str, count: int, seed: int, separator: str = ", ", prefix: str = "", suffix: str = "") -> Tuple[str, str]:
         """Select random items from a JSON file."""
         
         # Set random seed if provided
@@ -120,6 +122,14 @@ class RandomJSONSelector:
         selected_items = random.sample(items, min(count, len(items)))
         result = separator.join(selected_items)
         
+        # Add prefix and suffix if provided
+        if prefix and suffix:
+            result = f"{prefix.strip()}, {result}, {suffix.strip()}"
+        elif prefix:
+            result = f"{prefix.strip()}, {result}"
+        elif suffix:
+            result = f"{result}, {suffix.strip()}"
+        
         print(f"Selected from {json_file}[{selected_category}]: {result}")
         return (result, selected_category)
 
@@ -139,7 +149,12 @@ class SmartPromptBuilder:
                     "Fantasy",
                     "Modern",
                     "Traditional",
-                    "Custom"
+                    "Sensual",
+                    "Erotic",
+                    "Intimate",
+                    "Fetish",
+                    "Custom",
+                    "Random"
                 ], {"default": "Portrait"}),
                 "gender": (["Any", "Female", "Male"], {"default": "Any"}),
                 "complexity": (["Simple", "Medium", "Complex"], {"default": "Medium"}),
@@ -149,6 +164,8 @@ class SmartPromptBuilder:
                 "custom_elements": ("STRING", {"default": "", "multiline": True, "placeholder": "Additional elements to include"}),
                 "style_preference": ("STRING", {"default": "", "placeholder": "Style preference (e.g., 'realistic', 'anime', 'artistic')"}),
                 "exclude_categories": ("STRING", {"default": "", "placeholder": "Categories to exclude (comma-separated)"}),
+                "prefix": ("STRING", {"default": "", "multiline": True, "placeholder": "Elements to add at the beginning"}),
+                "suffix": ("STRING", {"default": "", "multiline": True, "placeholder": "Elements to add at the end"}),
             }
         }
 
@@ -159,7 +176,7 @@ class SmartPromptBuilder:
     OUTPUT_NODE = False
 
     def build_prompt(self, prompt_type: str, gender: str, complexity: str, seed: int, 
-                    custom_elements: str = "", style_preference: str = "", exclude_categories: str = "") -> Tuple[str, str]:
+                    custom_elements: str = "", style_preference: str = "", exclude_categories: str = "", prefix: str = "", suffix: str = "") -> Tuple[str, str]:
         """Build an intelligent prompt based on the specified parameters."""
         
         if seed != -1:
@@ -167,6 +184,14 @@ class SmartPromptBuilder:
         
         base_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
         excluded_cats = [cat.strip().lower() for cat in exclude_categories.split(",") if cat.strip()]
+        
+        # Handle random prompt type selection
+        if prompt_type == "Random":
+            available_types = ["Portrait", "Fashion", "Artistic", "Scenic", "Character", "Fantasy", "Modern", "Traditional", "Sensual", "Erotic", "Intimate", "Fetish"]
+            prompt_type = random.choice(available_types)
+        
+        # Define spicy themes
+        spicy_themes = ["Sensual", "Erotic", "Intimate", "Fetish"]
         
         # Define prompt templates based on type
         prompt_components = []
@@ -217,17 +242,27 @@ class SmartPromptBuilder:
                     description_parts.append(f"Expression: {expression}")
         
         # Clothing
-        if prompt_type in ["Portrait", "Character", "Fashion"]:
+        if prompt_type in ["Portrait", "Character", "Fashion"] or prompt_type in spicy_themes:
             clothing_items = []
             
-            # Determine clothing files based on gender
-            if gender == "Female":
-                clothing_files = ["attire_female_topwear.json", "attire_female_bottomwear.json"]
-            elif gender == "Male":
-                clothing_files = ["attire_male_topwear.json", "attire_male_bottomwear.json"]
+            # Determine clothing files based on theme and gender
+            if prompt_type in spicy_themes:
+                # Use spicy attire for spicy themes
+                if prompt_type == "Sensual":
+                    clothing_files = ["sexual_attire_lingerine.json", "sexy_things.json"]
+                elif prompt_type == "Fetish":
+                    clothing_files = ["sexual_attire_bdsm.json", "sexual_attire_miscellaneous.json"]
+                elif prompt_type in ["Intimate", "Erotic"]:
+                    clothing_files = ["sexual_attire_exposure.json", "nudity.json", "sexy_things.json"]
             else:
-                clothing_files = [random.choice(["attire_female_topwear.json", "attire_male_topwear.json"]),
-                                random.choice(["attire_female_bottomwear.json", "attire_male_bottomwear.json"])]
+                # Regular clothing selection
+                if gender == "Female":
+                    clothing_files = ["attire_female_topwear.json", "attire_female_bottomwear.json"]
+                elif gender == "Male":
+                    clothing_files = ["attire_male_topwear.json", "attire_male_bottomwear.json"]
+                else:
+                    clothing_files = [random.choice(["attire_female_topwear.json", "attire_male_topwear.json"]),
+                                    random.choice(["attire_female_bottomwear.json", "attire_male_bottomwear.json"])]
             
             if "clothing" not in excluded_cats:
                 for clothing_file in clothing_files:
@@ -247,8 +282,13 @@ class SmartPromptBuilder:
                     description_parts.append(f"Accessories: {accessory}")
         
         # Pose/Posture
-        if prompt_type in ["Portrait", "Character", "Fashion"] and "pose" not in excluded_cats:
-            pose_files = ["poses.json", "posture_basic.json", "posture_arm.json"]
+        if (prompt_type in ["Portrait", "Character", "Fashion"] or prompt_type in spicy_themes) and "pose" not in excluded_cats:
+            if prompt_type in spicy_themes:
+                # Use more suggestive poses for spicy themes
+                pose_files = ["poses.json", "posture_basic.json", "posture_hug.json"]
+            else:
+                pose_files = ["poses.json", "posture_basic.json", "posture_arm.json"]
+            
             pose_file = random.choice(pose_files)
             pose = self._get_random_from_file(base_path, pose_file)
             if pose:
@@ -295,6 +335,15 @@ class SmartPromptBuilder:
         
         # Build final prompt
         final_prompt = ", ".join(prompt_components)
+        
+        # Add prefix and suffix if provided
+        if prefix and suffix:
+            final_prompt = f"{prefix.strip()}, {final_prompt}, {suffix.strip()}"
+        elif prefix:
+            final_prompt = f"{prefix.strip()}, {final_prompt}"
+        elif suffix:
+            final_prompt = f"{final_prompt}, {suffix.strip()}"
+        
         description = " | ".join(description_parts)
         
         print(f"Generated {prompt_type} prompt: {final_prompt}...")
@@ -325,6 +374,7 @@ class PromptTemplateManager:
         return {
             "required": {
                 "template": ([
+                    "Random",
                     "Elegant Portrait",
                     "Casual Fashion",
                     "Fantasy Character",
@@ -339,14 +389,22 @@ class PromptTemplateManager:
                     "Dynamic Movement",
                     "Serene Moment",
                     "Dramatic Lighting",
-                    "Minimalist Style"
-                ], {"default": "Elegant Portrait"}),
+                    "Minimalist Style",
+                    "Sensual Lingerie",
+                    "Seductive Pose",
+                    "Intimate Scene",
+                    "Fetish Fashion",
+                    "Erotic Art",
+                    "Spicy Romance"
+                ], {"default": "Random"}),
                 "gender": (["Any", "Female", "Male"], {"default": "Any"}),
                 "variation_level": (["Low", "Medium", "High"], {"default": "Medium"}),
                 "seed": ("INT", {"default": -1, "min": -1, "max": 0xffffffffffffffff}),
             },
             "optional": {
                 "custom_additions": ("STRING", {"default": "", "multiline": True, "placeholder": "Additional elements to include"}),
+                "prefix": ("STRING", {"default": "", "multiline": True, "placeholder": "Elements to add at the beginning"}),
+                "suffix": ("STRING", {"default": "", "multiline": True, "placeholder": "Elements to add at the end"}),
             }
         }
 
@@ -356,13 +414,24 @@ class PromptTemplateManager:
     CATEGORY = "t4ggno/prompt_generation"
     OUTPUT_NODE = False
 
-    def generate_from_template(self, template: str, gender: str, variation_level: str, seed: int, custom_additions: str = "") -> Tuple[str, str]:
+    def generate_from_template(self, template: str, gender: str, variation_level: str, seed: int, custom_additions: str = "", prefix: str = "", suffix: str = "") -> Tuple[str, str]:
         """Generate a prompt from a predefined template."""
         
         if seed != -1:
             random.seed(seed)
         
         base_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        
+        # Handle random template selection
+        if template == "Random":
+            available_templates = [
+                "Elegant Portrait", "Casual Fashion", "Fantasy Character", "Modern Art",
+                "Traditional Clothing", "Action Pose", "Romantic Scene", "Professional Look",
+                "Vintage Style", "Futuristic Design", "Artistic Expression", "Dynamic Movement",
+                "Serene Moment", "Dramatic Lighting", "Minimalist Style", "Sensual Lingerie",
+                "Seductive Pose", "Intimate Scene", "Fetish Fashion", "Erotic Art", "Spicy Romance"
+            ]
+            template = random.choice(available_templates)
         
         # Define templates
         templates = {
@@ -470,6 +539,48 @@ class PromptTemplateManager:
                 "styles": ["Minimalist", "Clean"],
                 "poses": ["posture_basic.json"],
                 "required": ["simple", "clean"]
+            },
+            "Sensual Lingerie": {
+                "base": "sensual lingerie",
+                "elements": ["sexual_attire_lingerine.json", "hair_colors.json", "facial_expressions.json"],
+                "styles": ["Sensual", "Elegant", "Intimate"],
+                "poses": ["posture_basic.json", "poses.json"],
+                "required": ["alluring", "sophisticated"]
+            },
+            "Seductive Pose": {
+                "base": "seductive pose",
+                "elements": ["sexy_things.json", "facial_expressions.json", "hair_colors.json"],
+                "styles": ["Seductive", "Artistic", "Photorealistic"],
+                "poses": ["poses.json", "posture_basic.json"],
+                "required": ["captivating", "enticing"]
+            },
+            "Intimate Scene": {
+                "base": "intimate scene",
+                "elements": ["sexy_things.json", "locations.json", "facial_expressions.json"],
+                "styles": ["Romantic", "Intimate", "Soft"],
+                "poses": ["posture_hug.json", "poses.json"],
+                "required": ["passionate", "tender"]
+            },
+            "Fetish Fashion": {
+                "base": "fetish fashion",
+                "elements": ["sexual_attire_bdsm.json", "sexual_attire_miscellaneous.json", "hair_colors.json"],
+                "styles": ["Bold", "Dramatic", "Artistic"],
+                "poses": ["posture_poses.json", "poses.json"],
+                "required": ["striking", "provocative"]
+            },
+            "Erotic Art": {
+                "base": "erotic art",
+                "elements": ["nudity.json", "facial_expressions.json", "styles.json"],
+                "styles": ["Artistic", "Sensual", "Fine Art"],
+                "poses": ["poses.json", "posture_basic.json"],
+                "required": ["artistic", "tasteful"]
+            },
+            "Spicy Romance": {
+                "base": "spicy romance",
+                "elements": ["sexy_things.json", "facial_expressions.json", "locations.json"],
+                "styles": ["Romantic", "Passionate", "Cinematic"],
+                "poses": ["posture_hug.json", "poses.json"],
+                "required": ["passionate", "romantic"]
             }
         }
         
@@ -477,12 +588,26 @@ class PromptTemplateManager:
         prompt_parts = [template_config["base"]]
         
         # Add gender-appropriate clothing
-        if gender == "Female":
-            clothing_files = ["attire_female_topwear.json", "attire_female_bottomwear.json"]
-        elif gender == "Male":
-            clothing_files = ["attire_male_topwear.json", "attire_male_bottomwear.json"]
+        spicy_templates = ["Sensual Lingerie", "Seductive Pose", "Intimate Scene", "Fetish Fashion", "Erotic Art", "Spicy Romance"]
+        
+        if template in spicy_templates:
+            # Use spicy attire for spicy themes
+            if template == "Sensual Lingerie":
+                clothing_files = ["sexual_attire_lingerine.json"]
+            elif template == "Fetish Fashion":
+                clothing_files = ["sexual_attire_bdsm.json", "sexual_attire_miscellaneous.json"]
+            elif template in ["Intimate Scene", "Erotic Art"]:
+                clothing_files = ["sexual_attire_exposure.json", "nudity.json"]
+            else:  # Seductive Pose, Spicy Romance
+                clothing_files = ["sexual_attire_lingerine.json", "sexy_things.json"]
         else:
-            clothing_files = [random.choice(["attire_female_topwear.json", "attire_male_topwear.json"])]
+            # Regular clothing selection
+            if gender == "Female":
+                clothing_files = ["attire_female_topwear.json", "attire_female_bottomwear.json"]
+            elif gender == "Male":
+                clothing_files = ["attire_male_topwear.json", "attire_male_bottomwear.json"]
+            else:
+                clothing_files = [random.choice(["attire_female_topwear.json", "attire_male_topwear.json"])]
         
         for clothing_file in clothing_files:
             item = self._get_random_from_file(base_path, clothing_file)
@@ -510,6 +635,15 @@ class PromptTemplateManager:
             prompt_parts.append(custom_additions)
         
         final_prompt = ", ".join(prompt_parts)
+        
+        # Add prefix and suffix if provided
+        if prefix and suffix:
+            final_prompt = f"{prefix.strip()}, {final_prompt}, {suffix.strip()}"
+        elif prefix:
+            final_prompt = f"{prefix.strip()}, {final_prompt}"
+        elif suffix:
+            final_prompt = f"{final_prompt}, {suffix.strip()}"
+        
         template_info = f"Template: {template} | Gender: {gender} | Variation: {variation_level}"
         
         print(f"Generated template prompt: {final_prompt}...")
@@ -541,6 +675,7 @@ class PromptEnhancer:
             "required": {
                 "prompt": ("STRING", {"multiline": True, "placeholder": "Enter your base prompt"}),
                 "enhancement_type": ([
+                    "Random",
                     "Artistic Style",
                     "Lighting Effects",
                     "Mood Enhancement",
@@ -550,13 +685,17 @@ class PromptEnhancer:
                     "Technical Quality",
                     "Creative Flair",
                     "Atmospheric",
-                    "Professional"
-                ], {"default": "Artistic Style"}),
+                    "Professional",
+                    "Sensual Enhancement",
+                    "Seductive Mood"
+                ], {"default": "Random"}),
                 "intensity": (["Subtle", "Moderate", "Strong"], {"default": "Moderate"}),
                 "seed": ("INT", {"default": -1, "min": -1, "max": 0xffffffffffffffff}),
             },
             "optional": {
                 "custom_enhancements": ("STRING", {"default": "", "multiline": True, "placeholder": "Custom enhancement terms"}),
+                "prefix": ("STRING", {"default": "", "multiline": True, "placeholder": "Elements to add at the beginning"}),
+                "suffix": ("STRING", {"default": "", "multiline": True, "placeholder": "Elements to add at the end"}),
             }
         }
 
@@ -566,13 +705,22 @@ class PromptEnhancer:
     CATEGORY = "t4ggno/prompt_generation"
     OUTPUT_NODE = False
 
-    def enhance_prompt(self, prompt: str, enhancement_type: str, intensity: str, seed: int, custom_enhancements: str = "") -> Tuple[str, str]:
+    def enhance_prompt(self, prompt: str, enhancement_type: str, intensity: str, seed: int, custom_enhancements: str = "", prefix: str = "", suffix: str = "") -> Tuple[str, str]:
         """Enhance a prompt with additional elements."""
         
         if seed != -1:
             random.seed(seed)
         
         base_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        
+        # Handle random enhancement type selection
+        if enhancement_type == "Random":
+            available_types = [
+                "Artistic Style", "Lighting Effects", "Mood Enhancement", "Detail Boost",
+                "Composition", "Color Palette", "Technical Quality", "Creative Flair",
+                "Atmospheric", "Professional", "Sensual Enhancement", "Seductive Mood"
+            ]
+            enhancement_type = random.choice(available_types)
         
         # Define enhancement categories
         enhancements = {
@@ -625,6 +773,16 @@ class PromptEnhancer:
                 "subtle": ["professional", "polished", "refined"],
                 "moderate": ["studio quality", "commercial grade", "professional photography", "expert craftsmanship"],
                 "strong": ["industry standard", "world-class quality", "professional excellence", "masterful execution"]
+            },
+            "Sensual Enhancement": {
+                "subtle": ["alluring", "captivating", "enchanting"],
+                "moderate": ["sensual", "seductive", "mesmerizing", "enticing"],
+                "strong": ["irresistibly sensual", "breathtakingly seductive", "hypnotically alluring", "utterly captivating"]
+            },
+            "Seductive Mood": {
+                "subtle": ["inviting", "mysterious", "intriguing"],
+                "moderate": ["seductive", "provocative", "tantalizing", "bewitching"],
+                "strong": ["devastatingly seductive", "irresistibly provocative", "spellbindingly alluring", "intensely magnetic"]
             }
         }
         
@@ -648,6 +806,15 @@ class PromptEnhancer:
         
         # Combine with original prompt
         enhanced_prompt = f"{prompt}, {', '.join(selected_enhancements)}"
+        
+        # Add prefix and suffix if provided
+        if prefix and suffix:
+            enhanced_prompt = f"{prefix.strip()}, {enhanced_prompt}, {suffix.strip()}"
+        elif prefix:
+            enhanced_prompt = f"{prefix.strip()}, {enhanced_prompt}"
+        elif suffix:
+            enhanced_prompt = f"{enhanced_prompt}, {suffix.strip()}"
+        
         enhancements_applied = f"Applied {enhancement_type} ({intensity}): {', '.join(selected_enhancements)}"
         
         print(f"Enhanced prompt with {enhancement_type}: {enhanced_prompt}...")
@@ -678,6 +845,7 @@ class QuickPromptGenerator:
         return {
             "required": {
                 "prompt_style": ([
+                    "Random",
                     "Amazing Portrait",
                     "Stunning Fashion",
                     "Epic Fantasy",
@@ -692,8 +860,12 @@ class QuickPromptGenerator:
                     "Dramatic Portrait",
                     "Stylish Modern",
                     "Vintage Classic",
-                    "Futuristic Vision"
-                ], {"default": "Amazing Portrait"}),
+                    "Futuristic Vision",
+                    "Sensual Beauty",
+                    "Seductive Portrait",
+                    "Intimate Mood",
+                    "Erotic Art"
+                ], {"default": "Random"}),
                 "subject_type": (["Person", "Character", "Model", "Artist", "Professional"], {"default": "Person"}),
                 "gender": (["Any", "Female", "Male"], {"default": "Any"}),
                 "quality_level": (["Good", "Great", "Amazing", "Legendary"], {"default": "Amazing"}),
@@ -718,6 +890,17 @@ class QuickPromptGenerator:
             random.seed(seed)
         
         base_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        
+        # Handle random prompt style selection
+        if prompt_style == "Random":
+            available_styles = [
+                "Amazing Portrait", "Stunning Fashion", "Epic Fantasy", "Artistic Masterpiece",
+                "Cinematic Scene", "Dreamy Atmosphere", "Professional Photo", "Creative Art",
+                "Elegant Beauty", "Dynamic Action", "Serene Moment", "Dramatic Portrait",
+                "Stylish Modern", "Vintage Classic", "Futuristic Vision", "Sensual Beauty",
+                "Seductive Portrait", "Intimate Mood", "Erotic Art"
+            ]
+            prompt_style = random.choice(available_styles)
         
         # Quality prefixes based on level
         quality_prefixes = {
@@ -803,6 +986,26 @@ class QuickPromptGenerator:
                 "base": "futuristic portrait",
                 "quality": ["advanced", "cutting-edge", "visionary"],
                 "style": ["sci-fi lighting", "futuristic aesthetics"]
+            },
+            "Sensual Beauty": {
+                "base": "sensual portrait",
+                "quality": ["alluring", "captivating", "seductive"],
+                "style": ["intimate lighting", "sensual atmosphere"]
+            },
+            "Seductive Portrait": {
+                "base": "seductive portrait",
+                "quality": ["enticing", "provocative", "mesmerizing"],
+                "style": ["dramatic lighting", "seductive mood"]
+            },
+            "Intimate Mood": {
+                "base": "intimate portrait",
+                "quality": ["passionate", "romantic", "tender"],
+                "style": ["soft lighting", "intimate atmosphere"]
+            },
+            "Erotic Art": {
+                "base": "erotic art portrait",
+                "quality": ["artistic", "sensual", "tasteful"],
+                "style": ["artistic lighting", "fine art aesthetics"]
             }
         }
         
@@ -875,12 +1078,26 @@ class QuickPromptGenerator:
             breakdown_parts.append(f"Expression: {expression}")
         
         # Clothing
-        if gender == "Female":
-            clothing_files = ["attire_female_topwear.json", "attire_female_bottomwear.json"]
-        elif gender == "Male":
-            clothing_files = ["attire_male_topwear.json", "attire_male_bottomwear.json"]
+        spicy_styles = ["Sensual Beauty", "Seductive Portrait", "Intimate Mood", "Erotic Art"]
+        
+        if prompt_style in spicy_styles:
+            # Use spicy attire for spicy styles
+            if prompt_style == "Sensual Beauty":
+                clothing_files = ["sexual_attire_lingerine.json"]
+            elif prompt_style == "Seductive Portrait":
+                clothing_files = ["sexual_attire_lingerine.json", "sexy_things.json"]
+            elif prompt_style == "Intimate Mood":
+                clothing_files = ["sexual_attire_exposure.json", "sexy_things.json"]
+            else:  # Erotic Art
+                clothing_files = ["nudity.json", "sexual_attire_lingerine.json"]
         else:
-            clothing_files = [random.choice(["attire_female_topwear.json", "attire_male_topwear.json"])]
+            # Regular clothing selection
+            if gender == "Female":
+                clothing_files = ["attire_female_topwear.json", "attire_female_bottomwear.json"]
+            elif gender == "Male":
+                clothing_files = ["attire_male_topwear.json", "attire_male_bottomwear.json"]
+            else:
+                clothing_files = [random.choice(["attire_female_topwear.json", "attire_male_topwear.json"])]
         
         clothing_items = []
         for clothing_file in clothing_files:

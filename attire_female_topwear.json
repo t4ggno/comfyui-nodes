@@ -1,32 +1,82 @@
 {
-    "Tops": [
-      "blouse",
-      "frilled shirt",
-      "sleeveless shirt",
-      "off-shoulder shirt",
-      "crop top",
-      "camisole",
-      "halterneck",
-      "criss-cross halter",
-      "tube top",
-      "bandeau"
-    ],
-    "Dresses": [
-      "dress"
-    ],
-    "Outerwear": [
-      "cardigan",
-      "fur coat",
-      "fur-trimmed coat",
-      "long coat",
-      "raincoat",
-      "transparent raincoat",
-      "poncho",
-      "shrug"
-    ],
-    "Other": [
-      "bustier",
-      "corset",
-      "underbust"
-    ]
-  }
+  "Tops": [
+    "blouse",
+    "frilled shirt",
+    "sleeveless shirt",
+    "off-shoulder shirt",
+    "crop top",
+    "camisole",
+    "halterneck",
+    "criss-cross halter",
+    "tube top",
+    "bandeau",
+    "tank top",
+    "t-shirt",
+    "v-neck top",
+    "scoop neck top",
+    "peplum top",
+    "wrap top",
+    "asymmetrical top",
+    "cold shoulder top",
+    "bell sleeve top",
+    "ruffle top"
+  ],
+  "Dresses": [
+    "dress",
+    "sundress",
+    "maxi dress",
+    "midi dress",
+    "mini dress",
+    "cocktail dress",
+    "evening gown",
+    "ball gown",
+    "shift dress",
+    "wrap dress",
+    "bodycon dress",
+    "a-line dress",
+    "fit and flare dress",
+    "shirt dress",
+    "slip dress"
+  ],
+  "Outerwear": [
+    "cardigan",
+    "fur coat",
+    "fur-trimmed coat",
+    "long coat",
+    "raincoat",
+    "transparent raincoat",
+    "poncho",
+    "shrug",
+    "blazer",
+    "jacket",
+    "denim jacket",
+    "leather jacket",
+    "bomber jacket",
+    "kimono",
+    "cape",
+    "cloak",
+    "vest",
+    "sweater",
+    "pullover"
+  ],
+  "Formal": [
+    "evening top",
+    "cocktail blouse",
+    "silk blouse",
+    "satin top",
+    "sequined top",
+    "beaded top",
+    "lace top"
+  ],
+  "Other": [
+    "bustier",
+    "corset",
+    "underbust",
+    "bodysuit",
+    "leotard",
+    "romper",
+    "playsuit",
+    "jumpsuit",
+    "overall dress"
+  ]
+}

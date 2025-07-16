@@ -1,122 +1,86 @@
 {
-    "Happy": [
-        "Beaming Smile",
-        "Giggly",
-        "Excited",
-        "Cheerful",
-        "Content",
-        "Joyful",
-        "Laughing",
-        "Pleased",
-        "Radiant",
-        "Smirking"
-    ],
-    "Sad": [
-        "Crying",
-        "Depressed",
-        "Disappointed",
-        "Heartbroken",
-        "Tearful",
-        "Gloomy",
-        "Sorrowful",
-        "Mournful",
-        "Wistful",
-        "Somber"
-    ],
-    "Angry": [
-        "Annoyed",
-        "Fuming",
-        "Irate",
-        "Outraged",
-        "Frustrated",
-        "Aggravated",
-        "Seething",
-        "Enraged",
-        "Infuriated",
-        "Irritated"
-    ],
-    "Surprised": [
-        "Astonished",
-        "Amazed",
-        "Startled",
-        "Stunned",
-        "Awed",
-        "Astounded",
-        "Shocked",
-        "Dumbfounded",
-        "Bewildered",
-        "Flabbergasted"
-    ],
-    "Fearful": [
-        "Scared",
-        "Terrified",
-        "Panicked",
-        "Horrified",
-        "Petrified",
-        "Alarmed",
-        "Disturbed",
-        "Frightened",
-        "Terror-struck",
-        "Spooked"
-    ],
-    "Disgust": [
-        "Repulsed",
-        "Revolted",
-        "Appalled",
-        "Distasteful",
-        "Nauseated",
-        "Sickened",
-        "Grossed Out",
-        "Detesting",
-        "Abhorred",
-        "Loathsome"
-    ],
-    "Thinking": [
-        "Pensive",
-        "Contemplative",
-        "Reflective",
-        "Meditative",
-        "Concentrated",
-        "Doubtful",
-        "Inquisitive",
-        "Skeptical",
-        "Perplexed",
-        "Intrigued"
-    ],
-    "Confused": [
-        "Puzzled",
-        "Baffled",
-        "Perplexed",
-        "Mystified",
-        "Bemused",
-        "Mixed Up",
-        "Bewildered",
-        "Dazed",
-        "Stumped",
-        "Nonplussed"
-    ],
-    "Neutral": [
-        "Unemotional",
-        "Apathetic",
-        "Nonchalant",
-        "Detached",
-        "Steady",
-        "Still",
-        "Serene",
-        "Composed",
-        "Calm",
-        "Casual"
-    ],
-    "Embarrassed": [
-        "Ashamed",
-        "Chagrined",
-        "Flushed",
-        "Mortified",
-        "Humiliated",
-        "Sheepish",
-        "Shy",
-        "Guilty",
-        "Regretful",
-        "Apologetic"
-    ]
+  "Happy": [
+    "smiling",
+    "grinning",
+    "laughing",
+    "giggling",
+    "beaming",
+    "cheerful expression",
+    "joyful expression",
+    "smirking"
+  ],
+  "Sad": [
+    "crying",
+    "tears",
+    "frowning",
+    "downcast eyes",
+    "sad expression",
+    "tearful",
+    "weeping"
+  ],
+  "Angry": [
+    "frowning",
+    "scowling",
+    "glaring",
+    "clenched teeth",
+    "angry expression",
+    "furious expression",
+    "narrowed eyes"
+  ],
+  "Surprised": [
+    "wide eyes",
+    "open mouth",
+    "raised eyebrows",
+    "gasping",
+    "shocked expression",
+    "surprised expression"
+  ],
+  "Fearful": [
+    "wide eyes",
+    "pale face",
+    "trembling",
+    "fearful expression",
+    "scared expression",
+    "terrified expression"
+  ],
+  "Disgust": [
+    "wrinkled nose",
+    "grimacing",
+    "disgusted expression",
+    "turning away",
+    "covering nose"
+  ],
+  "Thinking": [
+    "hand on chin",
+    "furrowed brow",
+    "contemplative expression",
+    "looking up",
+    "concentrated expression",
+    "thoughtful expression"
+  ],
+  "Confused": [
+    "tilted head",
+    "furrowed brow",
+    "questioning expression",
+    "scratching head",
+    "confused expression",
+    "puzzled expression"
+  ],
+  "Neutral": [
+    "blank expression",
+    "stoic expression",
+    "calm expression",
+    "neutral expression",
+    "expressionless",
+    "serene expression",
+    "composed expression"
+  ],
+  "Embarrassed": [
+    "blushing",
+    "covering face",
+    "looking away",
+    "red cheeks",
+    "shy expression",
+    "embarrassed expression"
+  ]
 }

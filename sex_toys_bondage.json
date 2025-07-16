@@ -1,68 +1,167 @@
 {
-    "Restraints": [
-        "bondage outfit",
-        "chain",
-        "nipple chain",
-        "cuffs",
-        "shackles",
-        "handcuffs",
-        "hobble",
-        "rope",
-        "crotch rope",
-        "spreader bar"
-    ],
-    "Chastity": [
-        "chastity belt",
-        "chastity bra",
-        "chastity cage"
-    ],
-    "Clamps": [
-        "clitoris clamp",
-        "nipple clamps",
-        "tongue clamp"
-    ],
-    "Collars": [
-        "collar",
-        "leash",
-        "clitoris leash",
-        "leash on penis",
-        "nipple leash"
-    ],
-    "Gags": [
-        "gag",
-        "ball gag",
-        "bit gag",
-        "cleave gag",
-        "panty gag",
-        "plug gag",
-        "ring gag",
-        "tape gag",
-        "gag harness"
-    ],
-    "Blindfolds": [
-        "blindfold"
-    ],
-    "FullBodyRestraints": [
-        "gimp suit",
-        "pillory",
-        "stocks"
-    ],
-    "Hooks": [
-        "nose hook",
-        "anal hook"
-    ],
-    "Piercings": [
-        "piercing"
-    ],
-    "Whips": [
-        "whip",
-        "riding crop"
-    ],
-    "TortureToys": [
-        "wooden horse",
-        "judas cradle"
-    ],
-    "Sounding": [
-        "sounding"
-    ]
+  "Restraints": [
+    "bondage outfit",
+    "chain",
+    "nipple chain",
+    "cuffs",
+    "shackles",
+    "handcuffs",
+    "hobble",
+    "rope",
+    "crotch rope",
+    "spreader bar",
+    "ankle cuffs",
+    "wrist cuffs",
+    "thigh cuffs",
+    "arm binder",
+    "leg spreader",
+    "restraint harness",
+    "silk ties",
+    "leather restraints",
+    "metal shackles",
+    "suspension cuffs"
+  ],
+  "Chastity": [
+    "chastity belt",
+    "chastity bra",
+    "chastity cage",
+    "male chastity device",
+    "female chastity belt",
+    "chastity piercing",
+    "locked collar",
+    "denial device"
+  ],
+  "Clamps": [
+    "clitoris clamp",
+    "nipple clamps",
+    "tongue clamp",
+    "labia clamps",
+    "testicle clamps",
+    "nose clamps",
+    "ear clamps",
+    "weighted clamps",
+    "vibrating clamps",
+    "magnetic clamps"
+  ],
+  "Collars": [
+    "collar",
+    "leash",
+    "clitoris leash",
+    "leash on penis",
+    "nipple leash",
+    "shock collar",
+    "posture collar",
+    "training collar",
+    "pet collar",
+    "slave collar",
+    "locking collar",
+    "spiked collar"
+  ],
+  "Gags": [
+    "gag",
+    "ball gag",
+    "bit gag",
+    "cleave gag",
+    "panty gag",
+    "plug gag",
+    "ring gag",
+    "tape gag",
+    "gag harness",
+    "spider gag",
+    "open mouth gag",
+    "trainer gag",
+    "inflatable gag",
+    "dildo gag",
+    "penis gag"
+  ],
+  "Blindfolds": [
+    "blindfold",
+    "hood",
+    "sensory deprivation",
+    "leather blindfold",
+    "silk blindfold",
+    "mask",
+    "eye mask"
+  ],
+  "FullBodyRestraints": [
+    "gimp suit",
+    "pillory",
+    "stocks",
+    "straightjacket",
+    "body harness",
+    "full body suit",
+    "mummification",
+    "bondage chair",
+    "x-frame",
+    "bondage table",
+    "suspension frame"
+  ],
+  "Hooks": [
+    "nose hook",
+    "anal hook",
+    "vaginal hook",
+    "mouth hook",
+    "cheek hooks",
+    "suspension hooks"
+  ],
+  "Piercings": [
+    "piercing",
+    "nipple piercing",
+    "genital piercing",
+    "nose piercing",
+    "tongue piercing",
+    "ear piercing",
+    "belly piercing",
+    "temporary piercing"
+  ],
+  "Whips": [
+    "whip",
+    "riding crop",
+    "flogger",
+    "paddle",
+    "cane",
+    "cat o nine tails",
+    "single tail",
+    "quirt",
+    "switch",
+    "belt",
+    "ruler",
+    "crop whip"
+  ],
+  "TortureToys": [
+    "wooden horse",
+    "judas cradle",
+    "rack",
+    "pillory",
+    "iron maiden",
+    "thumbscrews",
+    "breast press",
+    "wheel",
+    "strappado"
+  ],
+  "Sounding": [
+    "sounding",
+    "urethral sound",
+    "catheter",
+    "urethral dilator",
+    "urethral plug"
+  ],
+  "ElectricPlay": [
+    "electro stimulation",
+    "e-stim",
+    "violet wand",
+    "tens unit",
+    "electric paddle",
+    "shock collar",
+    "electric nipple clamps",
+    "electric butt plug"
+  ],
+  "TemperaturePlay": [
+    "ice cubes",
+    "hot wax",
+    "warming oils",
+    "cooling gels",
+    "heat pads",
+    "cold therapy"
+  ]
 }

@@ -1,23 +1,55 @@
 {
-    "Professional": [
-      "maid uniform",
-      "nurse uniform",
-      "waitress uniform",
-      "stewardess uniform"
-    ],
-    "Costumes": [
-      "cheerleader outfit",
-      "witch costume",
-      "princess costume",
-      "fairy costume"
-    ],
-    "School": [
-      "serafuku",
-      "sailor dress",
-      "school uniform"
-    ],
-    "Religious": [
-      "nun habit",
-      "miko outfit"
-    ]
-  }
+  "Professional": [
+    "maid uniform",
+    "nurse uniform",
+    "waitress uniform",
+    "stewardess uniform",
+    "teacher outfit",
+    "secretary attire",
+    "librarian outfit",
+    "bank teller uniform",
+    "hotel receptionist",
+    "tour guide uniform"
+  ],
+  "Costumes": [
+    "cheerleader outfit",
+    "witch costume",
+    "princess costume",
+    "fairy costume",
+    "angel costume",
+    "devil costume",
+    "cat costume",
+    "bunny costume",
+    "mermaid costume",
+    "vampire costume",
+    "pirate costume",
+    "superhero costume",
+    "wonder woman costume"
+  ],
+  "School": [
+    "serafuku",
+    "sailor dress",
+    "school uniform",
+    "graduation gown",
+    "academic robes",
+    "prep school outfit",
+    "college sweater",
+    "varsity cheerleader"
+  ],
+  "Religious": [
+    "nun habit",
+    "miko outfit",
+    "choir robes",
+    "altar server attire",
+    "temple priestess"
+  ],
+  "Fantasy": [
+    "elf costume",
+    "medieval dress",
+    "renaissance gown",
+    "sorceress outfit",
+    "warrior princess",
+    "mythical creature",
+    "goddess costume"
+  ]
+}

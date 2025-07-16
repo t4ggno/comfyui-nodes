@@ -1,36 +1,73 @@
 {
-    "Kneeling": [
-        "kneeling",
-        "on one knee"
-    ],
-    "Lying": [
-        "lying",
-        "crossed legs",
-        "fetal position",
-        "on back",
-        "on side",
-        "on stomach"
-    ],
-    "Sitting": [
-        "butterfly sitting",
-        "crossed legs",
-        "figure four sitting",
-        "indian style",
-        "hugging own legs",
-        "lotus position",
-        "seiza",
-        "sitting on lap",
-        "sitting on person",
-        "straddling",
-        "thigh straddling",
-        "upright straddle",
-        "wariza",
-        "yokozuwari"
-    ],
-    "Standing": [
-        "balancing",
-        "crossed legs",
-        "legs apart",
-        "standing on one leg"
-    ]
+  "Kneeling": [
+    "kneeling",
+    "on one knee",
+    "genuflecting",
+    "prostrating",
+    "prayer position",
+    "bow kneeling",
+    "seiza kneeling",
+    "proposal pose"
+  ],
+  "Lying": [
+    "lying",
+    "crossed legs",
+    "fetal position",
+    "on back",
+    "on side",
+    "on stomach",
+    "prone position",
+    "supine position",
+    "side lying",
+    "sprawled",
+    "stretched out",
+    "reclining",
+    "lounging"
+  ],
+  "Sitting": [
+    "butterfly sitting",
+    "crossed legs",
+    "figure four sitting",
+    "indian style",
+    "hugging own legs",
+    "lotus position",
+    "seiza",
+    "sitting on lap",
+    "sitting on person",
+    "straddling",
+    "thigh straddling",
+    "upright straddle",
+    "wariza",
+    "yokozuwari",
+    "cross-legged",
+    "legs tucked",
+    "perched",
+    "slouching",
+    "upright sitting",
+    "edge sitting",
+    "side saddle"
+  ],
+  "Standing": [
+    "balancing",
+    "crossed legs",
+    "legs apart",
+    "standing on one leg",
+    "at attention",
+    "at ease",
+    "hip cocked",
+    "weight shifted",
+    "contrapposto",
+    "feet together",
+    "wide stance",
+    "casual stance",
+    "confident pose"
+  ],
+  "Squatting": [
+    "squatting",
+    "deep squat",
+    "catcher's squat",
+    "slav squat",
+    "low squat",
+    "partial squat"
+  ]
 }

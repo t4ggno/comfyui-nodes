@@ -1,16 +1,38 @@
 {
-    "General": [
-        "baby carry",
-        "carrying",
-        "carried breast rest",
-        "carrying over shoulder",
-        "carrying under arm",
-        "child carry",
-        "fireman's carry",
-        "piggyback",
-        "princess carry",
-        "shoulder carry",
-        "sitting on shoulder",
-        "standing on shoulder"
-    ]
+  "General": [
+    "baby carry",
+    "carrying",
+    "carried breast rest",
+    "carrying over shoulder",
+    "carrying under arm",
+    "child carry",
+    "fireman's carry",
+    "piggyback",
+    "princess carry",
+    "shoulder carry",
+    "sitting on shoulder",
+    "standing on shoulder"
+  ],
+  "Intimate Carrying": [
+    "bridal carry",
+    "cradling",
+    "holding in arms",
+    "carrying like a child",
+    "protective embrace carry"
+  ],
+  "Athletic Carrying": [
+    "wrestler carry",
+    "bodyguard carry",
+    "rescue carry",
+    "military carry",
+    "combat carry"
+  ],
+  "Playful Carrying": [
+    "piggyback ride",
+    "shoulder ride",
+    "airplane carry",
+    "spinning carry",
+    "swinging carry",
+    "lifting carry"
+  ]
 }

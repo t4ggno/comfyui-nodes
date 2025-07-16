@@ -1,28 +1,67 @@
 {
-    "Shirts": [
-      "collared shirt",
-      "dress shirt",
-      "t-shirt",
-      "compression shirt"
-    ],
-    "Outerwear": [
-      "cardigan",
-      "coat",
-      "duffel coat",
-      "overcoat",
-      "peacoat",
-      "trench coat",
-      "winter coat",
-      "hoodie",
-      "jacket",
-      "blazer",
-      "letterman jacket",
-      "safari jacket",
-      "suit jacket"
-    ],
-    "Other": [
-      "tank top",
-      "vest",
-      "waistcoat"
-    ]
-  }
+  "Shirts": [
+    "collared shirt",
+    "dress shirt",
+    "t-shirt",
+    "compression shirt",
+    "polo shirt",
+    "button-down shirt",
+    "flannel shirt",
+    "oxford shirt",
+    "henley shirt",
+    "tank top",
+    "muscle shirt",
+    "v-neck shirt",
+    "crew neck shirt",
+    "long sleeve shirt",
+    "short sleeve shirt"
+  ],
+  "Outerwear": [
+    "cardigan",
+    "coat",
+    "duffel coat",
+    "overcoat",
+    "peacoat",
+    "trench coat",
+    "winter coat",
+    "hoodie",
+    "jacket",
+    "blazer",
+    "letterman jacket",
+    "safari jacket",
+    "suit jacket",
+    "bomber jacket",
+    "leather jacket",
+    "denim jacket",
+    "windbreaker",
+    "parka",
+    "raincoat",
+    "sports jacket"
+  ],
+  "Formal": [
+    "tuxedo shirt",
+    "dress vest",
+    "cummerbund",
+    "bow tie shirt",
+    "formal waistcoat"
+  ],
+  "Casual": [
+    "sweater",
+    "pullover",
+    "sweatshirt",
+    "zip-up hoodie",
+    "cardigan sweater",
+    "jersey",
+    "thermal top"
+  ],
+  "Other": [
+    "tank top",
+    "vest",
+    "waistcoat",
+    "sleeveless shirt",
+    "undershirt",
+    "compression top",
+    "athletic shirt",
+    "moisture-wicking shirt"
+  ]
+}

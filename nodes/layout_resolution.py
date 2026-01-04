@@ -109,8 +109,8 @@ class PredefinedResolutions(comfy_io.ComfyNode):
         return needed
 
     @classmethod
-    def _get_enabled_layouts(cls, enable_square_random: bool, enable_landscape_random: bool, 
-                           enable_ultra_wide_random: bool, enable_portrait_random: bool, 
+    def _get_enabled_layouts(cls, enable_square_random: bool, enable_landscape_random: bool,
+                           enable_ultra_wide_random: bool, enable_portrait_random: bool,
                            enable_ultra_tall_random: bool) -> list:
         layout_mappings = [
             (enable_square_random, LAYOUT_SQUARE),
@@ -119,7 +119,7 @@ class PredefinedResolutions(comfy_io.ComfyNode):
             (enable_portrait_random, LAYOUT_PORTRAIT),
             (enable_ultra_tall_random, LAYOUT_ULTRA_TALL),
         ]
-        
+
         return [layout for enabled, layout in layout_mappings if enabled]
 
     @classmethod
@@ -128,9 +128,9 @@ class PredefinedResolutions(comfy_io.ComfyNode):
         return resolution_map.get(layout, resolution_map[LAYOUT_SQUARE])
 
     @classmethod
-    def execute(cls, dimension: str, layout: str, enable_square_random: bool, 
-                         enable_landscape_random: bool, enable_ultra_wide_random: bool, 
-                         enable_portrait_random: bool, enable_ultra_tall_random: bool, 
+    def execute(cls, dimension: str, layout: str, enable_square_random: bool,
+                         enable_landscape_random: bool, enable_ultra_wide_random: bool,
+                         enable_portrait_random: bool, enable_ultra_tall_random: bool,
                          scale: float, **kwargs) -> comfy_io.NodeOutput:
         print(f"Predefined Resolutions: {dimension}")
 
@@ -140,17 +140,17 @@ class PredefinedResolutions(comfy_io.ComfyNode):
                 enable_square_random, enable_landscape_random, enable_ultra_wide_random,
                 enable_portrait_random, enable_ultra_tall_random
             )
-            
+
             if not enabled_layouts:
                 enabled_layouts = [LAYOUT_SQUARE]
-            
+
             selected_layout = random.choice(enabled_layouts)
             print(f"Random layout selected: {selected_layout}")
 
         resolution = cls._get_resolution(dimension, selected_layout)
         scaled_width = int(resolution[0] * scale)
         scaled_height = int(resolution[1] * scale)
-        
+
         print(f"Output: {scaled_width}x{scaled_height} (scale: {scale}x)")
         return comfy_io.NodeOutput(scaled_width, scaled_height)
 
@@ -190,7 +190,7 @@ class ResolutionSwitch(comfy_io.ComfyNode):
         return needed
 
     @classmethod
-    def execute(cls, active: str, width1: int, height1: int, 
+    def execute(cls, active: str, width1: int, height1: int,
                       width2: int, height2: int, **kwargs) -> comfy_io.NodeOutput:
         print(f"Resolution Switch: {active}")
 
@@ -198,6 +198,6 @@ class ResolutionSwitch(comfy_io.ComfyNode):
             result_width, result_height = width1, height1
         else:
             result_width, result_height = width2, height2
-        
+
         print(f"Output: {result_width}x{result_height}")
         return comfy_io.NodeOutput(result_width, result_height)

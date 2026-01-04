@@ -13,11 +13,11 @@ class PromptFromAIOpenAI(comfy_io.ComfyNode):
             inputs=[
                 comfy_io.String.Input("api_key", default=""),
                 comfy_io.Combo.Input("gpt_model", options=[
-                    "gpt-3.5-turbo", 
-                    "gpt-3.5-turbo-16K", 
-                    "gpt-4", 
-                    "gpt-4-turbo", 
-                    "gpt-4o", 
+                    "gpt-3.5-turbo",
+                    "gpt-3.5-turbo-16K",
+                    "gpt-4",
+                    "gpt-4-turbo",
+                    "gpt-4o",
                     "Custom"
                 ], default="gpt-4o"),
                 comfy_io.String.Input("custom_model", default=""),
@@ -39,19 +39,19 @@ class PromptFromAIOpenAI(comfy_io.ComfyNode):
 
     @classmethod
     def execute(
-        cls, 
-        api_key: str, 
-        gpt_model: str, 
-        custom_model: str, 
-        temperature: float, 
-        frequency_penalty: float, 
-        presence_penalty: float, 
-        prompt_details: str, 
-        prefix: str, 
-        suffix: str, 
-        batch_quantity: int, 
-        images_per_batch: int, 
-        lora_whitelist_regex: str, 
+        cls,
+        api_key: str,
+        gpt_model: str,
+        custom_model: str,
+        temperature: float,
+        frequency_penalty: float,
+        presence_penalty: float,
+        prompt_details: str,
+        prefix: str,
+        suffix: str,
+        batch_quantity: int,
+        images_per_batch: int,
+        lora_whitelist_regex: str,
         lora_blacklist_regex: str,
         **kwargs
     ) -> comfy_io.NodeOutput:
@@ -64,19 +64,19 @@ class PromptFromAIOpenAI(comfy_io.ComfyNode):
 
         available_loras = cls._get_available_loras(lora_whitelist_regex, lora_blacklist_regex)
         keyword_list = cls._load_keyword_list()
-        
+
         prompt = cls._generate_prompt_with_openai(
-            api_key, gpt_model, custom_model, temperature, 
-            frequency_penalty, presence_penalty, prompt_details, 
+            api_key, gpt_model, custom_model, temperature,
+            frequency_penalty, presence_penalty, prompt_details,
             batch_quantity, available_loras, keyword_list
         )
-        
+
         cls._save_prompt_and_keywords(prompt, keyword_list, api_key, gpt_model, custom_model)
-        
+
         return cls.execute(
-            api_key, gpt_model, custom_model, temperature, 
-            frequency_penalty, presence_penalty, prompt_details, 
-            prefix, suffix, batch_quantity, images_per_batch, 
+            api_key, gpt_model, custom_model, temperature,
+            frequency_penalty, presence_penalty, prompt_details,
+            prefix, suffix, batch_quantity, images_per_batch,
             lora_whitelist_regex, lora_blacklist_regex, **kwargs
         )
 
@@ -85,59 +85,59 @@ class PromptFromAIOpenAI(comfy_io.ComfyNode):
         lora_paths = folder_paths.get_folder_paths("loras")
         if not lora_paths:
             raise Exception("No lora paths found")
-        
+
         available_loras = folder_paths.get_filename_list("loras")
-        
+
         if whitelist_regex:
             whitelist_patterns = [
-                re.compile(pattern.strip()) 
-                for pattern in whitelist_regex.split('\n') 
+                re.compile(pattern.strip())
+                for pattern in whitelist_regex.split('\n')
                 if pattern.strip()
             ]
             available_loras = [
-                lora for lora in available_loras 
+                lora for lora in available_loras
                 if any(pattern.match(lora) for pattern in whitelist_patterns)
             ]
-        
+
         if blacklist_regex:
             blacklist_patterns = [
-                re.compile(pattern.strip()) 
-                for pattern in blacklist_regex.split('\n') 
+                re.compile(pattern.strip())
+                for pattern in blacklist_regex.split('\n')
                 if pattern.strip()
             ]
             available_loras = [
-                lora for lora in available_loras 
+                lora for lora in available_loras
                 if not any(pattern.match(lora) for pattern in blacklist_patterns)
             ]
-        
+
         return cls._convert_loras_to_json(available_loras, lora_paths[0])
 
     @classmethod
     def _convert_loras_to_json(cls, loras: List[str], lora_path: str) -> str:
         converted_loras = {}
-        
+
         for lora in loras:
             lora_parts = lora.split("\\")
             category = "General" if len(lora_parts) == 1 else lora_parts[0]
-            
+
             if category not in converted_loras:
                 converted_loras[category] = []
-            
+
             lora_name = lora_parts[-1].replace(".safetensors", "")
             description = cls._get_lora_description(lora_path, lora)
-            
+
             lora_entry = {"name": lora_name}
             if description:
                 lora_entry["description"] = description
-            
+
             converted_loras[category].append(lora_entry)
-        
+
         return json.dumps(converted_loras)
 
     @classmethod
     def _get_lora_description(cls, lora_path: str, lora: str) -> Optional[str]:
         description_file = os.path.join(lora_path, lora.replace(".safetensors", ".txt"))
-        
+
         if os.path.isfile(description_file):
             try:
                 with open(description_file, "r", encoding="utf-8") as f:
@@ -145,7 +145,7 @@ class PromptFromAIOpenAI(comfy_io.ComfyNode):
                     return description if description else None
             except Exception as e:
                 print(f"Error reading description file {description_file}: {e}")
-        
+
         return None
 
     @classmethod
@@ -162,25 +162,25 @@ class PromptFromAIOpenAI(comfy_io.ComfyNode):
 
     @classmethod
     def _generate_prompt_with_openai(
-        cls, 
-        api_key: str, 
-        gpt_model: str, 
-        custom_model: str, 
+        cls,
+        api_key: str,
+        gpt_model: str,
+        custom_model: str,
         temperature: float,
-        frequency_penalty: float, 
-        presence_penalty: float, 
-        prompt_details: str, 
-        batch_quantity: int, 
-        available_loras: str, 
+        frequency_penalty: float,
+        presence_penalty: float,
+        prompt_details: str,
+        batch_quantity: int,
+        available_loras: str,
         keyword_list: str
     ) -> str:
         client = OpenAI(api_key=api_key)
-        
+
         system_prompt = cls._build_system_prompt()
         user_prompt = cls._build_user_prompt(prompt_details, batch_quantity, available_loras, keyword_list)
-        
+
         model = gpt_model if not custom_model else custom_model
-        
+
         response = client.chat.completions.create(
             model=model,
             messages=[
@@ -192,11 +192,11 @@ class PromptFromAIOpenAI(comfy_io.ComfyNode):
             frequency_penalty=frequency_penalty,
             presence_penalty=presence_penalty,
         )
-        
+
         if not response.choices[0].message.content:
             print("No prompts found")
             return ""
-        
+
         return response.choices[0].message.content
 
     @classmethod
@@ -212,20 +212,20 @@ class PromptFromAIOpenAI(comfy_io.ComfyNode):
             "-" * 33,
             f"Available loras: {available_loras}"
         ]
-        
+
         if keyword_list:
             prompt_parts.extend([
                 "-" * 33,
                 f"Do NOT use the following keywords or similar keywords (IMPORTANT): {keyword_list}"
             ])
-        
+
         return "\n".join(prompt_parts)
 
     @classmethod
     def _save_prompt_and_keywords(cls, prompt: str, keyword_list: str, api_key: str, gpt_model: str, custom_model: str):
         processed_prompt = cls._process_prompt(prompt)
         updated_keywords = cls._update_keyword_list(prompt, keyword_list, api_key, gpt_model, custom_model)
-        
+
         cls._write_files(processed_prompt, updated_keywords)
 
     @classmethod
@@ -235,19 +235,19 @@ class PromptFromAIOpenAI(comfy_io.ComfyNode):
         prompt = re.sub(r"<(?:[\w\-. \\]+?)\:((?:[\w-]+?)(?:\-V\d+\.\d+))?(?:\.safetensors?)?>", r"<lora:\1>", prompt)
         prompt = re.sub(r"<loraname:", "<lora:", prompt)
         prompt = re.sub(r"^\s*[\-]+\s*$", "", prompt, flags=re.MULTILINE)
-        
+
         return prompt
 
     @classmethod
     def _update_keyword_list(cls, prompt: str, current_keywords: str, api_key: str, gpt_model: str, custom_model: str) -> str:
         client = OpenAI(api_key=api_key)
-        
+
         system_prompt = """You will receive an overview of prompts. Create a keyword list of prompts I can use to prevent further generations of the same or similar prompts later. Start directly with the keywords! Separate the keywords with a comma. If already a keyword list is provided you must add the new keywords to the existing list and avoid duplicates."""
-        
+
         user_prompt = f"Prompts:\n\n{prompt}"
         if current_keywords:
             user_prompt += f"\n{'-' * 33}\nKeyword list: {current_keywords}"
-        
+
         try:
             response = client.chat.completions.create(
                 model="gpt-4-turbo",
@@ -258,13 +258,13 @@ class PromptFromAIOpenAI(comfy_io.ComfyNode):
                 temperature=0.8,
                 max_tokens=4095,
             )
-            
+
             if response.choices[0].message.content:
                 print(f"Response keyword list: {response.choices[0].message.content}")
                 return response.choices[0].message.content
         except Exception as e:
             print(f"Error updating keyword list: {e}")
-        
+
         return current_keywords
 
     @classmethod
@@ -272,7 +272,7 @@ class PromptFromAIOpenAI(comfy_io.ComfyNode):
         try:
             with open("prompt_from_ai.txt", "w", encoding="utf-8") as f:
                 f.write(f"index:0\nimage:0\n\n{prompt}")
-            
+
             with open("keywoard_list.txt", "w", encoding="utf-8") as f:
                 f.write(keywords)
         except Exception as e:
@@ -307,15 +307,15 @@ class PromptFromAIAnthropic(comfy_io.ComfyNode):
 
     @classmethod
     def execute(
-        cls, 
-        api_key: str, 
-        model: str, 
-        prompt_details: str, 
-        prefix: str, 
-        suffix: str, 
-        batch_quantity: int, 
-        images_per_batch: int, 
-        lora_whitelist_regex: str, 
+        cls,
+        api_key: str,
+        model: str,
+        prompt_details: str,
+        prefix: str,
+        suffix: str,
+        batch_quantity: int,
+        images_per_batch: int,
+        lora_whitelist_regex: str,
         lora_blacklist_regex: str,
         **kwargs
     ) -> comfy_io.NodeOutput:
@@ -328,16 +328,16 @@ class PromptFromAIAnthropic(comfy_io.ComfyNode):
 
         available_loras = cls._get_available_loras(lora_whitelist_regex, lora_blacklist_regex)
         keyword_list = cls._load_keyword_list()
-        
+
         prompt = cls._generate_prompt_with_anthropic(
             api_key, model, prompt_details, batch_quantity, available_loras, keyword_list
         )
-        
+
         if prompt:
             cls._save_prompt_and_keywords(prompt, keyword_list, api_key, model)
-        
+
         return cls.execute(
-            api_key, model, prompt_details, prefix, suffix, 
+            api_key, model, prompt_details, prefix, suffix,
             batch_quantity, images_per_batch, lora_whitelist_regex, lora_blacklist_regex, **kwargs
         )
 
@@ -346,59 +346,59 @@ class PromptFromAIAnthropic(comfy_io.ComfyNode):
         lora_paths = folder_paths.get_folder_paths("loras")
         if not lora_paths:
             raise Exception("No lora paths found")
-        
+
         available_loras = folder_paths.get_filename_list("loras")
-        
+
         if whitelist_regex:
             whitelist_patterns = [
-                re.compile(pattern.strip()) 
-                for pattern in whitelist_regex.split('\n') 
+                re.compile(pattern.strip())
+                for pattern in whitelist_regex.split('\n')
                 if pattern.strip()
             ]
             available_loras = [
-                lora for lora in available_loras 
+                lora for lora in available_loras
                 if any(pattern.match(lora) for pattern in whitelist_patterns)
             ]
-        
+
         if blacklist_regex:
             blacklist_patterns = [
-                re.compile(pattern.strip()) 
-                for pattern in blacklist_regex.split('\n') 
+                re.compile(pattern.strip())
+                for pattern in blacklist_regex.split('\n')
                 if pattern.strip()
             ]
             available_loras = [
-                lora for lora in available_loras 
+                lora for lora in available_loras
                 if not any(pattern.match(lora) for pattern in blacklist_patterns)
             ]
-        
+
         return cls._convert_loras_to_json(available_loras, lora_paths[0])
 
     @classmethod
     def _convert_loras_to_json(cls, loras: List[str], lora_path: str) -> str:
         converted_loras = {}
-        
+
         for lora in loras:
             lora_parts = lora.split("\\")
             category = "General" if len(lora_parts) == 1 else lora_parts[0]
-            
+
             if category not in converted_loras:
                 converted_loras[category] = []
-            
+
             lora_name = lora_parts[-1].replace(".safetensors", "")
             description = cls._get_lora_description(lora_path, lora)
-            
+
             lora_entry = {"name": lora_name}
             if description:
                 lora_entry["description"] = description
-            
+
             converted_loras[category].append(lora_entry)
-        
+
         return json.dumps(converted_loras)
 
     @classmethod
     def _get_lora_description(cls, lora_path: str, lora: str) -> Optional[str]:
         description_file = os.path.join(lora_path, lora.replace(".safetensors", ".txt"))
-        
+
         if os.path.isfile(description_file):
             try:
                 with open(description_file, "r", encoding="utf-8") as f:
@@ -406,7 +406,7 @@ class PromptFromAIAnthropic(comfy_io.ComfyNode):
                     return description if description else None
             except Exception as e:
                 print(f"Error reading description file {description_file}: {e}")
-        
+
         return None
 
     @classmethod
@@ -423,27 +423,27 @@ class PromptFromAIAnthropic(comfy_io.ComfyNode):
 
     @classmethod
     def _generate_prompt_with_anthropic(
-        cls, 
-        api_key: str, 
-        model: str, 
-        prompt_details: str, 
-        batch_quantity: int, 
-        available_loras: str, 
+        cls,
+        api_key: str,
+        model: str,
+        prompt_details: str,
+        batch_quantity: int,
+        available_loras: str,
         keyword_list: str
     ) -> Optional[str]:
         client = Anthropic(api_key=api_key)
-        
+
         system_prompt = cls._build_system_prompt()
         user_prompt = cls._build_user_prompt(prompt_details, batch_quantity, available_loras, keyword_list)
-        
+
         model_id = "claude-3-5-sonnet-20240620" if model == "claude-3.5-sonnet" else "claude-3-opus-20240229"
-        
+
         print(f"Request prompt from AI:")
         print(f"API key: {api_key}")
         print(f"Model: {model}")
         print(f"System prompt: {system_prompt}")
         print(f"User prompt: {user_prompt}")
-        
+
         try:
             response = client.messages.create(
                 max_tokens=1024,
@@ -451,14 +451,14 @@ class PromptFromAIAnthropic(comfy_io.ComfyNode):
                 messages=[{"role": "user", "content": user_prompt}],
                 model=model_id,
             )
-            
+
             if response.content and response.content[0].text:
                 print(f"Response prompt: {response.content[0].text}")
                 return response.content[0].text
             else:
                 print("No prompts found")
                 return None
-                
+
         except Exception as e:
             print(f"Error generating prompt: {e}")
             return None
@@ -476,20 +476,20 @@ class PromptFromAIAnthropic(comfy_io.ComfyNode):
             "-" * 33,
             f"Available loras: {available_loras}"
         ]
-        
+
         if keyword_list:
             prompt_parts.extend([
                 "-" * 33,
                 f"Do NOT use the following keywords or similar keywords (IMPORTANT): {keyword_list}"
             ])
-        
+
         return "\n".join(prompt_parts)
 
     @classmethod
     def _save_prompt_and_keywords(cls, prompt: str, keyword_list: str, api_key: str, model: str):
         processed_prompt = cls._process_prompt(prompt)
         updated_keywords = cls._update_keyword_list(prompt, keyword_list, api_key, model)
-        
+
         if updated_keywords:
             cls._write_files(processed_prompt, updated_keywords)
         else:
@@ -502,21 +502,21 @@ class PromptFromAIAnthropic(comfy_io.ComfyNode):
         prompt = re.sub(r"<(?:[\w\-. \\]+?)\:((?:[\w-]+?)(?:\-V\d+\.\d+))?(?:\.safetensors?)?>", r"<lora:\1>", prompt)
         prompt = re.sub(r"<loraname:", "<lora:", prompt)
         prompt = re.sub(r"^\s*[\-]+\s*$", "", prompt, flags=re.MULTILINE)
-        
+
         return prompt
 
     @classmethod
     def _update_keyword_list(cls, prompt: str, current_keywords: str, api_key: str, model: str) -> Optional[str]:
         client = Anthropic(api_key=api_key)
-        
+
         system_prompt = """You will receive an overview of prompts. Create a keyword list of prompts I can use, to prevent further generations of the same or similar prompts later. Start directly with the keywords! Separate the keywords with a comma. If already a keyword list is provided you must add the new keywords to the existing list and avoid duplicates."""
-        
+
         user_prompt = f"Prompts:\n\n{prompt}"
         if current_keywords:
             user_prompt += f"\n{'-' * 33}\nKeyword list: {current_keywords}"
-        
+
         model_id = "claude-3-5-sonnet-20240620" if model == "claude-3.5-sonnet" else "claude-3-opus-20240229"
-        
+
         try:
             response = client.messages.create(
                 max_tokens=1024,
@@ -524,13 +524,13 @@ class PromptFromAIAnthropic(comfy_io.ComfyNode):
                 messages=[{"role": "user", "content": user_prompt}],
                 model=model_id,
             )
-            
+
             if response.content and response.content[0].text:
                 print(f"Response keyword list: {response.content[0].text}")
                 return response.content[0].text
         except Exception as e:
             print(f"Error updating keyword list: {e}")
-        
+
         return current_keywords
 
     @classmethod
@@ -538,7 +538,7 @@ class PromptFromAIAnthropic(comfy_io.ComfyNode):
         try:
             with open("prompt_from_ai.txt", "w", encoding="utf-8") as f:
                 f.write(f"index:0\nimage:0\n\n{prompt}")
-            
+
             with open("keywoard_list.txt", "w", encoding="utf-8") as f:
                 f.write(keywords)
         except Exception as e:
@@ -569,11 +569,11 @@ class PromptFromOllama(comfy_io.ComfyNode):
 
     @classmethod
     def execute(
-        cls, 
-        host: str, 
-        model: str, 
-        prompt_details: str, 
-        prefix: str, 
+        cls,
+        host: str,
+        model: str,
+        prompt_details: str,
+        prefix: str,
         suffix: str,
         **kwargs
     ) -> comfy_io.NodeOutput:
@@ -582,7 +582,7 @@ class PromptFromOllama(comfy_io.ComfyNode):
 
         keyword_list = cls._load_keyword_list()
         prompt = cls._generate_prompt_with_ollama(host, model, prompt_details, keyword_list)
-        
+
         if prompt:
             return comfy_io.NodeOutput(f"{prefix} {prompt} {suffix}".strip())
         else:
@@ -602,16 +602,16 @@ class PromptFromOllama(comfy_io.ComfyNode):
 
     @classmethod
     def _generate_prompt_with_ollama(
-        cls, 
-        host: str, 
-        model: str, 
-        prompt_details: str, 
+        cls,
+        host: str,
+        model: str,
+        prompt_details: str,
         keyword_list: str
     ) -> Optional[str]:
         system_prompt = "You are a Stable Diffusion / DALL-E / Midjourney prompt generator. The prompt should be detailed. Use Keyword sentences. The scene should be interesting and engaging. The prompt should be creative and unique. Start directly with the prompt and dont use a caption. Remember, its for an image and neither for a video nor for a book. The prompt should be 100 words long"
-        
+
         user_prompt = f"Details for the prompt: {prompt_details}"
-        
+
         if keyword_list:
             user_prompt += f"\n{'-' * 33}\nDONT use any of the following keywords or similar: {keyword_list}"
 
@@ -626,23 +626,23 @@ class PromptFromOllama(comfy_io.ComfyNode):
             "prompt": user_prompt,
             "stream": False,
         }
-        
+
         headers = {"Content-Type": "application/json"}
-        
+
         try:
             response = requests.post(host, json=data, headers=headers, timeout=30)
             response.raise_for_status()
-            
+
             response_data = response.json()
             prompt = response_data.get("response", "")
-            
+
             if prompt:
                 print(f"Response prompt: {prompt}")
                 return prompt
             else:
                 print("No prompts found")
                 return None
-                
+
         except requests.exceptions.RequestException as e:
             print(f"Error making request to Ollama: {e}")
             return None

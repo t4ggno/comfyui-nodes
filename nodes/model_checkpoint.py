@@ -31,11 +31,11 @@ class LoraLoaderFromPrompt(comfy_io.ComfyNode):
         available_loras = folder_paths.get_filename_list("loras")
         all_loras = cls._extract_loras_from_prompt(prompt)
         prompt = cls._remove_loras_from_prompt(prompt)
-        
+
         processed_loras = cls._process_lora_data(all_loras)
         resolved_loras = cls._resolve_lora_names(processed_loras, available_loras)
         deduplicated_loras = cls._deduplicate_loras(resolved_loras)
-        
+
         model, clip, prompt = cls._apply_loras(model, clip, deduplicated_loras, available_loras, prompt)
         return comfy_io.NodeOutput(model, clip, prompt)
 
@@ -47,11 +47,11 @@ class LoraLoaderFromPrompt(comfy_io.ComfyNode):
         # Also matches: <name:model_strength:clip_strength>, <name:model_strength>, <name::clip_strength>, <name>
         lora_pattern = r"<(?:lora:)?([\w\-. \\]+?)(?::(-?[0-9]+(?:\.[0-9]*)?)?)?(?::(-?[0-9]+(?:\.[0-9]*)?)?)?>"
         matches = re.findall(lora_pattern, prompt)
-        
+
         # Debug output
         for match in matches:
             print(f"DEBUG: Extracted lora match: {match}")
-        
+
         return matches
 
     @classmethod
@@ -64,23 +64,23 @@ class LoraLoaderFromPrompt(comfy_io.ComfyNode):
     def _process_lora_data(cls, lora_matches: List[Tuple[str, str, str]]) -> List[Dict[str, Any]]:
         """Convert lora matches to structured data with proper strength values"""
         processed_loras = []
-        
+
         for match in lora_matches:
             name, model_strength, clip_strength = match
-            
+
             # Debug output
             print(f"DEBUG: Processing lora - name: '{name}', model_strength: '{model_strength}', clip_strength: '{clip_strength}'")
-            
+
             # Handle the different regex group combinations
             model_str = float(model_strength) if model_strength else 1.0
             clip_str = float(clip_strength) if clip_strength else model_str
-            
+
             processed_loras.append({
                 "name": name,
                 "model_strength": model_str,
                 "clip_strength": clip_str
             })
-        
+
         return processed_loras
 
     @classmethod
@@ -88,28 +88,28 @@ class LoraLoaderFromPrompt(comfy_io.ComfyNode):
         """Resolve lora names to match available files"""
         for lora in loras:
             current_name = lora["name"]
-            
+
             if current_name in available_loras:
                 continue
-                
+
             matching_loras = [
                 available_lora for available_lora in available_loras
                 if current_name in available_lora
             ]
-            
+
             if matching_loras:
                 lora["name"] = numpy.random.choice(matching_loras)
                 print(f"Resolved lora '{current_name}' to '{lora['name']}'")
             else:
                 print(f"Lora not available: {current_name}")
-        
+
         return loras
 
     @classmethod
     def _deduplicate_loras(cls, loras: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         """Remove duplicate loras by averaging their strengths"""
         lora_dict = {}
-        
+
         for lora in loras:
             name = lora["name"]
             if name in lora_dict:
@@ -124,7 +124,7 @@ class LoraLoaderFromPrompt(comfy_io.ComfyNode):
                     "clip_strength": lora["clip_strength"],
                     "count": 1
                 }
-        
+
         # Calculate averages
         deduplicated_loras = []
         for lora_data in lora_dict.values():
@@ -134,25 +134,25 @@ class LoraLoaderFromPrompt(comfy_io.ComfyNode):
                 "model_strength": lora_data["model_strength"] / count,
                 "clip_strength": lora_data["clip_strength"] / count
             })
-        
+
         return deduplicated_loras
 
     @classmethod
-    def _apply_loras(cls, model: Any, clip: Any, loras: List[Dict[str, Any]], 
+    def _apply_loras(cls, model: Any, clip: Any, loras: List[Dict[str, Any]],
                     available_loras: List[str], prompt: str) -> Tuple[Any, Any, str]:
         """Apply loras to model and clip"""
         valid_loras = [lora for lora in loras if lora["name"] in available_loras]
-        
+
         if not valid_loras:
             return (model, clip, prompt)
-        
+
         for lora in valid_loras:
             try:
                 model, clip, prompt = cls._load_single_lora(model, clip, lora, prompt)
             except Exception as e:
                 print(f"Error loading lora {lora['name']}: {e}")
                 continue
-        
+
         print(f"Text prompt after loading loras: {prompt}")
         return (model, clip, prompt)
 
@@ -161,13 +161,13 @@ class LoraLoaderFromPrompt(comfy_io.ComfyNode):
         """Load a single lora file"""
         lora_path = folder_paths.get_full_path("loras", lora["name"])
         loaded_lora = comfy.utils.load_torch_file(lora_path, safe_load=True)
-        
+
         model_strength = lora["model_strength"]
         clip_strength = lora["clip_strength"]
-        
+
         model, clip = comfy.sd.load_lora_for_models(model, clip, loaded_lora, model_strength, clip_strength)
         print(f"Loaded lora: {lora_path} with model strength: {model_strength} and clip strength: {clip_strength}")
-        
+
         return model, clip, cls._process_trigger_words(lora_path, prompt)
 
     @classmethod
@@ -177,19 +177,19 @@ class LoraLoaderFromPrompt(comfy_io.ComfyNode):
             metadata = cls._extract_lora_metadata(lora_path)
             if not metadata:
                 return prompt
-                
+
             trigger_words = cls._get_trigger_words(metadata)
             if not trigger_words:
                 return prompt
-                
+
             if not any(word in prompt for word in trigger_words):
                 random_trigger = numpy.random.choice(trigger_words)
                 prompt += f" {random_trigger}"
                 print(f"Added trigger word: '{random_trigger}' to prompt")
-            
+
         except Exception as e:
             print(f"Error processing trigger words for {lora_path}: {e}")
-        
+
         return prompt
 
     @classmethod
@@ -199,23 +199,23 @@ class LoraLoaderFromPrompt(comfy_io.ComfyNode):
             with open(lora_path, 'r', encoding='ansi') as f:
                 metadata_str = ""
                 brace_count = 0
-                
+
                 for line in f:
                     for char in line:
                         if char == '{':
                             brace_count += 1
                         elif char == '}':
                             brace_count -= 1
-                            
+
                         if brace_count > 0:
                             metadata_str += char
-                            
+
                         if brace_count == 0 and metadata_str:
                             return json.loads(metadata_str)
-                            
+
         except Exception:
             pass
-        
+
         return None
 
     @classmethod
@@ -225,12 +225,12 @@ class LoraLoaderFromPrompt(comfy_io.ComfyNode):
             dataset_dirs = metadata.get("__metadata__", {}).get("ss_dataset_dirs")
             if not dataset_dirs:
                 return []
-                
+
             dataset_data = json.loads(dataset_dirs)
             trigger_keys = [key for key in dataset_data.keys() if re.match(r"^\d+_.+$", key)]
-            
+
             return [key.split("_", 1)[1] for key in trigger_keys]
-            
+
         except Exception:
             return []
 
@@ -262,7 +262,7 @@ class CheckpointLoaderByName(comfy_io.ComfyNode):
             available_checkpoints = comfy_paths.get_filename_list("checkpoints")
             if cls._find_checkpoint(checkpoint_name, available_checkpoints):
                 return needed
-        
+
         # Otherwise we need fallback
         if fallback is None:
             needed.append("fallback")
@@ -322,7 +322,7 @@ class CheckpointLoaderByName(comfy_io.ComfyNode):
             output_clip=True,
             embedding_directory=comfy_paths.get_folder_paths("embeddings")
         )
-        
+
         checkpoint_name = os.path.splitext(os.path.basename(checkpoint_path))[0]
         return (*result, checkpoint_name)
 
@@ -353,11 +353,11 @@ class RandomCheckpointLoader(comfy_io.ComfyNode):
             display_name="Random Checkpoint Loader",
             category="t4ggno/loaders",
             description="""
-            Load a random checkpoint from the available checkpoints. The checkpoint is selected randomly from the list of available checkpoints. 
-            The checkpoint is loaded only if it has not reached the usage limit. The usage limit is the maximum number of times a checkpoint can be loaded before it is reset. 
-            The checkpoint is selected based on the whitelist and blacklist regex patterns. The whitelist regex is used to filter the checkpoints that match the pattern. 
-            The blacklist regex is used to exclude the checkpoints that match the pattern. 
-            If no checkpoints are available after applying the whitelist and blacklist regex, an error is raised. 
+            Load a random checkpoint from the available checkpoints. The checkpoint is selected randomly from the list of available checkpoints.
+            The checkpoint is loaded only if it has not reached the usage limit. The usage limit is the maximum number of times a checkpoint can be loaded before it is reset.
+            The checkpoint is selected based on the whitelist and blacklist regex patterns. The whitelist regex is used to filter the checkpoints that match the pattern.
+            The blacklist regex is used to exclude the checkpoints that match the pattern.
+            If no checkpoints are available after applying the whitelist and blacklist regex, an error is raised.
             If all checkpoints have reached the usage limit, the usage count is reset, and the process is repeated until an eligible checkpoint is found.
             """,
             inputs=[
@@ -390,10 +390,10 @@ class RandomCheckpointLoader(comfy_io.ComfyNode):
         """Get all available checkpoints and filter out None/empty values"""
         all_checkpoints = comfy_paths.get_filename_list("checkpoints")
         valid_checkpoints = [cp for cp in all_checkpoints if cp]
-        
+
         print(f"Total checkpoints found: {len(all_checkpoints)}")
         print(f"Valid checkpoints: {len(valid_checkpoints)}")
-        
+
         return valid_checkpoints
 
     @classmethod
@@ -402,12 +402,12 @@ class RandomCheckpointLoader(comfy_io.ComfyNode):
         # Process whitelist patterns
         if whitelist_regex.strip():
             whitelist_patterns = [
-                re.compile(pattern.strip()) 
-                for pattern in whitelist_regex.split('\n') 
+                re.compile(pattern.strip())
+                for pattern in whitelist_regex.split('\n')
                 if pattern.strip()
             ]
             checkpoints = [
-                cp for cp in checkpoints 
+                cp for cp in checkpoints
                 if any(pattern.search(cp) for pattern in whitelist_patterns)
             ]
             print(f"Checkpoints after whitelist: {len(checkpoints)}")
@@ -415,12 +415,12 @@ class RandomCheckpointLoader(comfy_io.ComfyNode):
         # Process blacklist patterns
         if blacklist_regex.strip():
             blacklist_patterns = [
-                re.compile(pattern.strip()) 
-                for pattern in blacklist_regex.split('\n') 
+                re.compile(pattern.strip())
+                for pattern in blacklist_regex.split('\n')
                 if pattern.strip()
             ]
             checkpoints = [
-                cp for cp in checkpoints 
+                cp for cp in checkpoints
                 if not any(pattern.search(cp) for pattern in blacklist_patterns)
             ]
             print(f"Checkpoints after blacklist: {len(checkpoints)}")

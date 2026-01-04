@@ -4,10 +4,10 @@ from typing import Optional, Tuple, Union
 
 class CurrentDateTime(comfy_io.ComfyNode):
     """Enhanced datetime utility with timezone support and flexible formatting."""
-    
+
     SUPPORTED_FORMATS = [
         "YYYY-MM-DD_HH-MM-SS",
-        "YYYY-MM-DD HH:MM:SS", 
+        "YYYY-MM-DD HH:MM:SS",
         "YYYY/MM/DD HH:MM:SS",
         "DD-MM-YYYY HH:MM:SS",
         "MM/DD/YYYY HH:MM:SS",
@@ -15,7 +15,7 @@ class CurrentDateTime(comfy_io.ComfyNode):
         "Unix Timestamp",
         "Custom"
     ]
-    
+
     @classmethod
     def define_schema(cls) -> comfy_io.Schema:
         return comfy_io.Schema(
@@ -53,35 +53,35 @@ class CurrentDateTime(comfy_io.ComfyNode):
         """Get current datetime with enhanced formatting and timezone support."""
         print("=============================")
         print("== Enhanced DateTime Utility")
-        
+
         try:
             # Determine timezone
             tz = cls._get_timezone(timezone, custom_timezone)
-            
+
             # Get current datetime
             now = datetime.now(tz) if tz else datetime.now()
-            
+
             # Log current time
             print(f"Current datetime: {now.strftime('%Y-%m-%d %H:%M:%S %Z')}")
             print(f"Timezone: {timezone}")
             print(f"Format: {format}")
-            
+
             # Format datetime based on selection
             formatted_dt = cls._format_datetime(now, format, custom_format)
             iso_dt = now.isoformat()
             timestamp = int(now.timestamp())
-            
+
             print(f"Formatted output: {formatted_dt}")
-            
+
             return comfy_io.NodeOutput(formatted_dt, iso_dt, timestamp)
-            
+
         except Exception as e:
             error_msg = f"Error in datetime processing: {str(e)}"
             print(f"ERROR: {error_msg}")
             # Return fallback values
             fallback_time = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
             return comfy_io.NodeOutput(fallback_time, datetime.now().isoformat(), int(time.time()))
-    
+
     @classmethod
     def _get_timezone(cls, timezone: str, custom_timezone: str) -> Optional[pytz.BaseTzInfo]:
         """Get timezone object based on selection."""
@@ -101,7 +101,7 @@ class CurrentDateTime(comfy_io.ComfyNode):
             except pytz.exceptions.UnknownTimeZoneError:
                 print(f"WARNING: Unknown timezone '{timezone}', falling back to local time")
                 return None
-    
+
     @classmethod
     def _format_datetime(cls, dt: datetime, format_type: str, custom_format: str) -> str:
         """Format datetime based on selected format type."""
@@ -115,7 +115,7 @@ class CurrentDateTime(comfy_io.ComfyNode):
             "Unix Timestamp": None,  # Special case
             "Custom": custom_format
         }
-        
+
         if format_type == "ISO 8601":
             return dt.isoformat()
         elif format_type == "Unix Timestamp":
@@ -132,7 +132,7 @@ class CurrentDateTime(comfy_io.ComfyNode):
 
 class TimestampConverter(comfy_io.ComfyNode):
     """Convert between different timestamp formats and timezones."""
-    
+
     @classmethod
     def define_schema(cls) -> comfy_io.Schema:
         return comfy_io.Schema(
@@ -166,20 +166,20 @@ class TimestampConverter(comfy_io.ComfyNode):
         needed = []
         if input_type == "Formatted String" and input_format is None:
             needed.append("input_format")
-        
+
         if output_format == "Custom" and output_custom_format is None:
             needed.append("output_custom_format")
-            
+
         if source_timezone == "Custom" and custom_source_tz is None:
             needed.append("custom_source_tz")
-            
+
         if target_timezone == "Custom" and custom_target_tz is None:
             needed.append("custom_target_tz")
-            
+
         return needed
 
     @classmethod
-    def execute(cls, input_type: str, input_value: str, output_format: str, 
+    def execute(cls, input_type: str, input_value: str, output_format: str,
                          source_timezone: str, target_timezone: str,
                          input_format: str, output_custom_format: str,
                          custom_source_tz: str, custom_target_tz: str, **kwargs) -> comfy_io.NodeOutput:
@@ -188,32 +188,32 @@ class TimestampConverter(comfy_io.ComfyNode):
         print("== Timestamp Converter")
         print(f"Input type: {input_type}")
         print(f"Input value: {input_value}")
-        
+
         try:
             # Parse input
             dt = cls._parse_input(input_type, input_value, input_format, source_timezone, custom_source_tz)
-            
+
             # Convert timezone
             target_dt = cls._convert_timezone(dt, target_timezone, custom_target_tz)
-            
+
             # Format output
             formatted_dt = cls._format_output(target_dt, output_format, output_custom_format)
             iso_dt = target_dt.isoformat()
             timestamp = int(target_dt.timestamp())
-            
+
             print(f"Converted output: {formatted_dt}")
-            
+
             return comfy_io.NodeOutput(formatted_dt, iso_dt, timestamp)
-            
+
         except Exception as e:
             error_msg = f"Error in timestamp conversion: {str(e)}"
             print(f"ERROR: {error_msg}")
             # Return error message and current time as fallback
             now = datetime.now()
             return comfy_io.NodeOutput(error_msg, now.isoformat(), int(now.timestamp()))
-    
+
     @classmethod
-    def _parse_input(cls, input_type: str, input_value: str, input_format: str, 
+    def _parse_input(cls, input_type: str, input_value: str, input_format: str,
                     source_timezone: str, custom_source_tz: str) -> datetime:
         """Parse input value based on input type."""
         if input_type == "Unix Timestamp":
@@ -229,18 +229,18 @@ class TimestampConverter(comfy_io.ComfyNode):
                 if tz:
                     dt = tz.localize(dt)
             return dt
-    
+
     @classmethod
     def _convert_timezone(cls, dt: datetime, target_timezone: str, custom_target_tz: str) -> datetime:
         """Convert datetime to target timezone."""
         if target_timezone == "Local":
             return dt.astimezone() if dt.tzinfo else dt
-        
+
         target_tz = cls._get_timezone(target_timezone, custom_target_tz)
         if target_tz:
             return dt.astimezone(target_tz) if dt.tzinfo else target_tz.localize(dt)
         return dt
-    
+
     @classmethod
     def _get_timezone(cls, timezone: str, custom_timezone: str) -> Optional[pytz.BaseTzInfo]:
         """Get timezone object based on selection."""
@@ -258,7 +258,7 @@ class TimestampConverter(comfy_io.ComfyNode):
             except pytz.exceptions.UnknownTimeZoneError:
                 print(f"WARNING: Unknown timezone '{timezone}', falling back to UTC")
                 return pytz.UTC
-    
+
     @classmethod
     def _format_output(cls, dt: datetime, format_type: str, custom_format: str) -> str:
         """Format datetime for output."""
@@ -272,7 +272,7 @@ class TimestampConverter(comfy_io.ComfyNode):
             "Unix Timestamp": None,
             "Custom": custom_format
         }
-        
+
         if format_type == "ISO 8601":
             return dt.isoformat()
         elif format_type == "Unix Timestamp":
@@ -290,7 +290,7 @@ class TimestampConverter(comfy_io.ComfyNode):
 
 class RandomSeed(comfy_io.ComfyNode):
     """Generate random seeds with optional constraints."""
-    
+
     @classmethod
     def define_schema(cls) -> comfy_io.Schema:
         return comfy_io.Schema(
@@ -321,7 +321,7 @@ class RandomSeed(comfy_io.ComfyNode):
         print("=============================")
         print("== Random Seed Generator")
         print(f"Mode: {mode}")
-        
+
         try:
             if mode == "Random":
                 seed = random.randint(min_value, max_value)
@@ -334,12 +334,12 @@ class RandomSeed(comfy_io.ComfyNode):
             else:  # Custom Range
                 seed = random.randint(min_value, max_value)
                 info = f"Custom range seed: {seed} (range: {min_value}-{max_value})"
-            
+
             print(f"Generated seed: {seed}")
             print(f"Seed info: {info}")
-            
+
             return comfy_io.NodeOutput(seed, info)
-            
+
         except Exception as e:
             error_msg = f"Error generating seed: {str(e)}"
             print(f"ERROR: {error_msg}")

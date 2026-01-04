@@ -6,7 +6,7 @@ from typing import Dict, List, Tuple, Any, Optional, Union
 
 class RandomJSONSelector(comfy_io.ComfyNode):
     """Select random items from JSON files in the workspace."""
-    
+
     @classmethod
     def define_schema(cls) -> comfy_io.Schema:
         return comfy_io.Schema(
@@ -83,15 +83,15 @@ class RandomJSONSelector(comfy_io.ComfyNode):
     @classmethod
     def execute(cls, json_file: str, category: str, count: int, seed: int, separator: str, prefix: str, suffix: str, **kwargs) -> comfy_io.NodeOutput:
         """Select random items from a JSON file."""
-        
+
         # Set random seed if provided
         if seed != -1:
             random.seed(seed)
-        
+
         # Get the base path (parent directory of nodes)
         base_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
         filepath = os.path.join(base_path, json_file)
-        
+
         try:
             with open(filepath, "r", encoding="utf-8") as file:
                 data = json.load(file)
@@ -101,7 +101,7 @@ class RandomJSONSelector(comfy_io.ComfyNode):
         except json.JSONDecodeError as e:
             print(f"Error decoding JSON file {json_file}: {e}")
             return comfy_io.NodeOutput("", "")
-        
+
         # If category is specified, use it; otherwise pick random category
         if category and category in data:
             selected_category = category
@@ -114,14 +114,14 @@ class RandomJSONSelector(comfy_io.ComfyNode):
             categories = list(data.keys())
             selected_category = random.choice(categories)
             items = data[selected_category]
-        
+
         # Select random items
         if not items:
             return comfy_io.NodeOutput("", selected_category)
-        
+
         selected_items = random.sample(items, min(count, len(items)))
         result = separator.join(selected_items)
-        
+
         # Add prefix and suffix if provided
         if prefix and suffix:
             result = f"{prefix.strip()}, {result}, {suffix.strip()}"
@@ -129,13 +129,13 @@ class RandomJSONSelector(comfy_io.ComfyNode):
             result = f"{prefix.strip()}, {result}"
         elif suffix:
             result = f"{result}, {suffix.strip()}"
-        
+
         print(f"Selected from {json_file}[{selected_category}]: {result}")
         return comfy_io.NodeOutput(result, selected_category)
 
 class SmartPromptBuilder(comfy_io.ComfyNode):
     """Build intelligent prompts by combining multiple elements."""
-    
+
     @classmethod
     def define_schema(cls) -> comfy_io.Schema:
         return comfy_io.Schema(
@@ -175,28 +175,28 @@ class SmartPromptBuilder(comfy_io.ComfyNode):
         )
 
     @classmethod
-    def execute(cls, prompt_type: str, gender: str, complexity: str, seed: int, 
+    def execute(cls, prompt_type: str, gender: str, complexity: str, seed: int,
                     custom_elements: str, style_preference: str, exclude_categories: str, prefix: str, suffix: str, **kwargs) -> comfy_io.NodeOutput:
         """Build an intelligent prompt based on the specified parameters."""
-        
+
         if seed != -1:
             random.seed(seed)
-        
+
         base_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
         excluded_cats = [cat.strip().lower() for cat in exclude_categories.split(",") if cat.strip()]
-        
+
         # Handle random prompt type selection
         if prompt_type == "Random":
             available_types = ["Portrait", "Fashion", "Artistic", "Scenic", "Character", "Fantasy", "Modern", "Traditional", "Sensual", "Erotic", "Intimate", "Fetish"]
             prompt_type = random.choice(available_types)
-        
+
         # Define spicy themes
         spicy_themes = ["Sensual", "Erotic", "Intimate", "Fetish"]
-        
+
         # Define prompt templates based on type
         prompt_components = []
         description_parts = []
-        
+
         # Character/Subject
         if prompt_type in ["Portrait", "Character", "Fashion"]:
             # Add name
@@ -206,18 +206,18 @@ class SmartPromptBuilder(comfy_io.ComfyNode):
                 name = cls._get_random_from_file(base_path, "names_male.json")
             else:
                 name = cls._get_random_from_file(base_path, random.choice(["names_female.json", "names_male.json"]))
-            
+
             if name:
                 prompt_components.append(name)
                 description_parts.append(f"Name: {name}")
-            
+
             # Add nationality/ethnicity
             if "nationality" not in excluded_cats:
                 nationality = cls._get_random_from_file(base_path, "nationality_by_continent.json")
                 if nationality:
                     prompt_components.append(f"{nationality} person")
                     description_parts.append(f"Nationality: {nationality}")
-        
+
         # Appearance
         if prompt_type in ["Portrait", "Character", "Fashion"]:
             # Hair
@@ -229,22 +229,22 @@ class SmartPromptBuilder(comfy_io.ComfyNode):
                     hair_style = cls._get_random_from_file(base_path, "hair_male.json")
                 else:
                     hair_style = cls._get_random_from_file(base_path, random.choice(["hair_female.json", "hair_male.json"]))
-                
+
                 if hair_color and hair_style:
                     prompt_components.append(f"{hair_color} {hair_style}")
                     description_parts.append(f"Hair: {hair_color} {hair_style}")
-            
+
             # Facial expression
             if "expression" not in excluded_cats:
                 expression = cls._get_random_from_file(base_path, "facial_expressions.json")
                 if expression:
                     prompt_components.append(expression)
                     description_parts.append(f"Expression: {expression}")
-        
+
         # Clothing
         if prompt_type in ["Portrait", "Character", "Fashion"] or prompt_type in spicy_themes:
             clothing_items = []
-            
+
             # Determine clothing files based on theme and gender
             if prompt_type in spicy_themes:
                 # Use spicy attire for spicy themes
@@ -263,24 +263,24 @@ class SmartPromptBuilder(comfy_io.ComfyNode):
                 else:
                     clothing_files = [random.choice(["attire_female_topwear.json", "attire_male_topwear.json"]),
                                     random.choice(["attire_female_bottomwear.json", "attire_male_bottomwear.json"])]
-            
+
             if "clothing" not in excluded_cats:
                 for clothing_file in clothing_files:
                     item = cls._get_random_from_file(base_path, clothing_file)
                     if item:
                         clothing_items.append(item)
-                
+
                 if clothing_items:
                     prompt_components.extend(clothing_items)
                     description_parts.append(f"Clothing: {', '.join(clothing_items)}")
-            
+
             # Accessories
             if "accessories" not in excluded_cats and complexity in ["Medium", "Complex"]:
                 accessory = cls._get_random_from_file(base_path, "attire_jewelry_and_accessories.json")
                 if accessory:
                     prompt_components.append(accessory)
                     description_parts.append(f"Accessories: {accessory}")
-        
+
         # Pose/Posture
         if (prompt_type in ["Portrait", "Character", "Fashion"] or prompt_type in spicy_themes) and "pose" not in excluded_cats:
             if prompt_type in spicy_themes:
@@ -288,20 +288,20 @@ class SmartPromptBuilder(comfy_io.ComfyNode):
                 pose_files = ["poses.json", "posture_basic.json", "posture_hug.json"]
             else:
                 pose_files = ["poses.json", "posture_basic.json", "posture_arm.json"]
-            
+
             pose_file = random.choice(pose_files)
             pose = cls._get_random_from_file(base_path, pose_file)
             if pose:
                 prompt_components.append(pose)
                 description_parts.append(f"Pose: {pose}")
-        
+
         # Location/Background
         if prompt_type in ["Scenic", "Fantasy", "Character"] and "location" not in excluded_cats:
             location = cls._get_random_from_file(base_path, "locations.json")
             if location:
                 prompt_components.append(f"in {location}")
                 description_parts.append(f"Location: {location}")
-        
+
         # Style
         if style_preference:
             prompt_components.append(style_preference)
@@ -311,7 +311,7 @@ class SmartPromptBuilder(comfy_io.ComfyNode):
             if style:
                 prompt_components.append(style)
                 description_parts.append(f"Style: {style}")
-        
+
         # Add complexity-based elements
         if complexity == "Complex":
             # Add patterns/materials
@@ -320,22 +320,22 @@ class SmartPromptBuilder(comfy_io.ComfyNode):
                 if pattern:
                     prompt_components.append(pattern)
                     description_parts.append(f"Pattern: {pattern}")
-            
+
             # Add interesting ideas
             if "ideas" not in excluded_cats:
                 idea = cls._get_random_from_file(base_path, "interesting_ideas.json")
                 if idea:
                     prompt_components.append(idea)
                     description_parts.append(f"Creative element: {idea}")
-        
+
         # Add custom elements
         if custom_elements:
             prompt_components.append(custom_elements)
             description_parts.append(f"Custom: {custom_elements}")
-        
+
         # Build final prompt
         final_prompt = ", ".join(prompt_components)
-        
+
         # Add prefix and suffix if provided
         if prefix and suffix:
             final_prompt = f"{prefix.strip()}, {final_prompt}, {suffix.strip()}"
@@ -343,12 +343,12 @@ class SmartPromptBuilder(comfy_io.ComfyNode):
             final_prompt = f"{prefix.strip()}, {final_prompt}"
         elif suffix:
             final_prompt = f"{final_prompt}, {suffix.strip()}"
-        
+
         description = " | ".join(description_parts)
-        
+
         print(f"Generated {prompt_type} prompt: {final_prompt}...")
         return comfy_io.NodeOutput(final_prompt, description)
-    
+
     @classmethod
     def _get_random_from_file(cls, base_path: str, filename: str) -> Optional[str]:
         """Get a random item from a JSON file."""
@@ -356,20 +356,20 @@ class SmartPromptBuilder(comfy_io.ComfyNode):
         try:
             with open(filepath, "r", encoding="utf-8") as file:
                 data = json.load(file)
-            
+
             # Get all items from all categories
             all_items = []
             for category, items in data.items():
                 if isinstance(items, list):
                     all_items.extend(items)
-            
+
             return random.choice(all_items) if all_items else None
         except (FileNotFoundError, json.JSONDecodeError):
             return None
 
 class PromptTemplateManager(comfy_io.ComfyNode):
     """Manage and use pre-built prompt templates."""
-    
+
     @classmethod
     def define_schema(cls) -> comfy_io.Schema:
         return comfy_io.Schema(
@@ -417,12 +417,12 @@ class PromptTemplateManager(comfy_io.ComfyNode):
     @classmethod
     def execute(cls, template: str, gender: str, variation_level: str, seed: int, custom_additions: str, prefix: str, suffix: str, **kwargs) -> comfy_io.NodeOutput:
         """Generate a prompt from a predefined template."""
-        
+
         if seed != -1:
             random.seed(seed)
-        
+
         base_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-        
+
         # Handle random template selection
         if template == "Random":
             available_templates = [
@@ -433,7 +433,7 @@ class PromptTemplateManager(comfy_io.ComfyNode):
                 "Seductive Pose", "Intimate Scene", "Fetish Fashion", "Erotic Art", "Spicy Romance"
             ]
             template = random.choice(available_templates)
-        
+
         # Define templates
         templates = {
             "Elegant Portrait": {
@@ -584,13 +584,13 @@ class PromptTemplateManager(comfy_io.ComfyNode):
                 "required": ["passionate", "romantic"]
             }
         }
-        
+
         template_config = templates.get(template, templates["Elegant Portrait"])
         prompt_parts = [template_config["base"]]
-        
+
         # Add gender-appropriate clothing
         spicy_templates = ["Sensual Lingerie", "Seductive Pose", "Intimate Scene", "Fetish Fashion", "Erotic Art", "Spicy Romance"]
-        
+
         if template in spicy_templates:
             # Use spicy attire for spicy themes
             if template == "Sensual Lingerie":
@@ -609,34 +609,34 @@ class PromptTemplateManager(comfy_io.ComfyNode):
                 clothing_files = ["attire_male_topwear.json", "attire_male_bottomwear.json"]
             else:
                 clothing_files = [random.choice(["attire_female_topwear.json", "attire_male_topwear.json"])]
-        
+
         for clothing_file in clothing_files:
             item = cls._get_random_from_file(base_path, clothing_file)
             if item:
                 prompt_parts.append(item)
-        
+
         # Add template-specific elements
         variation_count = {"Low": 1, "Medium": 2, "High": 3}[variation_level]
-        
+
         for element_file in template_config["elements"][:variation_count]:
             item = cls._get_random_from_file(base_path, element_file)
             if item:
                 prompt_parts.append(item)
-        
+
         # Add required elements
         prompt_parts.extend(template_config["required"])
-        
+
         # Add style
         if template_config["styles"]:
             style = random.choice(template_config["styles"])
             prompt_parts.append(style)
-        
+
         # Add custom additions
         if custom_additions:
             prompt_parts.append(custom_additions)
-        
+
         final_prompt = ", ".join(prompt_parts)
-        
+
         # Add prefix and suffix if provided
         if prefix and suffix:
             final_prompt = f"{prefix.strip()}, {final_prompt}, {suffix.strip()}"
@@ -644,12 +644,12 @@ class PromptTemplateManager(comfy_io.ComfyNode):
             final_prompt = f"{prefix.strip()}, {final_prompt}"
         elif suffix:
             final_prompt = f"{final_prompt}, {suffix.strip()}"
-        
+
         template_info = f"Template: {template} | Gender: {gender} | Variation: {variation_level}"
-        
+
         print(f"Generated template prompt: {final_prompt}...")
         return comfy_io.NodeOutput(final_prompt, template_info)
-    
+
     @classmethod
     def _get_random_from_file(cls, base_path: str, filename: str) -> Optional[str]:
         """Get a random item from a JSON file."""
@@ -657,20 +657,20 @@ class PromptTemplateManager(comfy_io.ComfyNode):
         try:
             with open(filepath, "r", encoding="utf-8") as file:
                 data = json.load(file)
-            
+
             # Get all items from all categories
             all_items = []
             for category, items in data.items():
                 if isinstance(items, list):
                     all_items.extend(items)
-            
+
             return random.choice(all_items) if all_items else None
         except (FileNotFoundError, json.JSONDecodeError):
             return None
 
 class PromptEnhancer(comfy_io.ComfyNode):
     """Enhance existing prompts with additional elements."""
-    
+
     @classmethod
     def define_schema(cls) -> comfy_io.Schema:
         return comfy_io.Schema(
@@ -709,12 +709,12 @@ class PromptEnhancer(comfy_io.ComfyNode):
     @classmethod
     def execute(cls, prompt: str, enhancement_type: str, intensity: str, seed: int, custom_enhancements: str, prefix: str, suffix: str, **kwargs) -> comfy_io.NodeOutput:
         """Enhance a prompt with additional elements."""
-        
+
         if seed != -1:
             random.seed(seed)
-        
+
         base_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-        
+
         # Handle random enhancement type selection
         if enhancement_type == "Random":
             available_types = [
@@ -723,7 +723,7 @@ class PromptEnhancer(comfy_io.ComfyNode):
                 "Atmospheric", "Professional", "Sensual Enhancement", "Seductive Mood"
             ]
             enhancement_type = random.choice(available_types)
-        
+
         # Define enhancement categories
         enhancements = {
             "Artistic Style": {
@@ -787,28 +787,28 @@ class PromptEnhancer(comfy_io.ComfyNode):
                 "strong": ["devastatingly seductive", "irresistibly provocative", "spellbindingly alluring", "intensely magnetic"]
             }
         }
-        
+
         # Get enhancement level
         level = intensity.lower()
         enhancement_list = enhancements.get(enhancement_type, enhancements["Artistic Style"])
-        
+
         # Select enhancements based on intensity
         count = {"subtle": 1, "moderate": 2, "strong": 3}[level]
         selected_enhancements = random.sample(enhancement_list[level], min(count, len(enhancement_list[level])))
-        
+
         # Also add some style elements
         if enhancement_type == "Artistic Style":
             style_item = cls._get_random_from_file(base_path, "styles.json")
             if style_item:
                 selected_enhancements.append(style_item)
-        
+
         # Add custom enhancements
         if custom_enhancements:
             selected_enhancements.extend([e.strip() for e in custom_enhancements.split(",") if e.strip()])
-        
+
         # Combine with original prompt
         enhanced_prompt = f"{prompt}, {', '.join(selected_enhancements)}"
-        
+
         # Add prefix and suffix if provided
         if prefix and suffix:
             enhanced_prompt = f"{prefix.strip()}, {enhanced_prompt}, {suffix.strip()}"
@@ -816,12 +816,12 @@ class PromptEnhancer(comfy_io.ComfyNode):
             enhanced_prompt = f"{prefix.strip()}, {enhanced_prompt}"
         elif suffix:
             enhanced_prompt = f"{enhanced_prompt}, {suffix.strip()}"
-        
+
         enhancements_applied = f"Applied {enhancement_type} ({intensity}): {', '.join(selected_enhancements)}"
-        
+
         print(f"Enhanced prompt with {enhancement_type}: {enhanced_prompt}...")
         return comfy_io.NodeOutput(enhanced_prompt, enhancements_applied)
-    
+
     @classmethod
     def _get_random_from_file(cls, base_path: str, filename: str) -> Optional[str]:
         """Get a random item from a JSON file."""
@@ -829,20 +829,20 @@ class PromptEnhancer(comfy_io.ComfyNode):
         try:
             with open(filepath, "r", encoding="utf-8") as file:
                 data = json.load(file)
-            
+
             # Get all items from all categories
             all_items = []
             for category, items in data.items():
                 if isinstance(items, list):
                     all_items.extend(items)
-            
+
             return random.choice(all_items) if all_items else None
         except (FileNotFoundError, json.JSONDecodeError):
             return None
 
 class QuickPromptGenerator(comfy_io.ComfyNode):
     """Generate complete prompts with one click."""
-    
+
     @classmethod
     def define_schema(cls) -> comfy_io.Schema:
         return comfy_io.Schema(
@@ -889,12 +889,12 @@ class QuickPromptGenerator(comfy_io.ComfyNode):
     @classmethod
     def execute(cls, prompt_style: str, subject_type: str, gender: str, quality_level: str, seed: int, prefix: str, suffix: str, **kwargs) -> comfy_io.NodeOutput:
         """Generate a complete, amazing prompt with one click."""
-        
+
         if seed != -1:
             random.seed(seed)
-        
+
         base_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-        
+
         # Handle random prompt style selection
         if prompt_style == "Random":
             available_styles = [
@@ -905,7 +905,7 @@ class QuickPromptGenerator(comfy_io.ComfyNode):
                 "Seductive Portrait", "Intimate Mood", "Erotic Art"
             ]
             prompt_style = random.choice(available_styles)
-        
+
         # Quality prefixes based on level
         quality_prefixes = {
             "Good": ["high quality", "professional"],
@@ -913,7 +913,7 @@ class QuickPromptGenerator(comfy_io.ComfyNode):
             "Amazing": ["breathtaking", "masterpiece", "award-winning", "stunning", "incredible"],
             "Legendary": ["legendary masterpiece", "godlike", "transcendent", "otherworldly", "divine perfection"]
         }
-        
+
         # Style-specific elements
         style_configs = {
             "Amazing Portrait": {
@@ -1012,11 +1012,11 @@ class QuickPromptGenerator(comfy_io.ComfyNode):
                 "style": ["artistic lighting", "fine art aesthetics"]
             }
         }
-        
+
         config = style_configs.get(prompt_style, style_configs["Amazing Portrait"])
         prompt_parts = []
         breakdown_parts = []
-        
+
         # Add prefix if provided
         if prefix:
             # Clean prefix and ensure it doesn't end with comma
@@ -1025,25 +1025,25 @@ class QuickPromptGenerator(comfy_io.ComfyNode):
                 clean_prefix = clean_prefix[:-1].strip()
             prompt_parts.append(clean_prefix)
             breakdown_parts.append(f"Prefix: {clean_prefix}")
-        
+
         # Add quality prefix
         quality_terms = quality_prefixes[quality_level]
         selected_quality = random.choice(quality_terms)
         prompt_parts.append(selected_quality)
         breakdown_parts.append(f"Quality: {selected_quality}")
-        
+
         # Add base style
         prompt_parts.append(config["base"])
         breakdown_parts.append(f"Base: {config['base']}")
-        
+
         # Add subject
         if subject_type != "Person":
             prompt_parts.append(f"of a {subject_type.lower()}")
             breakdown_parts.append(f"Subject: {subject_type}")
-        
+
         # Add character details
         character_parts = []
-        
+
         # Name
         if gender == "Female":
             name = cls._get_random_from_file(base_path, "names_female.json")
@@ -1051,17 +1051,17 @@ class QuickPromptGenerator(comfy_io.ComfyNode):
             name = cls._get_random_from_file(base_path, "names_male.json")
         else:
             name = cls._get_random_from_file(base_path, random.choice(["names_female.json", "names_male.json"]))
-        
+
         if name:
             character_parts.append(name)
             breakdown_parts.append(f"Name: {name}")
-        
+
         # Nationality
         nationality = cls._get_random_from_file(base_path, "nationality_by_continent.json")
         if nationality:
             character_parts.append(f"{nationality} person")
             breakdown_parts.append(f"Nationality: {nationality}")
-        
+
         # Hair
         hair_color = cls._get_random_from_file(base_path, "hair_colors.json")
         if gender == "Female":
@@ -1070,20 +1070,20 @@ class QuickPromptGenerator(comfy_io.ComfyNode):
             hair_style = cls._get_random_from_file(base_path, "hair_male.json")
         else:
             hair_style = cls._get_random_from_file(base_path, random.choice(["hair_female.json", "hair_male.json"]))
-        
+
         if hair_color and hair_style:
             character_parts.append(f"{hair_color} {hair_style}")
             breakdown_parts.append(f"Hair: {hair_color} {hair_style}")
-        
+
         # Expression
         expression = cls._get_random_from_file(base_path, "facial_expressions.json")
         if expression:
             character_parts.append(expression)
             breakdown_parts.append(f"Expression: {expression}")
-        
+
         # Clothing
         spicy_styles = ["Sensual Beauty", "Seductive Portrait", "Intimate Mood", "Erotic Art"]
-        
+
         if prompt_style in spicy_styles:
             # Use spicy attire for spicy styles
             if prompt_style == "Sensual Beauty":
@@ -1102,43 +1102,43 @@ class QuickPromptGenerator(comfy_io.ComfyNode):
                 clothing_files = ["attire_male_topwear.json", "attire_male_bottomwear.json"]
             else:
                 clothing_files = [random.choice(["attire_female_topwear.json", "attire_male_topwear.json"])]
-        
+
         clothing_items = []
         for clothing_file in clothing_files:
             item = cls._get_random_from_file(base_path, clothing_file)
             if item:
                 clothing_items.append(item)
-        
+
         if clothing_items:
             character_parts.extend(clothing_items)
             breakdown_parts.append(f"Clothing: {', '.join(clothing_items)}")
-        
+
         # Accessories
         accessory = cls._get_random_from_file(base_path, "attire_jewelry_and_accessories.json")
         if accessory:
             character_parts.append(accessory)
             breakdown_parts.append(f"Accessory: {accessory}")
-        
+
         # Pose
         pose = cls._get_random_from_file(base_path, "poses.json")
         if pose:
             character_parts.append(pose)
             breakdown_parts.append(f"Pose: {pose}")
-        
+
         # Add character parts to prompt
         if character_parts:
             prompt_parts.extend(character_parts)
-        
+
         # Add style-specific quality and style elements
         prompt_parts.extend(config["quality"])
         prompt_parts.extend(config["style"])
-        
+
         # Add artistic style
         artistic_style = cls._get_random_from_file(base_path, "styles.json")
         if artistic_style:
             prompt_parts.append(artistic_style)
             breakdown_parts.append(f"Art Style: {artistic_style}")
-        
+
         # Add suffix if provided
         if suffix:
             # Clean suffix and ensure it doesn't start with comma
@@ -1147,15 +1147,15 @@ class QuickPromptGenerator(comfy_io.ComfyNode):
                 clean_suffix = clean_suffix[1:].strip()
             prompt_parts.append(clean_suffix)
             breakdown_parts.append(f"Suffix: {clean_suffix}")
-        
+
         # Final assembly
         complete_prompt = ", ".join(prompt_parts)
         prompt_breakdown = " | ".join(breakdown_parts)
         settings_used = f"Style: {prompt_style} | Subject: {subject_type} | Gender: {gender} | Quality: {quality_level}"
-        
+
         print(f"Generated complete prompt: {complete_prompt}...")
         return comfy_io.NodeOutput(complete_prompt, prompt_breakdown, settings_used)
-    
+
     @classmethod
     def _get_random_from_file(cls, base_path: str, filename: str) -> Optional[str]:
         """Get a random item from a JSON file."""
@@ -1163,13 +1163,13 @@ class QuickPromptGenerator(comfy_io.ComfyNode):
         try:
             with open(filepath, "r", encoding="utf-8") as file:
                 data = json.load(file)
-            
+
             # Get all items from all categories
             all_items = []
             for category, items in data.items():
                 if isinstance(items, list):
                     all_items.extend(items)
-            
+
             return random.choice(all_items) if all_items else None
         except (FileNotFoundError, json.JSONDecodeError):
             return None

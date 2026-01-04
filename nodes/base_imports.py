@@ -41,6 +41,7 @@ from collections import defaultdict
 import hashlib
 import node_helpers
 import requests
+from comfy_api.latest import io as comfy_io, ui as comfy_ui
 
 dirPath = os.path.dirname(os.path.realpath(__file__))
 ALLOWED_EXT = ('jpeg', 'jpg', 'png', 'tiff', 'gif', 'bmp', 'webp')

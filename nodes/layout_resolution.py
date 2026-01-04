@@ -5,24 +5,26 @@ LAYOUT_LANDSCAPE = "Landscape"
 LAYOUT_PORTRAIT = "Portrait"
 LAYOUT_SQUARE = "Square"
 
-class LayoutSwitch:
+class LayoutSwitch(comfy_io.ComfyNode):
     @classmethod
-    def INPUT_TYPES(cls):
-        return {
-            "required": {
-                "width": ("INT", {"default": 1024}),
-                "height": ("INT", {"default": 1024}),
-                "layout": ([LAYOUT_LANDSCAPE, LAYOUT_PORTRAIT, LAYOUT_SQUARE], {"default": LAYOUT_LANDSCAPE}),
-            },
-        }
+    def define_schema(cls) -> comfy_io.Schema:
+        return comfy_io.Schema(
+            node_id="LayoutSwitch",
+            display_name="Switch Layout",
+            category="t4ggno/utils",
+            inputs=[
+                comfy_io.Int.Input("width", default=1024),
+                comfy_io.Int.Input("height", default=1024),
+                comfy_io.Combo.Input("layout", options=[LAYOUT_LANDSCAPE, LAYOUT_PORTRAIT, LAYOUT_SQUARE], default=LAYOUT_LANDSCAPE),
+            ],
+            outputs=[
+                comfy_io.Int.Output(display_name="width"),
+                comfy_io.Int.Output(display_name="height"),
+            ]
+        )
 
-    RETURN_TYPES = ("INT", "INT")
-    RETURN_NAMES = ("width", "height")
-    FUNCTION = "render_resolution"
-    CATEGORY = "t4ggno/utils"
-    OUTPUT_NODE = False
-
-    def render_resolution(self, width: int, height: int, layout: str) -> Tuple[int, int]:
+    @classmethod
+    def execute(cls, width: int, height: int, layout: str, **kwargs) -> comfy_io.NodeOutput:
         print(f"Layout Switch: {layout}")
 
         if layout == LAYOUT_LANDSCAPE:
@@ -36,7 +38,7 @@ class LayoutSwitch:
             result_width, result_height = width, height
 
         print(f"Output: {result_width}x{result_height}")
-        return (result_width, result_height)
+        return comfy_io.NodeOutput(result_width, result_height)
 
 DIMENSION_1_5 = "1.5"
 DIMENSION_SDXL = "SDXL"
@@ -70,33 +72,33 @@ RESOLUTION_MAPPINGS = {
     }
 }
 
-class PredefinedResolutions:
+class PredefinedResolutions(comfy_io.ComfyNode):
     @classmethod
-    def INPUT_TYPES(cls):
-        return {
-            "required": {
-                "dimension": ([DIMENSION_1_5, DIMENSION_SDXL, DIMENSION_FAMOUS], {"default": DIMENSION_SDXL}),
-                "layout": ([LAYOUT_SQUARE, LAYOUT_LANDSCAPE, LAYOUT_ULTRA_WIDE, LAYOUT_PORTRAIT, LAYOUT_ULTRA_TALL, LAYOUT_RANDOM], {"default": LAYOUT_SQUARE}),
-                "enable_square_random": ("BOOLEAN", {"default": True, "lazy": True}),
-                "enable_landscape_random": ("BOOLEAN", {"default": True, "lazy": True}),
-                "enable_ultra_wide_random": ("BOOLEAN", {"default": True, "lazy": True}),
-                "enable_portrait_random": ("BOOLEAN", {"default": True, "lazy": True}),
-                "enable_ultra_tall_random": ("BOOLEAN", {"default": True, "lazy": True}),
-                "scale": ("FLOAT", {"default": 1.0, "min": 0.1, "max": 10.0, "step": 0.1}),
-            },
-            "hidden": {
-                "control_after_generate": (["fixed", "random", "increment"], {"default": "increment"}),
-                "value": ("INT", {"default": 0}),
-            },
-        }
+    def define_schema(cls) -> comfy_io.Schema:
+        return comfy_io.Schema(
+            node_id="PredefinedResolutions",
+            display_name="Predefined Resolutions",
+            category="t4ggno/utils",
+            inputs=[
+                comfy_io.Combo.Input("dimension", options=[DIMENSION_1_5, DIMENSION_SDXL, DIMENSION_FAMOUS], default=DIMENSION_SDXL),
+                comfy_io.Combo.Input("layout", options=[LAYOUT_SQUARE, LAYOUT_LANDSCAPE, LAYOUT_ULTRA_WIDE, LAYOUT_PORTRAIT, LAYOUT_ULTRA_TALL, LAYOUT_RANDOM], default=LAYOUT_SQUARE),
+                comfy_io.Boolean.Input("enable_square_random", default=True, lazy=True),
+                comfy_io.Boolean.Input("enable_landscape_random", default=True, lazy=True),
+                comfy_io.Boolean.Input("enable_ultra_wide_random", default=True, lazy=True),
+                comfy_io.Boolean.Input("enable_portrait_random", default=True, lazy=True),
+                comfy_io.Boolean.Input("enable_ultra_tall_random", default=True, lazy=True),
+                comfy_io.Float.Input("scale", default=1.0, min=0.1, max=10.0, step=0.1),
+                comfy_io.Combo.Input("control_after_generate", options=["fixed", "random", "increment"], default="increment"),
+                comfy_io.Int.Input("value", default=0),
+            ],
+            outputs=[
+                comfy_io.Int.Output(display_name="width"),
+                comfy_io.Int.Output(display_name="height"),
+            ]
+        )
 
-    RETURN_TYPES = ("INT", "INT")
-    RETURN_NAMES = ("width", "height")
-    FUNCTION = "render_resolution"
-    CATEGORY = "t4ggno/utils"
-    OUTPUT_NODE = False
-
-    def check_lazy_status(self, dimension, layout, enable_square_random, enable_landscape_random, enable_ultra_wide_random, enable_portrait_random, enable_ultra_tall_random, scale):
+    @classmethod
+    def check_lazy_status(cls, dimension, layout, enable_square_random, enable_landscape_random, enable_ultra_wide_random, enable_portrait_random, enable_ultra_tall_random, scale, **kwargs):
         needed = []
         if layout == LAYOUT_RANDOM:
             if enable_square_random is None: needed.append("enable_square_random")
@@ -106,7 +108,8 @@ class PredefinedResolutions:
             if enable_ultra_tall_random is None: needed.append("enable_ultra_tall_random")
         return needed
 
-    def _get_enabled_layouts(self, enable_square_random: bool, enable_landscape_random: bool, 
+    @classmethod
+    def _get_enabled_layouts(cls, enable_square_random: bool, enable_landscape_random: bool, 
                            enable_ultra_wide_random: bool, enable_portrait_random: bool, 
                            enable_ultra_tall_random: bool) -> list:
         layout_mappings = [
@@ -119,19 +122,21 @@ class PredefinedResolutions:
         
         return [layout for enabled, layout in layout_mappings if enabled]
 
-    def _get_resolution(self, dimension: str, layout: str) -> Tuple[int, int]:
+    @classmethod
+    def _get_resolution(cls, dimension: str, layout: str) -> Tuple[int, int]:
         resolution_map = RESOLUTION_MAPPINGS.get(dimension, RESOLUTION_MAPPINGS[DIMENSION_SDXL])
         return resolution_map.get(layout, resolution_map[LAYOUT_SQUARE])
 
-    def render_resolution(self, dimension: str, layout: str, enable_square_random: bool, 
+    @classmethod
+    def execute(cls, dimension: str, layout: str, enable_square_random: bool, 
                          enable_landscape_random: bool, enable_ultra_wide_random: bool, 
                          enable_portrait_random: bool, enable_ultra_tall_random: bool, 
-                         scale: float) -> Tuple[int, int]:
+                         scale: float, **kwargs) -> comfy_io.NodeOutput:
         print(f"Predefined Resolutions: {dimension}")
 
         selected_layout = layout
         if layout == LAYOUT_RANDOM:
-            enabled_layouts = self._get_enabled_layouts(
+            enabled_layouts = cls._get_enabled_layouts(
                 enable_square_random, enable_landscape_random, enable_ultra_wide_random,
                 enable_portrait_random, enable_ultra_tall_random
             )
@@ -142,37 +147,39 @@ class PredefinedResolutions:
             selected_layout = random.choice(enabled_layouts)
             print(f"Random layout selected: {selected_layout}")
 
-        resolution = self._get_resolution(dimension, selected_layout)
+        resolution = cls._get_resolution(dimension, selected_layout)
         scaled_width = int(resolution[0] * scale)
         scaled_height = int(resolution[1] * scale)
         
         print(f"Output: {scaled_width}x{scaled_height} (scale: {scale}x)")
-        return (scaled_width, scaled_height)
+        return comfy_io.NodeOutput(scaled_width, scaled_height)
 
     @classmethod
-    def IS_CHANGED(self, **kwargs):
+    def fingerprint_inputs(cls, **kwargs):
         return float("nan")
 
-class ResolutionSwitch:
+class ResolutionSwitch(comfy_io.ComfyNode):
     @classmethod
-    def INPUT_TYPES(cls):
-        return {
-            "required": {
-                "active": (["Resolution 1", "Resolution 2"], {"default": "Resolution 1"}),
-                "width1": ("INT", {"default": 1024, "lazy": True}),
-                "height1": ("INT", {"default": 1024, "lazy": True}),
-                "width2": ("INT", {"default": 1024, "lazy": True}),
-                "height2": ("INT", {"default": 1024, "lazy": True}),
-            },
-        }
+    def define_schema(cls) -> comfy_io.Schema:
+        return comfy_io.Schema(
+            node_id="ResolutionSwitch",
+            display_name="Switch Resolution",
+            category="t4ggno/utils",
+            inputs=[
+                comfy_io.Combo.Input("active", options=["Resolution 1", "Resolution 2"], default="Resolution 1"),
+                comfy_io.Int.Input("width1", default=1024, lazy=True),
+                comfy_io.Int.Input("height1", default=1024, lazy=True),
+                comfy_io.Int.Input("width2", default=1024, lazy=True),
+                comfy_io.Int.Input("height2", default=1024, lazy=True),
+            ],
+            outputs=[
+                comfy_io.Int.Output(display_name="width"),
+                comfy_io.Int.Output(display_name="height"),
+            ]
+        )
 
-    RETURN_TYPES = ("INT", "INT")
-    RETURN_NAMES = ("width", "height")
-    FUNCTION = "get_resolution"
-    CATEGORY = "t4ggno/utils"
-    OUTPUT_NODE = False
-
-    def check_lazy_status(self, active, width1, height1, width2, height2):
+    @classmethod
+    def check_lazy_status(cls, active, width1, height1, width2, height2, **kwargs):
         needed = []
         if active == "Resolution 1":
             if width1 is None: needed.append("width1")
@@ -182,8 +189,9 @@ class ResolutionSwitch:
             if height2 is None: needed.append("height2")
         return needed
 
-    def get_resolution(self, active: str, width1: int, height1: int, 
-                      width2: int, height2: int) -> Tuple[int, int]:
+    @classmethod
+    def execute(cls, active: str, width1: int, height1: int, 
+                      width2: int, height2: int, **kwargs) -> comfy_io.NodeOutput:
         print(f"Resolution Switch: {active}")
 
         if active == "Resolution 1":
@@ -192,16 +200,4 @@ class ResolutionSwitch:
             result_width, result_height = width2, height2
         
         print(f"Output: {result_width}x{result_height}")
-        return (result_width, result_height)
-
-NODE_CLASS_MAPPINGS = {
-    "LayoutSwitch": LayoutSwitch,
-    "PredefinedResolutions": PredefinedResolutions,
-    "ResolutionSwitch": ResolutionSwitch,
-}
-
-NODE_DISPLAY_NAME_MAPPINGS = {
-    "LayoutSwitch": "Switch Layout",
-    "PredefinedResolutions": "Predefined Resolutions",
-    "ResolutionSwitch": "Switch Resolution",
-}
+        return comfy_io.NodeOutput(result_width, result_height)

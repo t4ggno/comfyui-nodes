@@ -1,26 +1,27 @@
 from .base_imports import *
 from typing import Dict, List, Tuple, Any, Optional
 
-class TextSwitch:
+class TextSwitch(comfy_io.ComfyNode):
     @classmethod
-    def INPUT_TYPES(cls):
-        return {
-            "required": {
-                "active": (["Text 1", "Text 2", "Text 3", "Text 4"], {"default": "Text 1"}),
-                "text1": ("STRING", {"default": "", "multiline": True, "lazy": True}),
-                "text2": ("STRING", {"default": "", "multiline": True, "lazy": True}),
-                "text3": ("STRING", {"default": "", "multiline": True, "lazy": True}),
-                "text4": ("STRING", {"default": "", "multiline": True, "lazy": True}),
-            },
-        }
+    def define_schema(cls) -> comfy_io.Schema:
+        return comfy_io.Schema(
+            node_id="TextSwitch",
+            display_name="Switch Text",
+            category="t4ggno/utils",
+            inputs=[
+                comfy_io.Combo.Input("active", options=["Text 1", "Text 2", "Text 3", "Text 4"], default="Text 1"),
+                comfy_io.String.Input("text1", default="", multiline=True, lazy=True),
+                comfy_io.String.Input("text2", default="", multiline=True, lazy=True),
+                comfy_io.String.Input("text3", default="", multiline=True, lazy=True),
+                comfy_io.String.Input("text4", default="", multiline=True, lazy=True),
+            ],
+            outputs=[
+                comfy_io.String.Output(display_name="text"),
+            ]
+        )
 
-    RETURN_TYPES = ("STRING",)
-    RETURN_NAMES = ("text",)
-    FUNCTION = "get_text"
-    CATEGORY = "t4ggno/utils"
-    OUTPUT_NODE = False
-
-    def check_lazy_status(self, active, text1, text2, text3, text4):
+    @classmethod
+    def check_lazy_status(cls, active, text1, text2, text3, text4):
         needed = []
         if active == "Text 1" and text1 is None: needed.append("text1")
         elif active == "Text 2" and text2 is None: needed.append("text2")
@@ -28,7 +29,8 @@ class TextSwitch:
         elif active == "Text 4" and text4 is None: needed.append("text4")
         return needed
 
-    def get_text(self, active: str, text1: str, text2: str, text3: str, text4: str) -> Tuple[str]:
+    @classmethod
+    def execute(cls, active: str, text1: str, text2: str, text3: str, text4: str, **kwargs) -> comfy_io.NodeOutput:
         """Switch between multiple text inputs based on the active selection."""
         text_map = {
             "Text 1": text1,
@@ -40,7 +42,7 @@ class TextSwitch:
         selected_text = text_map.get(active, text1)
         print(f"Text Switch: Selected '{active}' -> '{selected_text}'")
         
-        return (selected_text,)
+        return comfy_io.NodeOutput(selected_text)
 
 class TextReplacementProcessor:
     """Helper class to handle text replacement operations."""
@@ -174,29 +176,25 @@ class TextReplacementProcessor:
         
         return text
 
-class TextReplacer:
+class TextReplacer(comfy_io.ComfyNode):
     @classmethod
-    def INPUT_TYPES(cls):
-        return {
-            "required": {
-                "text": ("STRING", {"default": "", "multiline": True}),
-            },
-            "hidden": {
-                "control_after_generate": (["fixed", "random", "increment"], {"default": "increment"}),
-                "value": ("INT", {"default": 0}),
-            },
-        }
+    def define_schema(cls) -> comfy_io.Schema:
+        return comfy_io.Schema(
+            node_id="TextReplacer",
+            display_name="Replace Text",
+            category="t4ggno/utils",
+            inputs=[
+                comfy_io.String.Input("text", default="", multiline=True),
+                comfy_io.Combo.Input("control_after_generate", options=["fixed", "random", "increment"], default="increment"),
+                comfy_io.Int.Input("value", default=0),
+            ],
+            outputs=[
+                comfy_io.String.Output(display_name="text"),
+            ]
+        )
 
-    RETURN_TYPES = ("STRING",)
-    RETURN_NAMES = ("text",)
-    FUNCTION = "replace_text"
-    CATEGORY = "t4ggno/utils"
-    OUTPUT_NODE = False
-
-    def __init__(self):
-        self.processor = TextReplacementProcessor(dirPath)
-
-    def clean_text(self, text: str) -> str:
+    @classmethod
+    def clean_text(cls, text: str) -> str:
         """Clean text by removing empty lines, comments, and normalizing whitespace."""
         # Remove empty lines and trim
         text = "\n".join([line.strip() for line in text.split("\n") if line.strip()])
@@ -213,7 +211,8 @@ class TextReplacer:
         
         return text
 
-    def process_pick_one(self, text: str) -> str:
+    @classmethod
+    def process_pick_one(cls, text: str) -> str:
         """Process [PickOne:Option1,Option2,...] replacements."""
         while True:
             pick_one_matches = re.findall(r"(\[PickOne:([^\]]+)\])", text)
@@ -231,7 +230,8 @@ class TextReplacer:
         
         return text
 
-    def process_pick_multiple(self, text: str) -> str:
+    @classmethod
+    def process_pick_multiple(cls, text: str) -> str:
         """Process [PickMultiple:Option1,Option2,...] replacements."""
         pick_multiple_matches = re.findall(r"(\[PickMultiple:([^\]]+)\])", text)
         
@@ -250,7 +250,8 @@ class TextReplacer:
         
         return text
 
-    def process_basic_replacements(self, text: str) -> str:
+    @classmethod
+    def process_basic_replacements(cls, text: str, processor: TextReplacementProcessor) -> str:
         """Process basic array-based replacements."""
         replacements = {
             "TimeOfDay": ["morning", "afternoon", "evening", "night", "sunset", "sunrise"],
@@ -260,11 +261,12 @@ class TextReplacer:
         }
         
         for trigger_word, options in replacements.items():
-            text = self.processor.replace_using_array(text, trigger_word, options)
+            text = processor.replace_using_array(text, trigger_word, options)
         
         return text
 
-    def process_json_replacements(self, text: str) -> str:
+    @classmethod
+    def process_json_replacements(cls, text: str, processor: TextReplacementProcessor) -> str:
         """Process JSON-based replacements."""
         json_replacements = {
             "Nudity": "nudity.json",
@@ -327,11 +329,12 @@ class TextReplacer:
         }
         
         for trigger_word, filename in json_replacements.items():
-            text = self.processor.replace_using_json(text, trigger_word, filename)
+            text = processor.replace_using_json(text, trigger_word, filename)
         
         return text
 
-    def process_name_replacements(self, text: str) -> str:
+    @classmethod
+    def process_name_replacements(cls, text: str, processor: TextReplacementProcessor) -> str:
         """Process name replacements based on gender context."""
         if not re.search(r"(\[Name(?:\:([\w\,]+?))?\])", text):
             return text
@@ -349,9 +352,10 @@ class TextReplacer:
             # Default to female names if no gender context
             filename = "names_female.json"
         
-        return self.processor.replace_using_json(text, "Name", filename)
+        return processor.replace_using_json(text, "Name", filename)
 
-    def process_conditional_statements(self, text: str) -> str:
+    @classmethod
+    def process_conditional_statements(cls, text: str) -> str:
         """Process conditional If statements."""
         if_pattern = r"(\[\[If:(Contains):([\w\ ]+?):(Add):([\w\ \[\]\:\,]+?)\]\])"
         
@@ -373,7 +377,8 @@ class TextReplacer:
         
         return text
 
-    def process_lora_replacements(self, text: str) -> str:
+    @classmethod
+    def process_lora_replacements(cls, text: str) -> str:
         """Process LoRA regex replacements."""
         lora_pattern = r"<RE\:(.+?)(?:\:(-?[0-9]+(?:\.[0-9]*)?)|(?:\:(-?[0-9]+(?:\.[0-9]*)?|))(?:\:(-?[0-9]+(?:\.[0-9]*)?|)))?>"""
         all_loras_regex = re.findall(lora_pattern, text)
@@ -413,7 +418,8 @@ class TextReplacer:
         
         return text
 
-    def final_cleanup(self, text: str) -> str:
+    @classmethod
+    def final_cleanup(cls, text: str) -> str:
         """Perform final text cleanup."""
         # Remove empty lines and trim
         text = "\n".join([line.strip() for line in text.split("\n") if line.strip()])
@@ -429,7 +435,8 @@ class TextReplacer:
         
         return text
 
-    def process_random_replacements(self, text: str) -> str:
+    @classmethod
+    def process_random_replacements(cls, text: str) -> str:
         """Process complex [Random] replacements with conditional logic."""
         random_pattern = r"(\[Random(?:\:[\w]+)*\])"
         
@@ -575,25 +582,30 @@ class TextReplacer:
         
         return text
 
-    def replace_text(self, text: str) -> Tuple[str]:
+    @classmethod
+    def execute(cls, text: str, **kwargs) -> comfy_io.NodeOutput:
         """Main text replacement function."""
         print("=" * 50)
         print("Text Replacer - Starting Processing")
         print(f"Input text length: {len(text)}")
         
+        # Initialize processor
+        base_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        processor = TextReplacementProcessor(base_path)
+        
         try:
             # Initial cleanup
-            text = self.clean_text(text)
+            text = cls.clean_text(text)
             print(f"After initial cleanup: {text}...")
             
             # Process global filters
-            text = self.processor.process_global_filters(text)
-            print(f"Global whitelist: {self.processor.global_whitelist}")
-            print(f"Global blacklist: {self.processor.global_blacklist}")
+            text = processor.process_global_filters(text)
+            print(f"Global whitelist: {processor.global_whitelist}")
+            print(f"Global blacklist: {processor.global_blacklist}")
             
             # Process PickOne first (before other replacements)
-            text = self.process_pick_one(text)
-            text = self.clean_text(text)
+            text = cls.process_pick_one(text)
+            text = cls.clean_text(text)
             
             # Main replacement loop
             max_iterations = 10
@@ -601,12 +613,12 @@ class TextReplacer:
                 initial_text = text
                 
                 # Process various replacement types
-                text = self.process_basic_replacements(text)
-                text = self.process_json_replacements(text)
-                text = self.process_name_replacements(text)
-                text = self.process_pick_multiple(text)
-                text = self.process_random_replacements(text)
-                text = self.process_conditional_statements(text)
+                text = cls.process_basic_replacements(text, processor)
+                text = cls.process_json_replacements(text, processor)
+                text = cls.process_name_replacements(text, processor)
+                text = cls.process_pick_multiple(text)
+                text = cls.process_random_replacements(text)
+                text = cls.process_conditional_statements(text)
                 
                 # If no changes were made, break the loop
                 if text == initial_text:
@@ -625,32 +637,22 @@ class TextReplacer:
                     text = text.replace(match, "", 1)
             
             # Process LoRA replacements
-            text = self.process_lora_replacements(text)
+            text = cls.process_lora_replacements(text)
             
             # Final cleanup
-            text = self.final_cleanup(text)
+            text = cls.final_cleanup(text)
             
             print(f"Final processed text: {text}")
             print("Text Replacer - Processing Complete")
             
-            return (text,)
+            return comfy_io.NodeOutput(text)
             
         except Exception as e:
             print(f"Error in text replacement: {e}")
             import traceback
             traceback.print_exc()
-            return (text,)
+            return comfy_io.NodeOutput(text)
 
-    def IS_CHANGED(cls, **kwargs):
-        return True
-
-# Export the node classes
-NODE_CLASS_MAPPINGS = {
-    "TextSwitch": TextSwitch,
-    "TextReplacer": TextReplacer,
-}
-
-NODE_DISPLAY_NAME_MAPPINGS = {
-    "TextSwitch": "Switch Text",
-    "TextReplacer": "Replace Text",
-}
+    @classmethod
+    def fingerprint_inputs(cls, **kwargs):
+        return float("nan")

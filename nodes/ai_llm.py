@@ -3,46 +3,43 @@ from .ai_helpers import get_next_prompt
 from typing import Dict, Any, List, Optional, Tuple
 from pathlib import Path
 
-class PromptFromAIOpenAI:
+class PromptFromAIOpenAI(comfy_io.ComfyNode):
     @classmethod
-    def INPUT_TYPES(cls) -> Dict[str, Any]:
-        return {
-            "required": {
-                "api_key": ("STRING", {"default": ""}),
-                "gpt_model": ([
+    def define_schema(cls) -> comfy_io.Schema:
+        return comfy_io.Schema(
+            node_id="PromptFromAIOpenAI",
+            display_name="Prompt From AI (OpenAI)",
+            category="t4ggno/utils",
+            inputs=[
+                comfy_io.String.Input("api_key", default=""),
+                comfy_io.Combo.Input("gpt_model", options=[
                     "gpt-3.5-turbo", 
                     "gpt-3.5-turbo-16K", 
                     "gpt-4", 
                     "gpt-4-turbo", 
                     "gpt-4o", 
                     "Custom"
-                ], {"default": "gpt-4o"}),
-                "custom_model": ("STRING", {"default": ""}),
-                "temperature": ("FLOAT", {"default": 1.1, "min": 0.0, "max": 2.0, "step": 0.1}),
-                "frequency_penalty": ("FLOAT", {"default": 0.2, "min": 0.0, "max": 2.0, "step": 0.1}),
-                "presence_penalty": ("FLOAT", {"default": 0.2, "min": 0.0, "max": 2.0, "step": 0.1}),
-                "prompt_details": ("STRING", {"multiline": True}),
-                "prefix": ("STRING", {"multiline": True}),
-                "suffix": ("STRING", {"multiline": True}),
-                "batch_quantity": ("INT", {"default": 1, "min": 1, "max": 10}),
-                "images_per_batch": ("INT", {"default": 1, "min": 1, "max": 10}),
-                "lora_whitelist_regex": ("STRING", {"default": "", "multiline": True}),
-                "lora_blacklist_regex": ("STRING", {"default": "", "multiline": True}),
-            },
-            "hidden": {
-                "control_after_generate": (["fixed", "random", "increment"], {"default": "increment"}),
-                "value": ("INT", {"default": 0}),
-            },
-        }
+                ], default="gpt-4o"),
+                comfy_io.String.Input("custom_model", default=""),
+                comfy_io.Float.Input("temperature", default=1.1, min=0.0, max=2.0, step=0.1),
+                comfy_io.Float.Input("frequency_penalty", default=0.2, min=0.0, max=2.0, step=0.1),
+                comfy_io.Float.Input("presence_penalty", default=0.2, min=0.0, max=2.0, step=0.1),
+                comfy_io.String.Input("prompt_details", multiline=True),
+                comfy_io.String.Input("prefix", multiline=True),
+                comfy_io.String.Input("suffix", multiline=True),
+                comfy_io.Int.Input("batch_quantity", default=1, min=1, max=10),
+                comfy_io.Int.Input("images_per_batch", default=1, min=1, max=10),
+                comfy_io.String.Input("lora_whitelist_regex", default="", multiline=True),
+                comfy_io.String.Input("lora_blacklist_regex", default="", multiline=True),
+            ],
+            outputs=[
+                comfy_io.String.Output(display_name="prompt")
+            ]
+        )
 
-    RETURN_TYPES = ("STRING",)
-    RETURN_NAMES = ("prompt",)
-    FUNCTION = "get_prompt"
-    CATEGORY = "t4ggno/utils"
-    OUTPUT_NODE = False
-
-    def get_prompt(
-        self, 
+    @classmethod
+    def execute(
+        cls, 
         api_key: str, 
         gpt_model: str, 
         custom_model: str, 
@@ -55,34 +52,36 @@ class PromptFromAIOpenAI:
         batch_quantity: int, 
         images_per_batch: int, 
         lora_whitelist_regex: str, 
-        lora_blacklist_regex: str
-    ) -> Tuple[str]:
+        lora_blacklist_regex: str,
+        **kwargs
+    ) -> comfy_io.NodeOutput:
         print("=============================")
         print("== Get prompt from OpenAI")
 
-        next_prompt = get_next_prompt(self, prefix, suffix, images_per_batch)
+        next_prompt = get_next_prompt(cls, prefix, suffix, images_per_batch)
         if next_prompt:
-            return next_prompt
+            return comfy_io.NodeOutput(next_prompt[0])
 
-        available_loras = self._get_available_loras(lora_whitelist_regex, lora_blacklist_regex)
-        keyword_list = self._load_keyword_list()
+        available_loras = cls._get_available_loras(lora_whitelist_regex, lora_blacklist_regex)
+        keyword_list = cls._load_keyword_list()
         
-        prompt = self._generate_prompt_with_openai(
+        prompt = cls._generate_prompt_with_openai(
             api_key, gpt_model, custom_model, temperature, 
             frequency_penalty, presence_penalty, prompt_details, 
             batch_quantity, available_loras, keyword_list
         )
         
-        self._save_prompt_and_keywords(prompt, keyword_list, api_key, gpt_model, custom_model)
+        cls._save_prompt_and_keywords(prompt, keyword_list, api_key, gpt_model, custom_model)
         
-        return self.get_prompt(
+        return cls.execute(
             api_key, gpt_model, custom_model, temperature, 
             frequency_penalty, presence_penalty, prompt_details, 
             prefix, suffix, batch_quantity, images_per_batch, 
-            lora_whitelist_regex, lora_blacklist_regex
+            lora_whitelist_regex, lora_blacklist_regex, **kwargs
         )
 
-    def _get_available_loras(self, whitelist_regex: str, blacklist_regex: str) -> str:
+    @classmethod
+    def _get_available_loras(cls, whitelist_regex: str, blacklist_regex: str) -> str:
         lora_paths = folder_paths.get_folder_paths("loras")
         if not lora_paths:
             raise Exception("No lora paths found")
@@ -111,9 +110,10 @@ class PromptFromAIOpenAI:
                 if not any(pattern.match(lora) for pattern in blacklist_patterns)
             ]
         
-        return self._convert_loras_to_json(available_loras, lora_paths[0])
+        return cls._convert_loras_to_json(available_loras, lora_paths[0])
 
-    def _convert_loras_to_json(self, loras: List[str], lora_path: str) -> str:
+    @classmethod
+    def _convert_loras_to_json(cls, loras: List[str], lora_path: str) -> str:
         converted_loras = {}
         
         for lora in loras:
@@ -124,7 +124,7 @@ class PromptFromAIOpenAI:
                 converted_loras[category] = []
             
             lora_name = lora_parts[-1].replace(".safetensors", "")
-            description = self._get_lora_description(lora_path, lora)
+            description = cls._get_lora_description(lora_path, lora)
             
             lora_entry = {"name": lora_name}
             if description:
@@ -134,7 +134,8 @@ class PromptFromAIOpenAI:
         
         return json.dumps(converted_loras)
 
-    def _get_lora_description(self, lora_path: str, lora: str) -> Optional[str]:
+    @classmethod
+    def _get_lora_description(cls, lora_path: str, lora: str) -> Optional[str]:
         description_file = os.path.join(lora_path, lora.replace(".safetensors", ".txt"))
         
         if os.path.isfile(description_file):
@@ -147,7 +148,8 @@ class PromptFromAIOpenAI:
         
         return None
 
-    def _load_keyword_list(self) -> str:
+    @classmethod
+    def _load_keyword_list(cls) -> str:
         try:
             with open("keywoard_list.txt", "r", encoding="utf-8") as f:
                 return f.read()
@@ -158,8 +160,9 @@ class PromptFromAIOpenAI:
             print(f"Error loading keyword list: {e}")
             return ""
 
+    @classmethod
     def _generate_prompt_with_openai(
-        self, 
+        cls, 
         api_key: str, 
         gpt_model: str, 
         custom_model: str, 
@@ -173,8 +176,8 @@ class PromptFromAIOpenAI:
     ) -> str:
         client = OpenAI(api_key=api_key)
         
-        system_prompt = self._build_system_prompt()
-        user_prompt = self._build_user_prompt(prompt_details, batch_quantity, available_loras, keyword_list)
+        system_prompt = cls._build_system_prompt()
+        user_prompt = cls._build_user_prompt(prompt_details, batch_quantity, available_loras, keyword_list)
         
         model = gpt_model if not custom_model else custom_model
         
@@ -196,10 +199,12 @@ class PromptFromAIOpenAI:
         
         return response.choices[0].message.content
 
-    def _build_system_prompt(self) -> str:
+    @classmethod
+    def _build_system_prompt(cls) -> str:
         return """You are a Stable Diffusion prompt generator. Generate detailed and creative prompts for unique and engaging scenes. Use keyword-rich sentences to describe the visuals. If the scene requires specific effects or characters, you may use loras in the format: `<lora:name:strength>`, ensuring only to use available loras. Emphasize important aspects of the scene by using brackets, for example: a white (cute cat) is playing with a (red ball:1.2). If generating multiple prompts, separate them with an empty line. Start directly with the prompt without any captions, titles, or numbering. Ensure clarity and creativity in each prompt."""
 
-    def _build_user_prompt(self, details: str, batch_quantity: int, available_loras: str, keyword_list: str) -> str:
+    @classmethod
+    def _build_user_prompt(cls, details: str, batch_quantity: int, available_loras: str, keyword_list: str) -> str:
         prompt_parts = [
             f"Details for the prompt: {details}",
             "-" * 33,
@@ -216,13 +221,15 @@ class PromptFromAIOpenAI:
         
         return "\n".join(prompt_parts)
 
-    def _save_prompt_and_keywords(self, prompt: str, keyword_list: str, api_key: str, gpt_model: str, custom_model: str):
-        processed_prompt = self._process_prompt(prompt)
-        updated_keywords = self._update_keyword_list(prompt, keyword_list, api_key, gpt_model, custom_model)
+    @classmethod
+    def _save_prompt_and_keywords(cls, prompt: str, keyword_list: str, api_key: str, gpt_model: str, custom_model: str):
+        processed_prompt = cls._process_prompt(prompt)
+        updated_keywords = cls._update_keyword_list(prompt, keyword_list, api_key, gpt_model, custom_model)
         
-        self._write_files(processed_prompt, updated_keywords)
+        cls._write_files(processed_prompt, updated_keywords)
 
-    def _process_prompt(self, prompt: str) -> str:
+    @classmethod
+    def _process_prompt(cls, prompt: str) -> str:
         prompt = re.sub(r"^\d+\.", "", prompt, flags=re.MULTILINE)
         prompt = re.sub(r"([^\n])\n([^\n])", r"\1 \2", prompt)
         prompt = re.sub(r"<(?:[\w\-. \\]+?)\:((?:[\w-]+?)(?:\-V\d+\.\d+))?(?:\.safetensors?)?>", r"<lora:\1>", prompt)
@@ -231,7 +238,8 @@ class PromptFromAIOpenAI:
         
         return prompt
 
-    def _update_keyword_list(self, prompt: str, current_keywords: str, api_key: str, gpt_model: str, custom_model: str) -> str:
+    @classmethod
+    def _update_keyword_list(cls, prompt: str, current_keywords: str, api_key: str, gpt_model: str, custom_model: str) -> str:
         client = OpenAI(api_key=api_key)
         
         system_prompt = """You will receive an overview of prompts. Create a keyword list of prompts I can use to prevent further generations of the same or similar prompts later. Start directly with the keywords! Separate the keywords with a comma. If already a keyword list is provided you must add the new keywords to the existing list and avoid duplicates."""
@@ -259,7 +267,8 @@ class PromptFromAIOpenAI:
         
         return current_keywords
 
-    def _write_files(self, prompt: str, keywords: str):
+    @classmethod
+    def _write_files(cls, prompt: str, keywords: str):
         try:
             with open("prompt_from_ai.txt", "w", encoding="utf-8") as f:
                 f.write(f"index:0\nimage:0\n\n{prompt}")
@@ -270,38 +279,35 @@ class PromptFromAIOpenAI:
             print(f"Error writing files: {e}")
 
     @classmethod
-    def IS_CHANGED(self, **kwargs):
+    def fingerprint_inputs(cls, **kwargs):
         return float("nan")
 
-class PromptFromAIAnthropic:
+class PromptFromAIAnthropic(comfy_io.ComfyNode):
     @classmethod
-    def INPUT_TYPES(cls) -> Dict[str, Any]:
-        return {
-            "required": {
-                "api_key": ("STRING", {"default": ""}),
-                "model": (["claude-3.5-sonnet", "claude-3-opus"], {"default": "claude-3.5-sonnet"}),
-                "prompt_details": ("STRING", {"multiline": True}),
-                "prefix": ("STRING", {"multiline": True}),
-                "suffix": ("STRING", {"multiline": True}),
-                "batch_quantity": ("INT", {"default": 1, "min": 1, "max": 10}),
-                "images_per_batch": ("INT", {"default": 1, "min": 1, "max": 10}),
-                "lora_whitelist_regex": ("STRING", {"default": "", "multiline": True}),
-                "lora_blacklist_regex": ("STRING", {"default": "", "multiline": True}),
-            },
-            "hidden": {
-                "control_after_generate": (["fixed", "random", "increment"], {"default": "increment"}),
-                "value": ("INT", {"default": 0}),
-            },
-        }
+    def define_schema(cls) -> comfy_io.Schema:
+        return comfy_io.Schema(
+            node_id="PromptFromAIAnthropic",
+            display_name="Prompt From AI (Anthropic)",
+            category="t4ggno/utils",
+            inputs=[
+                comfy_io.String.Input("api_key", default=""),
+                comfy_io.Combo.Input("model", options=["claude-3.5-sonnet", "claude-3-opus"], default="claude-3.5-sonnet"),
+                comfy_io.String.Input("prompt_details", multiline=True),
+                comfy_io.String.Input("prefix", multiline=True),
+                comfy_io.String.Input("suffix", multiline=True),
+                comfy_io.Int.Input("batch_quantity", default=1, min=1, max=10),
+                comfy_io.Int.Input("images_per_batch", default=1, min=1, max=10),
+                comfy_io.String.Input("lora_whitelist_regex", default="", multiline=True),
+                comfy_io.String.Input("lora_blacklist_regex", default="", multiline=True),
+            ],
+            outputs=[
+                comfy_io.String.Output(display_name="prompt")
+            ]
+        )
 
-    RETURN_TYPES = ("STRING",)
-    RETURN_NAMES = ("prompt",)
-    FUNCTION = "get_prompt"
-    CATEGORY = "t4ggno/utils"
-    OUTPUT_NODE = False
-
-    def get_prompt(
-        self, 
+    @classmethod
+    def execute(
+        cls, 
         api_key: str, 
         model: str, 
         prompt_details: str, 
@@ -310,31 +316,33 @@ class PromptFromAIAnthropic:
         batch_quantity: int, 
         images_per_batch: int, 
         lora_whitelist_regex: str, 
-        lora_blacklist_regex: str
-    ) -> Tuple[str]:
+        lora_blacklist_regex: str,
+        **kwargs
+    ) -> comfy_io.NodeOutput:
         print("=============================")
         print("== Get prompt from Anthropic")
 
-        next_prompt = get_next_prompt(self, prefix, suffix, images_per_batch)
+        next_prompt = get_next_prompt(cls, prefix, suffix, images_per_batch)
         if next_prompt:
-            return next_prompt
+            return comfy_io.NodeOutput(next_prompt[0])
 
-        available_loras = self._get_available_loras(lora_whitelist_regex, lora_blacklist_regex)
-        keyword_list = self._load_keyword_list()
+        available_loras = cls._get_available_loras(lora_whitelist_regex, lora_blacklist_regex)
+        keyword_list = cls._load_keyword_list()
         
-        prompt = self._generate_prompt_with_anthropic(
+        prompt = cls._generate_prompt_with_anthropic(
             api_key, model, prompt_details, batch_quantity, available_loras, keyword_list
         )
         
         if prompt:
-            self._save_prompt_and_keywords(prompt, keyword_list, api_key, model)
+            cls._save_prompt_and_keywords(prompt, keyword_list, api_key, model)
         
-        return self.get_prompt(
+        return cls.execute(
             api_key, model, prompt_details, prefix, suffix, 
-            batch_quantity, images_per_batch, lora_whitelist_regex, lora_blacklist_regex
+            batch_quantity, images_per_batch, lora_whitelist_regex, lora_blacklist_regex, **kwargs
         )
 
-    def _get_available_loras(self, whitelist_regex: str, blacklist_regex: str) -> str:
+    @classmethod
+    def _get_available_loras(cls, whitelist_regex: str, blacklist_regex: str) -> str:
         lora_paths = folder_paths.get_folder_paths("loras")
         if not lora_paths:
             raise Exception("No lora paths found")
@@ -363,9 +371,10 @@ class PromptFromAIAnthropic:
                 if not any(pattern.match(lora) for pattern in blacklist_patterns)
             ]
         
-        return self._convert_loras_to_json(available_loras, lora_paths[0])
+        return cls._convert_loras_to_json(available_loras, lora_paths[0])
 
-    def _convert_loras_to_json(self, loras: List[str], lora_path: str) -> str:
+    @classmethod
+    def _convert_loras_to_json(cls, loras: List[str], lora_path: str) -> str:
         converted_loras = {}
         
         for lora in loras:
@@ -376,7 +385,7 @@ class PromptFromAIAnthropic:
                 converted_loras[category] = []
             
             lora_name = lora_parts[-1].replace(".safetensors", "")
-            description = self._get_lora_description(lora_path, lora)
+            description = cls._get_lora_description(lora_path, lora)
             
             lora_entry = {"name": lora_name}
             if description:
@@ -386,7 +395,8 @@ class PromptFromAIAnthropic:
         
         return json.dumps(converted_loras)
 
-    def _get_lora_description(self, lora_path: str, lora: str) -> Optional[str]:
+    @classmethod
+    def _get_lora_description(cls, lora_path: str, lora: str) -> Optional[str]:
         description_file = os.path.join(lora_path, lora.replace(".safetensors", ".txt"))
         
         if os.path.isfile(description_file):
@@ -399,7 +409,8 @@ class PromptFromAIAnthropic:
         
         return None
 
-    def _load_keyword_list(self) -> str:
+    @classmethod
+    def _load_keyword_list(cls) -> str:
         try:
             with open("keywoard_list.txt", "r", encoding="utf-8") as f:
                 return f.read()
@@ -410,8 +421,9 @@ class PromptFromAIAnthropic:
             print(f"Error loading keyword list: {e}")
             return ""
 
+    @classmethod
     def _generate_prompt_with_anthropic(
-        self, 
+        cls, 
         api_key: str, 
         model: str, 
         prompt_details: str, 
@@ -421,8 +433,8 @@ class PromptFromAIAnthropic:
     ) -> Optional[str]:
         client = Anthropic(api_key=api_key)
         
-        system_prompt = self._build_system_prompt()
-        user_prompt = self._build_user_prompt(prompt_details, batch_quantity, available_loras, keyword_list)
+        system_prompt = cls._build_system_prompt()
+        user_prompt = cls._build_user_prompt(prompt_details, batch_quantity, available_loras, keyword_list)
         
         model_id = "claude-3-5-sonnet-20240620" if model == "claude-3.5-sonnet" else "claude-3-opus-20240229"
         
@@ -451,10 +463,12 @@ class PromptFromAIAnthropic:
             print(f"Error generating prompt: {e}")
             return None
 
-    def _build_system_prompt(self) -> str:
+    @classmethod
+    def _build_system_prompt(cls) -> str:
         return """You are a Stable Diffusion prompt generator. Generate detailed and creative prompts for unique and engaging scenes. Use keyword-rich sentences to describe the visuals. If the scene requires specific effects or characters, you may use loras in the format: `<lora:name:strength>`, ensuring only to use available loras. Emphasize important aspects of the scene by using brackets, for example: a white (cute cat) is playing with a (red ball:1.2). If generating multiple prompts, separate them with an empty line. Start directly with the prompt without any captions, titles, or numbering. Ensure clarity and creativity in each prompt."""
 
-    def _build_user_prompt(self, details: str, batch_quantity: int, available_loras: str, keyword_list: str) -> str:
+    @classmethod
+    def _build_user_prompt(cls, details: str, batch_quantity: int, available_loras: str, keyword_list: str) -> str:
         prompt_parts = [
             f"Details for the prompt: {details}",
             "-" * 33,
@@ -471,16 +485,18 @@ class PromptFromAIAnthropic:
         
         return "\n".join(prompt_parts)
 
-    def _save_prompt_and_keywords(self, prompt: str, keyword_list: str, api_key: str, model: str):
-        processed_prompt = self._process_prompt(prompt)
-        updated_keywords = self._update_keyword_list(prompt, keyword_list, api_key, model)
+    @classmethod
+    def _save_prompt_and_keywords(cls, prompt: str, keyword_list: str, api_key: str, model: str):
+        processed_prompt = cls._process_prompt(prompt)
+        updated_keywords = cls._update_keyword_list(prompt, keyword_list, api_key, model)
         
         if updated_keywords:
-            self._write_files(processed_prompt, updated_keywords)
+            cls._write_files(processed_prompt, updated_keywords)
         else:
             print("Failed to get keyword list")
 
-    def _process_prompt(self, prompt: str) -> str:
+    @classmethod
+    def _process_prompt(cls, prompt: str) -> str:
         prompt = re.sub(r"^\d+\.", "", prompt, flags=re.MULTILINE)
         prompt = re.sub(r"([^\n])\n([^\n])", r"\1 \2", prompt)
         prompt = re.sub(r"<(?:[\w\-. \\]+?)\:((?:[\w-]+?)(?:\-V\d+\.\d+))?(?:\.safetensors?)?>", r"<lora:\1>", prompt)
@@ -489,7 +505,8 @@ class PromptFromAIAnthropic:
         
         return prompt
 
-    def _update_keyword_list(self, prompt: str, current_keywords: str, api_key: str, model: str) -> Optional[str]:
+    @classmethod
+    def _update_keyword_list(cls, prompt: str, current_keywords: str, api_key: str, model: str) -> Optional[str]:
         client = Anthropic(api_key=api_key)
         
         system_prompt = """You will receive an overview of prompts. Create a keyword list of prompts I can use, to prevent further generations of the same or similar prompts later. Start directly with the keywords! Separate the keywords with a comma. If already a keyword list is provided you must add the new keywords to the existing list and avoid duplicates."""
@@ -516,7 +533,8 @@ class PromptFromAIAnthropic:
         
         return current_keywords
 
-    def _write_files(self, prompt: str, keywords: str):
+    @classmethod
+    def _write_files(cls, prompt: str, keywords: str):
         try:
             with open("prompt_from_ai.txt", "w", encoding="utf-8") as f:
                 f.write(f"index:0\nimage:0\n\n{prompt}")
@@ -527,52 +545,51 @@ class PromptFromAIAnthropic:
             print(f"Error writing files: {e}")
 
     @classmethod
-    def IS_CHANGED(self, **kwargs):
+    def fingerprint_inputs(cls, **kwargs):
         return float("nan")
 
-class PromptFromOllama:
+class PromptFromOllama(comfy_io.ComfyNode):
     @classmethod
-    def INPUT_TYPES(cls) -> Dict[str, Any]:
-        return {
-            "required": {
-                "host": ("STRING", {"default": "http://localhost:11434/api/generate"}),
-                "model": ("STRING", {"default": "mistral-nemo"}),
-                "prompt_details": ("STRING", {"multiline": True}),
-                "prefix": ("STRING", {"multiline": True}),
-                "suffix": ("STRING", {"multiline": True}),
-            },
-            "hidden": {
-                "control_after_generate": (["fixed", "random", "increment"], {"default": "increment"}),
-                "value": ("INT", {"default": 0}),
-            },
-        }
+    def define_schema(cls) -> comfy_io.Schema:
+        return comfy_io.Schema(
+            node_id="PromptFromOllama",
+            display_name="Prompt From Ollama",
+            category="t4ggno/utils",
+            inputs=[
+                comfy_io.String.Input("host", default="http://localhost:11434/api/generate"),
+                comfy_io.String.Input("model", default="mistral-nemo"),
+                comfy_io.String.Input("prompt_details", multiline=True),
+                comfy_io.String.Input("prefix", multiline=True),
+                comfy_io.String.Input("suffix", multiline=True),
+            ],
+            outputs=[
+                comfy_io.String.Output(display_name="prompt")
+            ]
+        )
 
-    RETURN_TYPES = ("STRING",)
-    RETURN_NAMES = ("prompt",)
-    FUNCTION = "get_prompt"
-    CATEGORY = "t4ggno/utils"
-    OUTPUT_NODE = False
-
-    def get_prompt(
-        self, 
+    @classmethod
+    def execute(
+        cls, 
         host: str, 
         model: str, 
         prompt_details: str, 
         prefix: str, 
-        suffix: str
-    ) -> Tuple[str]:
+        suffix: str,
+        **kwargs
+    ) -> comfy_io.NodeOutput:
         print("=============================")
         print("== Get prompt from Ollama")
 
-        keyword_list = self._load_keyword_list()
-        prompt = self._generate_prompt_with_ollama(host, model, prompt_details, keyword_list)
+        keyword_list = cls._load_keyword_list()
+        prompt = cls._generate_prompt_with_ollama(host, model, prompt_details, keyword_list)
         
         if prompt:
-            return (f"{prefix} {prompt} {suffix}".strip(),)
+            return comfy_io.NodeOutput(f"{prefix} {prompt} {suffix}".strip())
         else:
-            return self.get_prompt(host, model, prompt_details, prefix, suffix)
+            return cls.execute(host, model, prompt_details, prefix, suffix, **kwargs)
 
-    def _load_keyword_list(self) -> str:
+    @classmethod
+    def _load_keyword_list(cls) -> str:
         try:
             with open("keywoard_list.txt", "r", encoding="utf-8") as f:
                 return f.read()
@@ -583,8 +600,9 @@ class PromptFromOllama:
             print(f"Error loading keyword list: {e}")
             return ""
 
+    @classmethod
     def _generate_prompt_with_ollama(
-        self, 
+        cls, 
         host: str, 
         model: str, 
         prompt_details: str, 
@@ -636,17 +654,5 @@ class PromptFromOllama:
             return None
 
     @classmethod
-    def IS_CHANGED(self, **kwargs):
+    def fingerprint_inputs(cls, **kwargs):
         return float("nan")
-
-NODE_CLASS_MAPPINGS = {
-    "PromptFromAIOpenAI": PromptFromAIOpenAI,
-    "PromptFromAIAnthropic": PromptFromAIAnthropic,
-    "PromptFromOllama": PromptFromOllama,
-}
-
-NODE_DISPLAY_NAME_MAPPINGS = {
-    "PromptFromAIOpenAI": "Prompt From AI (OpenAI)",
-    "PromptFromAIAnthropic": "Prompt From AI (Anthropic)",
-    "PromptFromOllama": "Prompt From Ollama",
-}

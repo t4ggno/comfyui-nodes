@@ -1,39 +1,46 @@
 from .base_imports import *
 from typing import Dict, List, Tuple, Optional, Any, Union
 
-class LoraLoaderFromPrompt:
+class LoraLoaderFromPrompt(comfy_io.ComfyNode):
     def __init__(self):
         self.loaded_loras: Optional[List[Dict[str, Any]]] = None
 
     @classmethod
-    def INPUT_TYPES(cls) -> Dict[str, Any]:
-        return {
-            "required": {
-                "model": ("MODEL",),
-                "clip": ("CLIP",),
-                "prompt": ("STRING", {"multiline": True}),
-            }
-        }
+    def define_schema(cls) -> comfy_io.Schema:
+        return comfy_io.Schema(
+            node_id="LoraLoaderFromPrompt",
+            display_name="Load Lora From Prompt",
+            category="t4ggno/loaders",
+            inputs=[
+                comfy_io.Model.Input("model"),
+                comfy_io.Clip.Input("clip"),
+                comfy_io.String.Input("prompt", multiline=True),
+            ],
+            outputs=[
+                comfy_io.Model.Output(display_name="model"),
+                comfy_io.Clip.Output(display_name="clip"),
+                comfy_io.String.Output(display_name="prompt"),
+            ]
+        )
 
-    RETURN_TYPES = ("MODEL", "CLIP", "STRING")
-    FUNCTION = "load_loras"
-    CATEGORY = "t4ggno/loaders"
-
-    def load_loras(self, model: Any, clip: Any, prompt: str) -> Tuple[Any, Any, str]:
+    @classmethod
+    def execute(cls, model: Any, clip: Any, prompt: str, **kwargs) -> comfy_io.NodeOutput:
         print("=============================")
         print("== Load Loras from Prompt ==")
 
         available_loras = folder_paths.get_filename_list("loras")
-        all_loras = self._extract_loras_from_prompt(prompt)
-        prompt = self._remove_loras_from_prompt(prompt)
+        all_loras = cls._extract_loras_from_prompt(prompt)
+        prompt = cls._remove_loras_from_prompt(prompt)
         
-        processed_loras = self._process_lora_data(all_loras)
-        resolved_loras = self._resolve_lora_names(processed_loras, available_loras)
-        deduplicated_loras = self._deduplicate_loras(resolved_loras)
+        processed_loras = cls._process_lora_data(all_loras)
+        resolved_loras = cls._resolve_lora_names(processed_loras, available_loras)
+        deduplicated_loras = cls._deduplicate_loras(resolved_loras)
         
-        return self._apply_loras(model, clip, deduplicated_loras, available_loras, prompt)
+        model, clip, prompt = cls._apply_loras(model, clip, deduplicated_loras, available_loras, prompt)
+        return comfy_io.NodeOutput(model, clip, prompt)
 
-    def _extract_loras_from_prompt(self, prompt: str) -> List[Tuple[str, str, str]]:
+    @classmethod
+    def _extract_loras_from_prompt(cls, prompt: str) -> List[Tuple[str, str, str]]:
         """Extract lora information from prompt using regex"""
         # Improved regex pattern to handle lora tags properly
         # Matches: <lora:name:model_strength:clip_strength>, <lora:name:model_strength>, <lora:name::clip_strength>, <lora:name>
@@ -47,12 +54,14 @@ class LoraLoaderFromPrompt:
         
         return matches
 
-    def _remove_loras_from_prompt(self, prompt: str) -> str:
+    @classmethod
+    def _remove_loras_from_prompt(cls, prompt: str) -> str:
         """Remove lora tags from prompt"""
         lora_pattern = r"<(?:lora:)?([\w\-. \\]+?)(?::(-?[0-9]+(?:\.[0-9]*)?)?)?(?::(-?[0-9]+(?:\.[0-9]*)?)?)?>"
         return re.sub(lora_pattern, "", prompt)
 
-    def _process_lora_data(self, lora_matches: List[Tuple[str, str, str]]) -> List[Dict[str, Any]]:
+    @classmethod
+    def _process_lora_data(cls, lora_matches: List[Tuple[str, str, str]]) -> List[Dict[str, Any]]:
         """Convert lora matches to structured data with proper strength values"""
         processed_loras = []
         
@@ -74,7 +83,8 @@ class LoraLoaderFromPrompt:
         
         return processed_loras
 
-    def _resolve_lora_names(self, loras: List[Dict[str, Any]], available_loras: List[str]) -> List[Dict[str, Any]]:
+    @classmethod
+    def _resolve_lora_names(cls, loras: List[Dict[str, Any]], available_loras: List[str]) -> List[Dict[str, Any]]:
         """Resolve lora names to match available files"""
         for lora in loras:
             current_name = lora["name"]
@@ -95,7 +105,8 @@ class LoraLoaderFromPrompt:
         
         return loras
 
-    def _deduplicate_loras(self, loras: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    @classmethod
+    def _deduplicate_loras(cls, loras: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         """Remove duplicate loras by averaging their strengths"""
         lora_dict = {}
         
@@ -126,7 +137,8 @@ class LoraLoaderFromPrompt:
         
         return deduplicated_loras
 
-    def _apply_loras(self, model: Any, clip: Any, loras: List[Dict[str, Any]], 
+    @classmethod
+    def _apply_loras(cls, model: Any, clip: Any, loras: List[Dict[str, Any]], 
                     available_loras: List[str], prompt: str) -> Tuple[Any, Any, str]:
         """Apply loras to model and clip"""
         valid_loras = [lora for lora in loras if lora["name"] in available_loras]
@@ -136,7 +148,7 @@ class LoraLoaderFromPrompt:
         
         for lora in valid_loras:
             try:
-                model, clip, prompt = self._load_single_lora(model, clip, lora, prompt)
+                model, clip, prompt = cls._load_single_lora(model, clip, lora, prompt)
             except Exception as e:
                 print(f"Error loading lora {lora['name']}: {e}")
                 continue
@@ -144,7 +156,8 @@ class LoraLoaderFromPrompt:
         print(f"Text prompt after loading loras: {prompt}")
         return (model, clip, prompt)
 
-    def _load_single_lora(self, model: Any, clip: Any, lora: Dict[str, Any], prompt: str) -> Tuple[Any, Any, str]:
+    @classmethod
+    def _load_single_lora(cls, model: Any, clip: Any, lora: Dict[str, Any], prompt: str) -> Tuple[Any, Any, str]:
         """Load a single lora file"""
         lora_path = folder_paths.get_full_path("loras", lora["name"])
         loaded_lora = comfy.utils.load_torch_file(lora_path, safe_load=True)
@@ -155,16 +168,17 @@ class LoraLoaderFromPrompt:
         model, clip = comfy.sd.load_lora_for_models(model, clip, loaded_lora, model_strength, clip_strength)
         print(f"Loaded lora: {lora_path} with model strength: {model_strength} and clip strength: {clip_strength}")
         
-        return model, clip, self._process_trigger_words(lora_path, prompt)
+        return model, clip, cls._process_trigger_words(lora_path, prompt)
 
-    def _process_trigger_words(self, lora_path: str, prompt: str) -> str:
+    @classmethod
+    def _process_trigger_words(cls, lora_path: str, prompt: str) -> str:
         """Extract and add trigger words from lora metadata if needed"""
         try:
-            metadata = self._extract_lora_metadata(lora_path)
+            metadata = cls._extract_lora_metadata(lora_path)
             if not metadata:
                 return prompt
                 
-            trigger_words = self._get_trigger_words(metadata)
+            trigger_words = cls._get_trigger_words(metadata)
             if not trigger_words:
                 return prompt
                 
@@ -178,7 +192,8 @@ class LoraLoaderFromPrompt:
         
         return prompt
 
-    def _extract_lora_metadata(self, lora_path: str) -> Optional[Dict[str, Any]]:
+    @classmethod
+    def _extract_lora_metadata(cls, lora_path: str) -> Optional[Dict[str, Any]]:
         """Extract metadata from lora file"""
         try:
             with open(lora_path, 'r', encoding='ansi') as f:
@@ -203,7 +218,8 @@ class LoraLoaderFromPrompt:
         
         return None
 
-    def _get_trigger_words(self, metadata: Dict[str, Any]) -> List[str]:
+    @classmethod
+    def _get_trigger_words(cls, metadata: Dict[str, Any]) -> List[str]:
         """Extract trigger words from metadata"""
         try:
             dataset_dirs = metadata.get("__metadata__", {}).get("ss_dataset_dirs")
@@ -218,29 +234,33 @@ class LoraLoaderFromPrompt:
         except Exception:
             return []
 
-class CheckpointLoaderByName:
+class CheckpointLoaderByName(comfy_io.ComfyNode):
     @classmethod
-    def INPUT_TYPES(cls) -> Dict[str, Any]:
-        return {
-            "required": {
-                "type": (["Detect (Manual)", "Detect (Random)"], {"default": "Detect (Manual)"}),
-                "checkpoint_name": ("STRING", {"default": ""}),
-                "fallback": (comfy_paths.get_filename_list("checkpoints"), {"lazy": True}),
-            }
-        }
+    def define_schema(cls) -> comfy_io.Schema:
+        return comfy_io.Schema(
+            node_id="CheckpointLoaderByName",
+            display_name="Checkpoint Loader By Name",
+            category="t4ggno/utils",
+            inputs=[
+                comfy_io.Combo.Input("type", options=["Detect (Manual)", "Detect (Random)"], default="Detect (Manual)"),
+                comfy_io.String.Input("checkpoint_name", default=""),
+                comfy_io.Combo.Input("fallback", options=comfy_paths.get_filename_list("checkpoints"), lazy=True),
+            ],
+            outputs=[
+                comfy_io.Model.Output(display_name="MODEL"),
+                comfy_io.Clip.Output(display_name="CLIP"),
+                comfy_io.Vae.Output(display_name="VAE"),
+                comfy_io.String.Output(display_name="NAME_STRING"),
+            ]
+        )
 
-    RETURN_TYPES = ("MODEL", "CLIP", "VAE", "STRING")
-    RETURN_NAMES = ("MODEL", "CLIP", "VAE", "NAME_STRING")
-    FUNCTION = "load_checkpoint"
-    CATEGORY = "t4ggno/utils"
-    OUTPUT_NODE = False
-
-    def check_lazy_status(self, type, checkpoint_name, fallback):
+    @classmethod
+    def check_lazy_status(cls, type, checkpoint_name, fallback, **kwargs):
         needed = []
         # If checkpoint_name is provided and valid, we don't need fallback
         if checkpoint_name:
             available_checkpoints = comfy_paths.get_filename_list("checkpoints")
-            if self._find_checkpoint(checkpoint_name, available_checkpoints):
+            if cls._find_checkpoint(checkpoint_name, available_checkpoints):
                 return needed
         
         # Otherwise we need fallback
@@ -248,7 +268,8 @@ class CheckpointLoaderByName:
             needed.append("fallback")
         return needed
 
-    def load_checkpoint(self, type: str, checkpoint_name: str, fallback: str) -> Tuple[Any, Any, Any, str]:
+    @classmethod
+    def execute(cls, type: str, checkpoint_name: str, fallback: str, **kwargs) -> comfy_io.NodeOutput:
         print("=============================")
         print("== Load Checkpoint by Name ==")
         print(f"Type: {type}")
@@ -256,13 +277,16 @@ class CheckpointLoaderByName:
         available_checkpoints = comfy_paths.get_filename_list("checkpoints")
 
         if checkpoint_name:
-            checkpoint_path = self._find_checkpoint(checkpoint_name, available_checkpoints)
+            checkpoint_path = cls._find_checkpoint(checkpoint_name, available_checkpoints)
             if checkpoint_path:
-                return self._load_checkpoint_from_path(checkpoint_path, checkpoint_name)
+                result = cls._load_checkpoint_from_path(checkpoint_path, checkpoint_name)
+                return comfy_io.NodeOutput(*result)
 
-        return self._load_fallback_checkpoint(type, available_checkpoints, fallback)
+        result = cls._load_fallback_checkpoint(type, available_checkpoints, fallback)
+        return comfy_io.NodeOutput(*result)
 
-    def _find_checkpoint(self, checkpoint_name: str, available_checkpoints: List[str]) -> Optional[str]:
+    @classmethod
+    def _find_checkpoint(cls, checkpoint_name: str, available_checkpoints: List[str]) -> Optional[str]:
         """Find checkpoint using multiple strategies"""
         # Strategy 1: Exact match
         checkpoint_path = comfy_paths.get_full_path("checkpoints", checkpoint_name)
@@ -289,7 +313,8 @@ class CheckpointLoaderByName:
         print("Missing or invalid checkpoint name")
         return None
 
-    def _load_checkpoint_from_path(self, checkpoint_path: str, original_name: str) -> Tuple[Any, Any, Any, str]:
+    @classmethod
+    def _load_checkpoint_from_path(cls, checkpoint_path: str, original_name: str) -> Tuple[Any, Any, Any, str]:
         """Load checkpoint from given path"""
         result = comfy.sd.load_checkpoint_guess_config(
             checkpoint_path,
@@ -301,7 +326,8 @@ class CheckpointLoaderByName:
         checkpoint_name = os.path.splitext(os.path.basename(checkpoint_path))[0]
         return (*result, checkpoint_name)
 
-    def _load_fallback_checkpoint(self, type_: str, available_checkpoints: List[str], fallback: str) -> Tuple[Any, Any, Any, str]:
+    @classmethod
+    def _load_fallback_checkpoint(cls, type_: str, available_checkpoints: List[str], fallback: str) -> Tuple[Any, Any, Any, str]:
         """Load fallback checkpoint based on type"""
         if type_ == "Detect (Random)":
             selected_checkpoint = numpy.random.choice(available_checkpoints)
@@ -311,50 +337,56 @@ class CheckpointLoaderByName:
             print(f"Load checkpoint [Fallback]: {selected_checkpoint}")
 
         checkpoint_path = comfy_paths.get_full_path("checkpoints", selected_checkpoint)
-        return self._load_checkpoint_from_path(checkpoint_path, selected_checkpoint)
+        return cls._load_checkpoint_from_path(checkpoint_path, selected_checkpoint)
 
     @classmethod
-    def IS_CHANGED(cls, **kwargs) -> float:
+    def fingerprint_inputs(cls, **kwargs):
         return float("nan")
 
-class RandomCheckpointLoader:
-    def __init__(self):
-        self.checkpoint_usage: Dict[str, int] = defaultdict(int)
+class RandomCheckpointLoader(comfy_io.ComfyNode):
+    checkpoint_usage: Dict[str, int] = defaultdict(int)
 
     @classmethod
-    def INPUT_TYPES(cls) -> Dict[str, Any]:
-        return {
-            "required": {
-                "whitelist_regex": ("STRING", {"default": "", "multiline": True}),
-                "blacklist_regex": ("STRING", {"default": "", "multiline": True}),
-                "usage_limit": ("INT", {"default": 1, "min": 1, "max": 100}),
-            },
-        }
+    def define_schema(cls) -> comfy_io.Schema:
+        return comfy_io.Schema(
+            node_id="RandomCheckpointLoader",
+            display_name="Random Checkpoint Loader",
+            category="t4ggno/loaders",
+            description="""
+            Load a random checkpoint from the available checkpoints. The checkpoint is selected randomly from the list of available checkpoints. 
+            The checkpoint is loaded only if it has not reached the usage limit. The usage limit is the maximum number of times a checkpoint can be loaded before it is reset. 
+            The checkpoint is selected based on the whitelist and blacklist regex patterns. The whitelist regex is used to filter the checkpoints that match the pattern. 
+            The blacklist regex is used to exclude the checkpoints that match the pattern. 
+            If no checkpoints are available after applying the whitelist and blacklist regex, an error is raised. 
+            If all checkpoints have reached the usage limit, the usage count is reset, and the process is repeated until an eligible checkpoint is found.
+            """,
+            inputs=[
+                comfy_io.String.Input("whitelist_regex", default="", multiline=True),
+                comfy_io.String.Input("blacklist_regex", default="", multiline=True),
+                comfy_io.Int.Input("usage_limit", default=1, min=1, max=100),
+            ],
+            outputs=[
+                comfy_io.Model.Output(display_name="model"),
+                comfy_io.Clip.Output(display_name="clip"),
+                comfy_io.Vae.Output(display_name="vae"),
+                comfy_io.String.Output(display_name="checkpoint_name"),
+            ]
+        )
 
-    RETURN_TYPES = ("MODEL", "CLIP", "VAE", "STRING")
-    RETURN_NAMES = ("model", "clip", "vae", "checkpoint_name")
-    FUNCTION = "load_random_checkpoint"
-    CATEGORY = "t4ggno/loaders"
-    DESCRIPTION = """
-Load a random checkpoint from the available checkpoints. The checkpoint is selected randomly from the list of available checkpoints. 
-The checkpoint is loaded only if it has not reached the usage limit. The usage limit is the maximum number of times a checkpoint can be loaded before it is reset. 
-The checkpoint is selected based on the whitelist and blacklist regex patterns. The whitelist regex is used to filter the checkpoints that match the pattern. 
-The blacklist regex is used to exclude the checkpoints that match the pattern. 
-If no checkpoints are available after applying the whitelist and blacklist regex, an error is raised. 
-If all checkpoints have reached the usage limit, the usage count is reset, and the process is repeated until an eligible checkpoint is found.
-"""
-
-    def load_random_checkpoint(self, whitelist_regex: str, blacklist_regex: str, usage_limit: int) -> Tuple[Any, Any, Any, str]:
+    @classmethod
+    def execute(cls, whitelist_regex: str, blacklist_regex: str, usage_limit: int, **kwargs) -> comfy_io.NodeOutput:
         print("=============================")
         print("== Loading random checkpoint")
 
-        available_checkpoints = self._get_available_checkpoints()
-        filtered_checkpoints = self._filter_checkpoints(available_checkpoints, whitelist_regex, blacklist_regex)
-        eligible_checkpoints = self._get_eligible_checkpoints(filtered_checkpoints, usage_limit)
+        available_checkpoints = cls._get_available_checkpoints()
+        filtered_checkpoints = cls._filter_checkpoints(available_checkpoints, whitelist_regex, blacklist_regex)
+        eligible_checkpoints = cls._get_eligible_checkpoints(filtered_checkpoints, usage_limit)
 
-        return self._load_checkpoint(eligible_checkpoints)
+        result = cls._load_checkpoint(eligible_checkpoints)
+        return comfy_io.NodeOutput(*result)
 
-    def _get_available_checkpoints(self) -> List[str]:
+    @classmethod
+    def _get_available_checkpoints(cls) -> List[str]:
         """Get all available checkpoints and filter out None/empty values"""
         all_checkpoints = comfy_paths.get_filename_list("checkpoints")
         valid_checkpoints = [cp for cp in all_checkpoints if cp]
@@ -364,7 +396,8 @@ If all checkpoints have reached the usage limit, the usage count is reset, and t
         
         return valid_checkpoints
 
-    def _filter_checkpoints(self, checkpoints: List[str], whitelist_regex: str, blacklist_regex: str) -> List[str]:
+    @classmethod
+    def _filter_checkpoints(cls, checkpoints: List[str], whitelist_regex: str, blacklist_regex: str) -> List[str]:
         """Filter checkpoints using whitelist and blacklist regex patterns"""
         # Process whitelist patterns
         if whitelist_regex.strip():
@@ -397,25 +430,27 @@ If all checkpoints have reached the usage limit, the usage count is reset, and t
 
         return checkpoints
 
-    def _get_eligible_checkpoints(self, checkpoints: List[str], usage_limit: int) -> List[str]:
+    @classmethod
+    def _get_eligible_checkpoints(cls, checkpoints: List[str], usage_limit: int) -> List[str]:
         """Get checkpoints that haven't reached the usage limit"""
-        eligible_checkpoints = [cp for cp in checkpoints if self.checkpoint_usage[cp] < usage_limit]
+        eligible_checkpoints = [cp for cp in checkpoints if cls.checkpoint_usage[cp] < usage_limit]
         print(f"Eligible checkpoints: {len(eligible_checkpoints)}")
 
         if not eligible_checkpoints:
             print("All checkpoints reached usage limit, resetting usage count")
-            self.checkpoint_usage = defaultdict(int)
+            cls.checkpoint_usage = defaultdict(int)
             eligible_checkpoints = checkpoints
 
         numpy.random.shuffle(eligible_checkpoints)
         return eligible_checkpoints
 
-    def _load_checkpoint(self, eligible_checkpoints: List[str]) -> Tuple[Any, Any, Any, str]:
+    @classmethod
+    def _load_checkpoint(cls, eligible_checkpoints: List[str]) -> Tuple[Any, Any, Any, str]:
         """Attempt to load checkpoints until one succeeds"""
         for checkpoint_name in eligible_checkpoints:
             try:
                 print(f"Attempting to load checkpoint: {checkpoint_name}")
-                self.checkpoint_usage[checkpoint_name] += 1
+                cls.checkpoint_usage[checkpoint_name] += 1
 
                 checkpoint_path = comfy_paths.get_full_path("checkpoints", checkpoint_name)
                 print(f"Loading checkpoint from: {checkpoint_path}")
@@ -445,17 +480,5 @@ If all checkpoints have reached the usage limit, the usage count is reset, and t
         raise ValueError("Unable to load any checkpoints. All attempts failed.")
 
     @classmethod
-    def IS_CHANGED(cls, **kwargs) -> float:
+    def fingerprint_inputs(cls, **kwargs):
         return float("nan")
-
-NODE_CLASS_MAPPINGS = {
-    "LoraLoaderFromPrompt": LoraLoaderFromPrompt,
-    "CheckpointLoaderByName": CheckpointLoaderByName,
-    "RandomCheckpointLoader": RandomCheckpointLoader,
-}
-
-NODE_DISPLAY_NAME_MAPPINGS = {
-    "LoraLoaderFromPrompt": "Load Lora From Prompt",
-    "CheckpointLoaderByName": "Checkpoint Loader By Name",
-    "RandomCheckpointLoader": "Random Checkpoint Loader",
-}

@@ -225,7 +225,7 @@ class CheckpointLoaderByName:
             "required": {
                 "type": (["Detect (Manual)", "Detect (Random)"], {"default": "Detect (Manual)"}),
                 "checkpoint_name": ("STRING", {"default": ""}),
-                "fallback": (comfy_paths.get_filename_list("checkpoints"),),
+                "fallback": (comfy_paths.get_filename_list("checkpoints"), {"lazy": True}),
             }
         }
 
@@ -235,10 +235,23 @@ class CheckpointLoaderByName:
     CATEGORY = "t4ggno/utils"
     OUTPUT_NODE = False
 
-    def load_checkpoint(self, type_: str, checkpoint_name: str, fallback: str) -> Tuple[Any, Any, Any, str]:
+    def check_lazy_status(self, type, checkpoint_name, fallback):
+        needed = []
+        # If checkpoint_name is provided and valid, we don't need fallback
+        if checkpoint_name:
+            available_checkpoints = comfy_paths.get_filename_list("checkpoints")
+            if self._find_checkpoint(checkpoint_name, available_checkpoints):
+                return needed
+        
+        # Otherwise we need fallback
+        if fallback is None:
+            needed.append("fallback")
+        return needed
+
+    def load_checkpoint(self, type: str, checkpoint_name: str, fallback: str) -> Tuple[Any, Any, Any, str]:
         print("=============================")
         print("== Load Checkpoint by Name ==")
-        print(f"Type: {type_}")
+        print(f"Type: {type}")
 
         available_checkpoints = comfy_paths.get_filename_list("checkpoints")
 
@@ -247,7 +260,7 @@ class CheckpointLoaderByName:
             if checkpoint_path:
                 return self._load_checkpoint_from_path(checkpoint_path, checkpoint_name)
 
-        return self._load_fallback_checkpoint(type_, available_checkpoints, fallback)
+        return self._load_fallback_checkpoint(type, available_checkpoints, fallback)
 
     def _find_checkpoint(self, checkpoint_name: str, available_checkpoints: List[str]) -> Optional[str]:
         """Find checkpoint using multiple strategies"""

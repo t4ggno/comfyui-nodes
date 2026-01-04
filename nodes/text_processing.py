@@ -7,10 +7,10 @@ class TextSwitch:
         return {
             "required": {
                 "active": (["Text 1", "Text 2", "Text 3", "Text 4"], {"default": "Text 1"}),
-                "text1": ("STRING", {"default": "", "multiline": True}),
-                "text2": ("STRING", {"default": "", "multiline": True}),
-                "text3": ("STRING", {"default": "", "multiline": True}),
-                "text4": ("STRING", {"default": "", "multiline": True}),
+                "text1": ("STRING", {"default": "", "multiline": True, "lazy": True}),
+                "text2": ("STRING", {"default": "", "multiline": True, "lazy": True}),
+                "text3": ("STRING", {"default": "", "multiline": True, "lazy": True}),
+                "text4": ("STRING", {"default": "", "multiline": True, "lazy": True}),
             },
         }
 
@@ -19,6 +19,14 @@ class TextSwitch:
     FUNCTION = "get_text"
     CATEGORY = "t4ggno/utils"
     OUTPUT_NODE = False
+
+    def check_lazy_status(self, active, text1, text2, text3, text4):
+        needed = []
+        if active == "Text 1" and text1 is None: needed.append("text1")
+        elif active == "Text 2" and text2 is None: needed.append("text2")
+        elif active == "Text 3" and text3 is None: needed.append("text3")
+        elif active == "Text 4" and text4 is None: needed.append("text4")
+        return needed
 
     def get_text(self, active: str, text1: str, text2: str, text3: str, text4: str) -> Tuple[str]:
         """Switch between multiple text inputs based on the active selection."""

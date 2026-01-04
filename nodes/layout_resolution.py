@@ -77,11 +77,11 @@ class PredefinedResolutions:
             "required": {
                 "dimension": ([DIMENSION_1_5, DIMENSION_SDXL, DIMENSION_FAMOUS], {"default": DIMENSION_SDXL}),
                 "layout": ([LAYOUT_SQUARE, LAYOUT_LANDSCAPE, LAYOUT_ULTRA_WIDE, LAYOUT_PORTRAIT, LAYOUT_ULTRA_TALL, LAYOUT_RANDOM], {"default": LAYOUT_SQUARE}),
-                "enable_square_random": ("BOOLEAN", {"default": True}),
-                "enable_landscape_random": ("BOOLEAN", {"default": True}),
-                "enable_ultra_wide_random": ("BOOLEAN", {"default": True}),
-                "enable_portrait_random": ("BOOLEAN", {"default": True}),
-                "enable_ultra_tall_random": ("BOOLEAN", {"default": True}),
+                "enable_square_random": ("BOOLEAN", {"default": True, "lazy": True}),
+                "enable_landscape_random": ("BOOLEAN", {"default": True, "lazy": True}),
+                "enable_ultra_wide_random": ("BOOLEAN", {"default": True, "lazy": True}),
+                "enable_portrait_random": ("BOOLEAN", {"default": True, "lazy": True}),
+                "enable_ultra_tall_random": ("BOOLEAN", {"default": True, "lazy": True}),
                 "scale": ("FLOAT", {"default": 1.0, "min": 0.1, "max": 10.0, "step": 0.1}),
             },
             "hidden": {
@@ -95,6 +95,16 @@ class PredefinedResolutions:
     FUNCTION = "render_resolution"
     CATEGORY = "t4ggno/utils"
     OUTPUT_NODE = False
+
+    def check_lazy_status(self, dimension, layout, enable_square_random, enable_landscape_random, enable_ultra_wide_random, enable_portrait_random, enable_ultra_tall_random, scale):
+        needed = []
+        if layout == LAYOUT_RANDOM:
+            if enable_square_random is None: needed.append("enable_square_random")
+            if enable_landscape_random is None: needed.append("enable_landscape_random")
+            if enable_ultra_wide_random is None: needed.append("enable_ultra_wide_random")
+            if enable_portrait_random is None: needed.append("enable_portrait_random")
+            if enable_ultra_tall_random is None: needed.append("enable_ultra_tall_random")
+        return needed
 
     def _get_enabled_layouts(self, enable_square_random: bool, enable_landscape_random: bool, 
                            enable_ultra_wide_random: bool, enable_portrait_random: bool, 
@@ -149,10 +159,10 @@ class ResolutionSwitch:
         return {
             "required": {
                 "active": (["Resolution 1", "Resolution 2"], {"default": "Resolution 1"}),
-                "width1": ("INT", {"default": 1024}),
-                "height1": ("INT", {"default": 1024}),
-                "width2": ("INT", {"default": 1024}),
-                "height2": ("INT", {"default": 1024}),
+                "width1": ("INT", {"default": 1024, "lazy": True}),
+                "height1": ("INT", {"default": 1024, "lazy": True}),
+                "width2": ("INT", {"default": 1024, "lazy": True}),
+                "height2": ("INT", {"default": 1024, "lazy": True}),
             },
         }
 
@@ -161,6 +171,16 @@ class ResolutionSwitch:
     FUNCTION = "get_resolution"
     CATEGORY = "t4ggno/utils"
     OUTPUT_NODE = False
+
+    def check_lazy_status(self, active, width1, height1, width2, height2):
+        needed = []
+        if active == "Resolution 1":
+            if width1 is None: needed.append("width1")
+            if height1 is None: needed.append("height1")
+        else:
+            if width2 is None: needed.append("width2")
+            if height2 is None: needed.append("height2")
+        return needed
 
     def get_resolution(self, active: str, width1: int, height1: int, 
                       width2: int, height2: int) -> Tuple[int, int]:

@@ -24,8 +24,8 @@ class CurrentDateTime:
                 "timezone": (["Local", "UTC", "US/Eastern", "US/Central", "US/Mountain", "US/Pacific", "Europe/London", "Europe/Paris", "Asia/Tokyo", "Custom"], {"default": "Local"}),
             },
             "optional": {
-                "custom_format": ("STRING", {"default": "%Y-%m-%d_%H-%M-%S", "multiline": False}),
-                "custom_timezone": ("STRING", {"default": "UTC", "multiline": False}),
+                "custom_format": ("STRING", {"default": "%Y-%m-%d_%H-%M-%S", "multiline": False, "lazy": True}),
+                "custom_timezone": ("STRING", {"default": "UTC", "multiline": False, "lazy": True}),
             },
             "hidden": {
                 "control_after_generate": (["fixed", "random", "increment"], {"default": "increment"}),
@@ -42,6 +42,14 @@ class CurrentDateTime:
 Enhanced datetime utility that provides current date and time with timezone support and flexible formatting options.
 Returns formatted datetime, ISO format, and Unix timestamp.
 """
+
+    def check_lazy_status(self, format, timezone, custom_format, custom_timezone, **kwargs):
+        needed = []
+        if format == "Custom" and custom_format is None:
+            needed.append("custom_format")
+        if timezone == "Custom" and custom_timezone is None:
+            needed.append("custom_timezone")
+        return needed
 
     def get_current_date_time(self, format: str, timezone: str, custom_format: str = "", custom_timezone: str = "", **kwargs) -> Tuple[str, str, int]:
         """Get current datetime with enhanced formatting and timezone support."""
@@ -136,10 +144,10 @@ class TimestampConverter:
                 "target_timezone": (["Local", "UTC", "US/Eastern", "US/Central", "US/Mountain", "US/Pacific", "Europe/London", "Europe/Paris", "Asia/Tokyo", "Custom"], {"default": "Local"}),
             },
             "optional": {
-                "input_format": ("STRING", {"default": "%Y-%m-%d %H:%M:%S", "multiline": False}),
-                "output_custom_format": ("STRING", {"default": "%Y-%m-%d_%H-%M-%S", "multiline": False}),
-                "custom_source_tz": ("STRING", {"default": "UTC", "multiline": False}),
-                "custom_target_tz": ("STRING", {"default": "UTC", "multiline": False}),
+                "input_format": ("STRING", {"default": "%Y-%m-%d %H:%M:%S", "multiline": False, "lazy": True}),
+                "output_custom_format": ("STRING", {"default": "%Y-%m-%d_%H-%M-%S", "multiline": False, "lazy": True}),
+                "custom_source_tz": ("STRING", {"default": "UTC", "multiline": False, "lazy": True}),
+                "custom_target_tz": ("STRING", {"default": "UTC", "multiline": False, "lazy": True}),
             },
         }
 
@@ -152,6 +160,22 @@ class TimestampConverter:
 Convert timestamps between different formats and timezones.
 Supports Unix timestamps, ISO strings, and custom formatted strings.
 """
+
+    def check_lazy_status(self, input_type, input_value, output_format, source_timezone, target_timezone, input_format, output_custom_format, custom_source_tz, custom_target_tz):
+        needed = []
+        if input_type == "Formatted String" and input_format is None:
+            needed.append("input_format")
+        
+        if output_format == "Custom" and output_custom_format is None:
+            needed.append("output_custom_format")
+            
+        if source_timezone == "Custom" and custom_source_tz is None:
+            needed.append("custom_source_tz")
+            
+        if target_timezone == "Custom" and custom_target_tz is None:
+            needed.append("custom_target_tz")
+            
+        return needed
 
     def convert_timestamp(self, input_type: str, input_value: str, output_format: str, 
                          source_timezone: str, target_timezone: str,
